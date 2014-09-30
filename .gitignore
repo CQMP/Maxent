@@ -1,3 +1,15 @@
+#everything in folder ignored
+*
+!.gitignore
+!maxent_helper.cpp
+!maxent_parms.cpp
+!maxent_parms.h
+!maxent_simulation.cpp
+!maxent.cpp
+!maxent.h
+
+
+#C++ Files
 # Compiled Object files
 *.slo
 *.lo
