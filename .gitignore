@@ -7,6 +7,7 @@
 !maxent_simulation.cpp
 !maxent.cpp
 !maxent.h
+!CMakeLists.txt
 
 
 #C++ Files
