@@ -71,7 +71,7 @@ void run_it(boost::python::dict parms_){
   int main(int argc, char** argv)
 {
   alps::mcoptions options(argc, argv);
-    std::cout << "Ryan test" << std::endl;
+    
   alps::parameters_type<MaxEntSimulation>::type parms(alps::hdf5::archive(options.input_file));
     
     std::string out_file(boost::lexical_cast<std::string>(parms["BASENAME"]|options.output_file)+std::string(".out.h5"));
