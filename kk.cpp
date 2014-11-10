@@ -52,8 +52,6 @@ double integrate(double lower_limit, double upper_limit, double pole_location, d
   I*=dx/3.;
   result=I;
   
-  //std::cout<<omega<<" "<<chi2_omega<<" "<<offset<<" "<<result<<" "<<result-offset<<std::endl;
-  
   return result-offset;
 }
 
@@ -85,22 +83,23 @@ enum direction_type{
   imag_to_real,
   real_to_imag
 };
+
 int main(int argc, char **argv){
+  //define parameter values
   namespace po = boost::program_options;
   std::string input_file_name;
   std::string output_file_name;
-  //double global_scale_factor=1.;
   double direction_sign=-1.;
   direction_type direction;
   double xmin=-100.;
   double xmax=100.;
   
+  //read in and parse command line options
   po::options_description desc("Allowed options");
   desc.add_options()
   ("help", "show this help")
   ("input_file", po::value<std::string>(&input_file_name), "Input file, e.g. Im(Sigma) selfenergy file out of continuation")
   ("output_file", po::value<std::string>(&output_file_name), "Output file, e.g. Re(Sigma) and Im(Sigma)")
-  //("global_scale_factor", po::value<double>(&global_scale_factor), "scale factor for the integral (real and imag part) to account for pis from maxent")
   ("imag_to_real", "input is imaginary part, produce real part")
   ("real_to_imag", "input is real part, produce imaginary part")
   ;
@@ -114,7 +113,6 @@ int main(int argc, char **argv){
   }
   if(!vm.count("input_file")) throw std::runtime_error("you need to specify the Im(Sigma) file.");
   if(!vm.count("output_file")) throw std::runtime_error("you need to specify the Re(Sigma) file.");
-  //if(!vm.count("new_norm")) throw std::runtime_error("you need to specify the new norm with --new_norm.");
   if(!vm.count("imag_to_real") && !vm.count("real_to_imag")) throw std::runtime_error("you need to specify the direction with --imag_to_real or --real_to_imag.");
   if(vm.count("real_to_imag")){
     direction_sign=1.;
@@ -123,6 +121,8 @@ int main(int argc, char **argv){
     direction_sign=-1;
     direction=imag_to_real;
   }
+
+  //deal with input and output files
   std::ofstream output_file(output_file_name.c_str());
   std::ifstream input_file(input_file_name.c_str());
   if(!input_file.is_open()) throw std::runtime_error("input sigma file not open.");
@@ -139,7 +139,6 @@ int main(int argc, char **argv){
     input_file>>x>>y>>std::ws;
     xgrid.push_back(x);
     input_data.push_back(y);
-    //input_data.push_back(y*global_scale_factor);
   }while(!input_file.eof());
   int N=input_data.size();
   double xmin_data=xgrid[0];
