@@ -10,9 +10,6 @@
 #include <gsl/gsl_spline.h>
 #include <boost/program_options.hpp>
 
-extern "C" void dqawc_(double (*f)(double *),double &lower_limit ,double &upper_limit,double &pole,double &abstol,double &reltol, double &result, double &err,int &neval,int &ier,int &limit,int &lenw,int &last,int *iwork, double *work);
-extern "C" void dqag_(double (*f)(double *),double &lower_limit ,double &upper_limit,double &abstol,double &reltol, int &key, double &result, double &err,int &neval,int &ier,int &limit,int &lenw,int &last,int *iwork, double *work);
-
 inline double fun(double omegaprime, double xmin_data, double xmax_data, const gsl_spline *input_spline, gsl_interp_accel *acc){
   if(omegaprime <= xmin_data || omegaprime >= xmax_data) return 0.;
   return -1./M_PI*gsl_spline_eval (input_spline, omegaprime, acc);
