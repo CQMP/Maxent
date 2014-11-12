@@ -136,9 +136,14 @@ int main(int argc, char **argv){
   std::vector<std::pair<double,double> > output_data;
   do{
     double x,y;
-    input_file>>x>>y>>std::ws;
-    xgrid.push_back(x);
-    input_data.push_back(y);
+    std::string line;
+    getline(input_file, line);
+    if(line.length()!=0){
+      std::stringstream sstream(line);
+      sstream>>x>>y>>std::ws;
+      xgrid.push_back(x);
+      input_data.push_back(y);
+    }
   }while(!input_file.eof());
   int N=input_data.size();
   double xmin_data=xgrid[0];
