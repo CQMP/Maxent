@@ -376,7 +376,7 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
       }
     }
     for (int i=0; i<ndat(); ++i) {
-        sigma_[i] = std::sqrt(std::abs(var(new_ndat_+i)))/static_cast<double>(p["NORM"]);
+        sigma_[i] = std::abs(var(new_ndat_+i))/static_cast<double>(p["NORM"]);
       if (alps::is_master() && p["VERBOSE"]|false)
         std::cout << "# " << var(new_ndat_+i) << "\n";
     }
