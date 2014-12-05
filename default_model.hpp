@@ -54,37 +54,33 @@
 class DefaultModel 
 {
 public:
-  //  DefaultModel(const alps::Parameters& p) :
   DefaultModel(const alps::params& p) :
     omega_max(p["OMEGA_MAX"]),
-    omega_min(static_cast<double>(p["OMEGA_MIN"]|(-omega_max))), //we had a 0 here in the bosonic case. That's not a good idea if you're continuing symmetric functions like chi(omega)/omega. Change omega_min to zero manually if you need it.
-    blow_up_(p["BLOW_UP"]|1.)
-{ //std::cout<<"found omega_min: "<<omega_min<<std::endl;
-    //std::cout<<"found omega_max: "<<omega_max<<std::endl;
-    //std::cout<<"found blowup:    "<<blow_up_<<std::endl;
-}
+    omega_min(static_cast<double>(p["OMEGA_MIN"]|(-omega_max))) //we had a 0 here in the bosonic case. That's not a good idea if you're continuing symmetric functions like chi(omega)/omega. Change omega_min to zero manually if you need it.
+{
+    if(p.defined("BLOW_UP"))
+      throw std::logic_error("Previous versions supported a parameter \'blowup\'. I've removed this from the code, I don't think it should exist");
+    }
 
   virtual ~DefaultModel(){}
 
-  //omega returns a frequency point, given x between 0 and 1.
+  ///omega returns a frequency point, given x between 0 and 1.
   virtual double omega(const double x) const = 0;
 
-  //D returns the derivative of the integrated default model
+  ///D returns the derivative of the integrated default model
   virtual double D(const double omega) const = 0;
 
-  //returns the integrated default model
+  ///returns the integrated default model
   virtual double x(const double t=0) const = 0;
 
-  //equidistant mapping from [0,1] to [omega_min, omega_max]
+  ///equidistant mapping from [0,1] to [omega_min, omega_max]
   double omega_of_t(const double t) const { return omega_min + (omega_max-omega_min)*t; }
-  //equidistant mapping from [omega_min, omega_max] to [0,1]
+  ///equidistant mapping from [omega_min, omega_max] to [0,1]
   double t_of_omega(const double omega) const { return (omega-omega_min)/(omega_max-omega_min); }
-  double blow_up() const { return blow_up_; }
 
 protected:
   const double omega_max;
   const double omega_min;
-  const double blow_up_;
 };
 
 
@@ -93,11 +89,10 @@ class FlatDefaultModel : public DefaultModel
 {
 public:
 
-  //    FlatDefaultModel(const alps::Parameters& p) : DefaultModel(p) {}
   FlatDefaultModel(const alps::params& p) : DefaultModel(p) {}
 
   double omega(const double x) const {
-    return x/blow_up()*(omega_max-omega_min) + omega_min;
+    return x*(omega_max-omega_min) + omega_min;
   }
 
   double D(const double) const {
@@ -105,7 +100,7 @@ public:
   }
 
   double x(const double t) const {
-    return t*blow_up();
+    return t;
   }
 
 };
@@ -173,7 +168,6 @@ protected:
 class DoubleGaussian : public ShiftedGaussian
 {
 public:
-  //  DoubleGaussian(const alps::Parameters& p) :
   DoubleGaussian(const alps::params& p) :
     ShiftedGaussian(p){}
 
@@ -184,7 +178,6 @@ public:
 
 class LinearRiseExpDecay : public Model{
 public:
-  //  LinearRiseExpDecay(const alps::Parameters &p): lambda_(p["LAMBDA"]){}
   LinearRiseExpDecay(const alps::params &p): lambda_(p["LAMBDA"]){}
   double operator()(const double omega) {
     return lambda_*lambda_*omega*std::exp(-lambda_*omega);
@@ -196,7 +189,6 @@ private:
 
 class QuadraticRiseExpDecay : public Model{
 public:
-  //  QuadraticRiseExpDecay(const alps::Parameters &p): lambda_(p["LAMBDA"]){}
   QuadraticRiseExpDecay(const alps::params &p): lambda_(p["LAMBDA"]){}
   double operator()(const double omega) {
     return (lambda_*lambda_*lambda_)/2.*(omega*omega)*std::exp(-lambda_*omega);
@@ -209,7 +201,6 @@ private:
 class GeneralDoubleGaussian : public ShiftedGaussian
 {
 public:
-  //  GeneralDoubleGaussian(const alps::Parameters& p) :
   GeneralDoubleGaussian(const alps::params& p) :
     ShiftedGaussian(p), bnorm(static_cast<double>(p["BOSE_NORM"])) {}
 
@@ -233,7 +224,7 @@ public:
   /// Second column: value of default model
   /// anything after that: ignored.
   TabFunction(const alps::params& p, std::string const& name)
-{
+  {
     std::string p_name = p[name].cast<std::string>();
     std::ifstream defstream(p_name.c_str());
     if (!defstream)
@@ -253,7 +244,7 @@ public:
       std::cout<<"Omega[ 0] "<<Omega[0]<<" omega min: "<<omega_min<<std::endl;
       std::cout<<"Omega[-1] "<<Omega.back()<<" omega max: "<<omega_max<<std::endl;
     }
-}
+  }
 
   //regturn value of default model. If INSIDE interval we have data in: return linearly interpolated data. Otherwise: return zero.
   double operator()(const double omega) {
@@ -282,7 +273,6 @@ class GeneralDefaultModel : public DefaultModel
 {
 public:
 
-  //  GeneralDefaultModel(const alps::Parameters& p, boost::shared_ptr<Model> mod)
   GeneralDefaultModel(const alps::params& p, boost::shared_ptr<Model> mod)
 : DefaultModel(p)
 , Mod(mod)
@@ -300,22 +290,14 @@ public:
       xtab[o] = sum;
     }
     for (int o=0; o<ntab; ++o) {
-      xtab[o] *= blow_up()/sum;
+      xtab[o] *= 1./sum;
     }
-    /*std::cout<<std::setprecision(14)<<"tabulated a model, these are the values: "<<std::endl;
-    for(int i=0;i<ntab;++i){
-      std::cout<<i<<" "<<xtab[i]<<std::endl;
-    }
-    std::cout<<"total sum is: "<<sum<<std::endl;*/
-
-    /*for(int N=0;N<=1000;++N){
-      double d=1./1000.*N;
-      std::cout<<omega(d)<<" "<<D(omega(d))<<" "<<x(d)<<" "<<d<<std::endl;
-    }*/
 }
 
   double omega(const double x) const {
-    if(!(x<=blow_up() && x>=0.)) throw std::logic_error("parameter x is out of bounds!"); //DNDEBUG switches off debug assertions
+    //range check for x
+    if(!(x<=1 && x>=0.))
+      throw std::logic_error("parameter x is out of bounds!");
     std::vector<double>::const_iterator ub = std::upper_bound(xtab.begin(), xtab.end(), x);
     int omega_index = ub - xtab.begin();
     if (ub==xtab.end())
@@ -327,7 +309,7 @@ public:
     return -(om2-om1)/(x2-x1)*(x2-x)+om2;      
   }
 
-  //this returns the value of the model function at frequency omega
+  /// returns the value of the model function at frequency omega
   double D(const double omega) const {
     return (*Mod)(omega);
   }
@@ -337,7 +319,7 @@ public:
     if(t>1. || t<0.) throw std::logic_error("parameter t is out of bounds!");
     int od = (int)(t*(ntab-1));
     if (od==(ntab-1)) 
-      return blow_up();
+      return 1.;
     double x1 = xtab[od];
     double x2 = xtab[od+1];
     return -(x2-x1)*(od+1-t*ntab)+x2;      
@@ -351,7 +333,6 @@ private:
 
 
 
-//inline boost::shared_ptr<DefaultModel> make_default_model(const alps::Parameters& parms, std::string const& name)
 inline boost::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, std::string const& name)
     {
   std::string p_name = parms[name]|"flat";
