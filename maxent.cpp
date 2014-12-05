@@ -46,10 +46,9 @@ void run_it(boost::python::dict parms_){
 
   int main(int argc, char** argv)
   {
-    {
-      if(argc==2 && std::string(argv[1])==std::string("--test"))
-        ::testing::InitGoogleTest(&argc, argv);
-        exit(RUN_ALL_TESTS());
+    if(argc==2 && std::string(argv[1])==std::string("--test")){
+      ::testing::InitGoogleTest(&argc, argv);
+      exit(RUN_ALL_TESTS());
     }
     alps::mcoptions options(argc, argv);
 
