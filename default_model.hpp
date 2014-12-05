@@ -26,8 +26,7 @@
  *****************************************************************************/
 
 
-#ifndef ALPS_TOOL_DEFAULT_MODEL_HPP
-#define ALPS_TOOL_DEFAULT_MODEL_HPP
+#pragma once
 
 #include <math.h>
 #include <alps/parameter.h>
@@ -60,7 +59,7 @@ public:
 {
     if(p.defined("BLOW_UP"))
       throw std::logic_error("Previous versions supported a parameter \'blowup\'. I've removed this from the code, I don't think it should exist");
-    }
+}
 
   virtual ~DefaultModel(){}
 
@@ -223,9 +222,8 @@ public:
   /// First column: frequency
   /// Second column: value of default model
   /// anything after that: ignored.
-  TabFunction(const alps::params& p, std::string const& name)
-  {
-    std::string p_name = p[name].cast<std::string>();
+  TabFunction(const alps::params& p, std::string const& name){
+  std::string p_name = p[name].cast<std::string>();
     std::ifstream defstream(p_name.c_str());
     if (!defstream)
       boost::throw_exception(std::invalid_argument("could not open default model file: "+p[name]));
@@ -244,14 +242,14 @@ public:
       std::cout<<"Omega[ 0] "<<Omega[0]<<" omega min: "<<omega_min<<std::endl;
       std::cout<<"Omega[-1] "<<Omega.back()<<" omega max: "<<omega_max<<std::endl;
     }
-  }
+}
 
   //regturn value of default model. If INSIDE interval we have data in: return linearly interpolated data. Otherwise: return zero.
   double operator()(const double omega) {
     //for values outside the grid point: return zero:
     if(omega < Omega[0] || omega > Omega.back())
       return 0.;
-    
+
     //otherwise linear interpolation
     std::vector<double>::const_iterator ub = std::upper_bound(Omega.begin(), Omega.end(), omega);
     int index = ub - Omega.begin();
@@ -277,8 +275,7 @@ public:
 : DefaultModel(p)
 , Mod(mod)
 , ntab(5001)
-, xtab(ntab) 
-{
+, xtab(ntab) {
     double sum = 0;
     xtab[0] = 0.;
     //this is an evaluation on an equidistant grid; sum integrated by trapezoidal rule
@@ -333,8 +330,7 @@ private:
 
 
 
-inline boost::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, std::string const& name)
-    {
+inline boost::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, std::string const& name){
   std::string p_name = parms[name]|"flat";
   if (p_name == "flat") {
     std::cout << "Using flat default model" << std::endl;
@@ -380,8 +376,7 @@ inline boost::shared_ptr<DefaultModel> make_default_model(const alps::params& pa
     boost::shared_ptr<Model> Mod(new TabFunction(parms, name));
     return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
-    }
+        }
 
 
 
-#endif
