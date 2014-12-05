@@ -224,12 +224,15 @@ private:
   const double bnorm; 
 };
 
-
+///This class deals with tabulated model functions
 class TabFunction : public Model
 {
 public:
-//  TabFunction(const alps::Parameters& p, std::string const& name) //: index(0)
-  TabFunction(const alps::params& p, std::string const& name) //: index(0)
+  ///constructor will read in a default model from a file. File format is:
+  /// First column: frequency
+  /// Second column: value of default model
+  /// anything after that: ignored.
+  TabFunction(const alps::params& p, std::string const& name)
   {
     std::string p_name = p[name].cast<std::string>();
     std::ifstream defstream(p_name.c_str());
@@ -243,12 +246,9 @@ public:
     }
     double omega_max = p["OMEGA_MAX"]; 
     double omega_min(static_cast<double>(p["OMEGA_MIN"]|-omega_max)); //we had a 0 here in the bosonic case. That's not a good idea if you're continuing symmetric functions like chi(omega)/omega. Change omega_min to zero manually if you need it.
-    //double omega_min = (p["KERNEL"] == "bosonic") ? 0. : 
-    //     static_cast<double>(p.value_or_default("OMEGA_MIN", -omega_max));
     if (Omega[0]!=omega_min || Omega[Omega.size()-1]!=omega_max){
       std::cout<<"Omega[ 0] "<<Omega[0]<<" omega min: "<<omega_min<<std::endl;
       std::cout<<"Omega[-1] "<<Omega[Omega.size()-1]<<" omega max: "<<omega_max<<std::endl;
-//      boost::throw_exception(std::invalid_argument("invalid omega range for default model"));
     }
   }
   

@@ -28,8 +28,7 @@
 
 /* $Id: factory.h 1101 2004-08-18 18:11:43Z troyer $ */
 
-#ifndef ALPS_TOOL_MAXENT_HPP
-#define ALPS_TOOL_MAXENT_HPP
+#pragma once
 
 #include <alps/scheduler.h>
 #include <alps/config.h>
@@ -37,6 +36,7 @@
 #include <boost/numeric/bindings/blas/level2/gemv.hpp>
 #include "maxent_parms.hpp"
 
+#include"gtest/gtest.h"
 
 
 class MaxEntFactory : public alps::scheduler::Factory 
@@ -170,4 +170,3 @@ private:
   std::ofstream prob_str;
 }; 
 
-#endif

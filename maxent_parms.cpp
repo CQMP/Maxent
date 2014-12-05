@@ -34,9 +34,9 @@
 #include <boost/numeric/bindings/lapack/driver/gesvd.hpp>
 #include <boost/numeric/bindings/upper.hpp>
 
-#define MAXIMUM(a,b) ((a>b) ? a : a)
+//this definition is brain dead. What is it doing here?!?
+//#define MAXIMUM(a,b) ((a>b) ? a : a)
 
-//ContiParameters::ContiParameters(const alps::Parameters& p) :
 ContiParameters::ContiParameters(const alps::params& p) :
 Default_(make_default_model(p, "DEFAULT_MODEL")),
 T_(p["T"]|1./static_cast<double>(p["BETA"])),
@@ -53,10 +53,6 @@ y_(ndat_),sigma_(ndat_), x_(ndat_),K_(),t_array_(nfreq_+1)
       temp[i] = tan(M_PI * (double(i)/(nfreq_)*(1.-2*cut)+cut - 0.5));
     for (int i=0; i<nfreq_+1; ++i) 
       t_array_[i] = (temp[i] - temp[0])/(temp[temp.size()-1] - temp[0]);
-    //std::cout<<"debug: Lorentzian grid : "<<std::endl;
-    //for (int i=0; i<nfreq_+1; ++i){
-    //  std::cout<<i<<" "<<t_array_[i]<<std::endl;
-    //}
   }
   else if (p_f_grid=="half Lorentzian") {
     double cut = p["CUT"]|0.01;
@@ -186,8 +182,6 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
   K_.resize(ndat_, ntab);
   std::string p_data = p["DATASPACE"]|"time";
   std::string p_kernel = p["KERNEL"]|"fermionic";
-//  for (int i=0; i<ndat(); ++i)
-//    y_(i) = static_cast<double>(p["X_"+boost::lexical_cast<std::string>(i)])/static_cast<double>(p["NORM"]);
   if(p_data=="time") {
     if (alps::is_master())
       std::cerr << "assume time space data" << std::endl;
