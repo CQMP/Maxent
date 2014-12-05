@@ -55,11 +55,10 @@ class DefaultModel
 public:
   DefaultModel(const alps::params& p) :
     omega_max(p["OMEGA_MAX"]),
-    omega_min(static_cast<double>(p["OMEGA_MIN"]|(-omega_max))) //we had a 0 here in the bosonic case. That's not a good idea if you're continuing symmetric functions like chi(omega)/omega. Change omega_min to zero manually if you need it.
-{
+    omega_min(static_cast<double>(p["OMEGA_MIN"]|(-omega_max))){ //we had a 0 here in the bosonic case. That's not a good idea if you're continuing symmetric functions like chi(omega)/omega. Change omega_min to zero manually if you need it.
     if(p.defined("BLOW_UP"))
       throw std::logic_error("Previous versions supported a parameter \'blowup\'. I've removed this from the code, I don't think it should exist");
-}
+  }
 
   virtual ~DefaultModel(){}
 
@@ -118,7 +117,6 @@ public:
 class Gaussian : public Model 
 {
 public:
-  //  Gaussian(const alps::Parameters& p) : sigma(static_cast<double>(p["SIGMA"])) {}
   Gaussian(const alps::params& p) : sigma(static_cast<double>(p["SIGMA"])) {}
 
   virtual double operator()(const double omega) {
@@ -132,7 +130,6 @@ private:
 class TwoGaussians : public Model
 {
 public:
-  //    TwoGaussians(const alps::Parameters& p) : sigma1(static_cast<double>(p["SIGMA1"])),
   TwoGaussians(const alps::params& p) : sigma1(static_cast<double>(p["SIGMA1"])),
   sigma2(static_cast<double>(p["SIGMA2"])),
   shift1(static_cast<double>(p["SHIFT1"]|0.0)),
@@ -222,43 +219,10 @@ public:
   /// First column: frequency
   /// Second column: value of default model
   /// anything after that: ignored.
-  TabFunction(const alps::params& p, std::string const& name){
-  std::string p_name = p[name].cast<std::string>();
-    std::ifstream defstream(p_name.c_str());
-    if (!defstream)
-      boost::throw_exception(std::invalid_argument("could not open default model file: "+p[name]));
-    double om, D;
-    std::string line;
-    while (getline(defstream, line)) {
-      if(line.size()>0 && line[0]=='#') continue;
-      std::stringstream linestream(line);
-      linestream>>om>>D;
-      Omega.push_back(om);
-      Def.push_back(D);
-    }
-    double omega_max = p["OMEGA_MAX"]; 
-    double omega_min(static_cast<double>(p["OMEGA_MIN"]|-omega_max)); //we had a 0 here in the bosonic case. That's not a good idea if you're continuing symmetric functions like chi(omega)/omega. Change omega_min to zero manually if you need it.
-    if (Omega[0]!=omega_min || Omega.back()!=omega_max){
-      std::cout<<"Omega[ 0] "<<Omega[0]<<" omega min: "<<omega_min<<std::endl;
-      std::cout<<"Omega[-1] "<<Omega.back()<<" omega max: "<<omega_max<<std::endl;
-    }
-}
+  TabFunction(const alps::params& p, std::string const& name);
 
-  //regturn value of default model. If INSIDE interval we have data in: return linearly interpolated data. Otherwise: return zero.
-  double operator()(const double omega) {
-    //for values outside the grid point: return zero:
-    if(omega < Omega[0] || omega > Omega.back())
-      return 0.;
-
-    //otherwise linear interpolation
-    std::vector<double>::const_iterator ub = std::upper_bound(Omega.begin(), Omega.end(), omega);
-    int index = ub - Omega.begin();
-    double om1 = Omega[index-1];
-    double om2 = Omega[index];
-    double D1 = Def[index-1];
-    double D2 = Def[index];
-    return -(D2-D1)/(om2-om1)*(om2-omega)+D2;      
-  }
+  //return value of default model. If INSIDE interval we have data in: return linearly interpolated data. Otherwise: return zero.
+  double operator()(const double omega);
 
 private:
   std::vector<double> Omega;
@@ -271,112 +235,24 @@ class GeneralDefaultModel : public DefaultModel
 {
 public:
 
-  GeneralDefaultModel(const alps::params& p, boost::shared_ptr<Model> mod)
-: DefaultModel(p)
-, Mod(mod)
-, ntab(5001)
-, xtab(ntab) {
-    double sum = 0;
-    xtab[0] = 0.;
-    //this is an evaluation on an equidistant grid; sum integrated by trapezoidal rule
-    double delta_omega = (omega_max-omega_min)/(ntab-1);
-    for (int o=1; o<ntab; ++o) {
-      double omega1 = omega_min + (o-1)*delta_omega;
-      double omega2 = omega_min + o*delta_omega;
-      sum += ((*Mod)(omega1)+(*Mod)(omega2))/2.*delta_omega;
-      xtab[o] = sum;
-    }
-    for (int o=0; o<ntab; ++o) {
-      xtab[o] *= 1./sum;
-    }
-}
+  GeneralDefaultModel(const alps::params& p, boost::shared_ptr<Model> mod);
 
-  double omega(const double x) const {
-    //range check for x
-    if(!(x<=1 && x>=0.))
-      throw std::logic_error("parameter x is out of bounds!");
-    std::vector<double>::const_iterator ub = std::upper_bound(xtab.begin(), xtab.end(), x);
-    int omega_index = ub - xtab.begin();
-    if (ub==xtab.end())
-      omega_index = xtab.end() - xtab.begin() - 1;
-    double om1 = omega_min + (omega_index-1)*(omega_max-omega_min)/(ntab-1);
-    double om2 = omega_min + omega_index*(omega_max-omega_min)/(ntab-1);
-    double x1 = xtab[omega_index-1];
-    double x2 = xtab[omega_index];
-    return -(om2-om1)/(x2-x1)*(x2-x)+om2;      
-  }
-
+  ///given a number x between 0 and 1, find the frequency omega belonging to x.
+  double omega(const double x) const;
   /// returns the value of the model function at frequency omega
-  double D(const double omega) const {
-    return (*Mod)(omega);
-  }
+  double D(const double omega) const;
 
   //I have no idea what this does.
-  double x(const double t) const {
-    if(t>1. || t<0.) throw std::logic_error("parameter t is out of bounds!");
-    int od = (int)(t*(ntab-1));
-    if (od==(ntab-1)) 
-      return 1.;
-    double x1 = xtab[od];
-    double x2 = xtab[od+1];
-    return -(x2-x1)*(od+1-t*ntab)+x2;      
-  }
+  double x(const double t) const;
 
 private:
   boost::shared_ptr<Model> Mod;
   const int ntab;
   std::vector<double> xtab; //xtab has an equidistantly tabulated discretized model function
+
+  double norm();
 };
 
 
 
-inline boost::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, std::string const& name){
-  std::string p_name = parms[name]|"flat";
-  if (p_name == "flat") {
-    std::cout << "Using flat default model" << std::endl;
-    return boost::shared_ptr<DefaultModel>(new FlatDefaultModel(parms));
-  }
-  else if (p_name == "gaussian") {
-    std::cout << "Using Gaussian default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new Gaussian(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
-  }
-  else if (p_name == "twogaussians") {
-    std::cout << "Using sum of two Gaussians default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new TwoGaussians(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
-  }
-  else if (p_name == "shifted gaussian") {
-    std::cout << "Using shifted Gaussian default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new ShiftedGaussian(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
-  }
-  else if (p_name == "double gaussian") {
-    std::cout << "Using double Gaussian default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new DoubleGaussian(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
-  }
-  else if (p_name == "general double gaussian") {
-    std::cout << "Using general double Gaussian default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new GeneralDoubleGaussian(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
-  }
-  else if (p_name == "linear rise exp decay") {
-    std::cout << "Using linear rise exponential decay default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new LinearRiseExpDecay(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
-  }
-  else if (p_name == "quadratic rise exp decay") {
-    std::cout << "Using quadratic rise exponential decay default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new QuadraticRiseExpDecay(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
-  }
-  else { 
-    std::cout << "Using tabulated default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new TabFunction(parms, name));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
-  }
-        }
-
-
-
+boost::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, std::string const& name);

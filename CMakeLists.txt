@@ -18,6 +18,7 @@ maxent_helper.cpp
 maxent_parms.cpp
 maxent_simulation.cpp
 default_modelTest.cpp
+default_model.cpp
 ${GTEST_SRC_DIR}/gtest-all.cc
 )
 target_link_libraries(maxent
