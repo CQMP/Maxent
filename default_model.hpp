@@ -29,8 +29,7 @@
 #pragma once
 
 #include <math.h>
-#include <alps/parameter.h>
-#include <alps/ngs.hpp>
+#include <alps/ngs/params.hpp>
 #include <boost/shared_ptr.hpp>
 
 

@@ -29,6 +29,7 @@
 #include "default_model.hpp"
 #include "alps/utility/temporary_filename.hpp"
 #include"gtest/gtest.h"
+#include <fstream>
 
 void write_minimal_tab_file(const std::string &str){
   {
