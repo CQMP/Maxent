@@ -57,7 +57,7 @@ y_(ndat_),sigma_(ndat_), x_(ndat_),K_(),t_array_(nfreq_+1)
   else if (p_f_grid=="half Lorentzian") {
     double cut = p["CUT"]|0.01;
     std::vector<double> temp(nfreq_+1);
-    for (int i=0; i<nfreq_; ++i) 
+    for (int i=0; i<nfreq_+1; ++i)
       temp[i] = tan(M_PI * (double(i+nfreq_)/(2*nfreq_-1)*(1.-2*cut)+cut - 0.5));
     for (int i=0; i<nfreq_+1; ++i) 
       t_array_[i] = (temp[i] - temp[0])/(temp[temp.size()-1] - temp[0]);\
