@@ -34,6 +34,7 @@
 #include <boost/numeric/bindings/ublas.hpp>
 #include <boost/numeric/bindings/upper.hpp>
 #include <boost/numeric/bindings/lower.hpp>
+#include <boost/math/special_functions/fpclassify.hpp>
 
 /*
 MaxEntHelper::MaxEntHelper(const alps::Parameters& p) : 
@@ -68,8 +69,12 @@ MaxEntParameters(p) , def_(nfreq())
 // u = V^T* log(A/Default)
 MaxEntHelper::vector_type MaxEntHelper::transform_into_singular_space(vector_type A) const
 {
+  double D;
   for (unsigned int i=0; i<A.size(); ++i) {
-    A[i] /= Default(i);
+    D=Default(i);
+      if(D==0 || boost::math::isnan(D))
+        throw std::logic_error("dude, your D is zero");
+    A[i] /= D;
     A[i] = A[i]==0. ? 0. : log(A[i]);
   }
   return prec_prod(Vt(), A);
