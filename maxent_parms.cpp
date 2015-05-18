@@ -36,6 +36,29 @@
 #include <alps/hdf5/vector.hpp>
 #include <boost/lexical_cast.hpp>
 
+  // We provide a file with data points and error bars, the latter are used only if
+  // COVARIANCE_MATRIX is not set. The format is
+  //
+  // index data error
+  //
+  // index is ignored, but MUST be an integer
+  // If we wish to continue imaginary frequency data, the structure must be:
+  // index_re data_re error_re index_im data_im error_im
+  //
+  // again, index_re and index_im MUST be integers and are ignored
+  //
+  // In case we provide data in a HDF5 file (DATA_IN_HDF5 = 1) we use
+  // the following convention:
+  // The data are consecutively contained in directory /Data. If we have complex
+  // data, we expect the sequence real1 imag1 real2 imag2 ...
+  // If we do not provide the covariance matrix, error bars will be read from directory
+  // /Error, otherwise the covariance matrix will be read from directory /Covariance
+  // as a ndat*ndat field, i.e. it should have been stored according to i*ndat+j
+  // As with the data, we adopt the convention that for complex data the sequence
+  // will be real imag.
+
+///Read data from a text file, with filename given by p["DATA"] in the parameters.
+///The format should be index data error
 void ContiParameters::read_data_from_text_file(const alps::params& p) {
   std::string fname = p["DATA"];
   std::ifstream datstream(fname.c_str());
@@ -53,6 +76,12 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
     }
   }
 }
+
+///Read data from a hdf5 file, with filename given by p["DATA"] in the parameters.
+///The data is stored at /Data.
+///The error is stored at /Error
+///if the parameter COVARIANCE_MATRIX is specified, then the covariance matrix is read in instead of the error.
+///The covariance matrix is expected to be stored at /Covariance
 
 void ContiParameters::read_data_from_hdf5_file(const alps::params& p) {
   std::string fname = p["DATA"];
@@ -116,26 +145,6 @@ y_(ndat_),sigma_(ndat_), x_(ndat_),K_(),grid_(p)
   if (ndat_<4) 
     boost::throw_exception(std::invalid_argument("NDAT too small"));
 
-  // We provide a file with data points and error bars, the latter are used only if
-  // COVARIANCE_MATRIX is not set. The format is
-  //
-  // index data error
-  //
-  // index is ignored, but MUST be an integer
-  // If we wish to continue imaginary frequency data, the structure must be:
-  // index_re data_re error_re index_im data_im error_im
-  //
-  // again, index_re and index_im MUST be integers and are ignored
-  //
-  // In case we provide data in a HDF5 file (DATA_IN_HDF5 = 1) we use
-  // the following convention:
-  // The data are consecutively contained in directory /Data. If we have complex
-  // data, we expect the sequence real1 imag1 real2 imag2 ...
-  // If we do not provide the covariance matrix, error bars will be read from directory
-  // /Error, otherwise the covariance matrix will be read from directory /Covariance
-  // as a ndat*ndat field, i.e. it should have been stored according to i*ndat+j
-  // As with the data, we adopt the convention that for complex data the sequence
-  // will be real imag.
 
   if (p.defined("DATA")) {
     if(p.defined("DATA_IN_HDF5") && (p["DATA_IN_HDF5"]|false)) {
@@ -148,9 +157,6 @@ y_(ndat_),sigma_(ndat_), x_(ndat_),K_(),grid_(p)
     read_data_from_param_file(p);
   }
 }
-
-
-
 
 void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const vector_type& freq)
 {
@@ -347,6 +353,7 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
   //    sigma_[i] = static_cast<double>(p["SIGMA_"+boost::lexical_cast<std::string>(i)])/static_cast<double>(p["NORM"]);
   //}
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
+  // hillibilli? wtf??!?
   if (p_data == "hillibilli" && !(p["PARTICLE_HOLE_SYMMETRY"]|true))  {
     //      if (p["DATASPACE"]=="frequency" && !p.value_or_default("PARTICLE_HOLE_SYMMETRY",true))  {
     std::cerr << "Kernel for complex data\n";

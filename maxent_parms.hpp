@@ -35,7 +35,7 @@
 #include "default_model.hpp"
 #include "maxent_grid.hpp"
 
-
+///This class has all the information about general analytic continuation things. It does not know about specifics of maxent.
 class ContiParameters {
 
 public:
@@ -45,14 +45,22 @@ public:
   typedef boost::numeric::ublas::vector<std::complex<double> > complex_vector_type;
   typedef std::pair<vector_type, complex_vector_type> omega_complex_type;
 
+  ///constructs the kernel and grid from the parameters p. Also reads in the data.
   ContiParameters(const alps::params& p);
   
+  ///value of the data at index i
   double y(const int i) const { return y_[i]; }
+  ///value of the covariance matrix
   double cov(const int i,const int j) const { return cov_(i,j); }
+  ///value of the error (if covariance not given)
   double sigma(const int i) const { return sigma_[i]; }
+  ///to be checked.
   double x(const int i) const { return x_[i]; }
+  ///value of the inverse temperature
   double T() const { return T_; }
+  ///number of data points
   int ndat() const { return ndat_; }
+  ///value of the Kernel matrix K(i,j).
   double K(const int i, const int j) const {
     return K_(i,j);
   }
