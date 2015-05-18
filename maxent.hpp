@@ -146,6 +146,6 @@ private:
   const int max_it;
   std::string name,Kernel_type;
   bool verbose,text_output,self;
-  boost::filesystem::path dir;
+  //boost::filesystem::path dir;
 }; 
 

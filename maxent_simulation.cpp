@@ -194,7 +194,7 @@ void MaxEntSimulation::run()
 
   if(Kernel_type=="anomalous"){ //for the anomalous function: use A(omega)=Im Sigma(omega)/(pi omega).
     std::ofstream maxspec_anom_str((name+"maxspec_anom.dat").c_str());
-    std::ofstream avspec_anom_str ((name+"avspec_anom.dat", dir).c_str());
+    std::ofstream avspec_anom_str ((name+"avspec_anom.dat").c_str());
     vector_type spec(avspec.size());
     for (std::size_t  i=0; i<avspec.size(); ++i){ 
       //if(omega_coord(i)>=0.)
@@ -215,7 +215,7 @@ void MaxEntSimulation::run()
       spec[i] = avspec[i]*omega_coord(i)*M_PI;
     }
     if (text_output) {
-      std::ofstream avspec_anom_str((name+"maxspec_bose.dat", dir).c_str());
+      std::ofstream avspec_anom_str((name+"maxspec_bose.dat").c_str());
       for (std::size_t  i=0; i<avspec.size(); ++i){
         //if(omega_coord(i)>=0.)
         avspec_anom_str << omega_coord(i) << " " << avspec[i]*omega_coord(i)*M_PI<<std::endl;
@@ -227,7 +227,7 @@ void MaxEntSimulation::run()
       spec[i] = spectra[max_a][i]*norm*omega_coord(i)*M_PI;
     }
     if (text_output) {
-      std::ofstream maxspec_anom_str ((name+"avspec_bose.dat", dir).c_str());
+      std::ofstream maxspec_anom_str ((name+"avspec_bose.dat").c_str());
       for (std::size_t i=0; i<spectra[0].size(); ++i){
         maxspec_anom_str << omega_coord(i) << " " << spectra[max_a][i]*norm*omega_coord(i)*M_PI << std::endl;
       }
@@ -244,8 +244,8 @@ void MaxEntSimulation::run()
     // here we compute Im Sigma out of A:
     //
     // for the self energy: use Im Sigma(omega)=-A(omega)*pi
-    std::ofstream maxspec_self_str((name+"maxspec_self.dat", dir).c_str());
-    std::ofstream avspec_self_str ((name+"avspec_self.dat", dir).c_str());
+    std::ofstream maxspec_self_str((name+"maxspec_self.dat").c_str());
+    std::ofstream avspec_self_str ((name+"avspec_self.dat").c_str());
     for (std::size_t  i=0; i<avspec.size(); ++i){ 
       avspec_self_str << omega_coord(i) << " " << -avspec[i]*M_PI<<std::endl;
     }
@@ -253,7 +253,6 @@ void MaxEntSimulation::run()
       maxspec_self_str << omega_coord(i) << " " << -spectra[max_a][i]*norm*M_PI << std::endl;
     }
   }
-
 }
 
 
