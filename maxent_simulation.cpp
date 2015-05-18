@@ -57,10 +57,10 @@ MaxEntSimulation::MaxEntSimulation(const alps::params &parms)
 
 void MaxEntSimulation::run()
 {
-  vector_type lprob(alpha.size());
-  vector_type chi_sq(alpha.size());
-  std::vector<vector_type> spectra(alpha.size());
-  vector_type u = transform_into_singular_space(Default());
+  lprob.resize(alpha.size());
+  chi_sq.resize(alpha.size());
+  spectra.resize(alpha.size());
+  u = transform_into_singular_space(Default());
 
   std::ofstream spectral_function_file;
   std::ofstream fits_file;
@@ -95,8 +95,9 @@ void MaxEntSimulation::run()
     std::cerr << std::endl;
     if (text_output) print_chi2(transform_into_real_space(u), fits_file);
   }
-
+}
   //everything from here on down is evaluation.
+void MaxEntSimulation::evaluate(){
   if (text_output) {
     std::ofstream chi_squared_file;
     chi_squared_file.open((name+"chi2.dat").c_str());

@@ -43,5 +43,6 @@ int main(int argc, char** argv)
 
   MaxEntSimulation my_sim(parms);
   my_sim.run();
+  my_sim.evaluate();
 }
 

@@ -134,8 +134,12 @@ class MaxEntSimulation : private MaxEntHelper
 
 public:
 
+  ///setup of parameters
   MaxEntSimulation(const alps::params& parms);
+  ///the maxent calculation
   void run();
+  ///the evaluation and writing of files
+  void evaluate();
   vector_type levenberg_marquardt(vector_type u, const double alpha) const;
   vector_type iteration(vector_type u, const double alpha, const double mu) const;
 
@@ -146,6 +150,11 @@ private:
   const int max_it;
   std::string name,Kernel_type;
   bool verbose,text_output,self;
-  //boost::filesystem::path dir;
+
+  vector_type lprob;
+  vector_type chi_sq;
+  std::vector<vector_type> spectra;
+  vector_type u;
+
 }; 
 
