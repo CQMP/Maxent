@@ -32,12 +32,6 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/bindings/ublas.hpp>
 #include <boost/numeric/ublas/io.hpp>
-#include <alps/osiris.h>
-#include <alps/alea.h>
-#include <alps/ngs.hpp>
-#include <alps/mcbase.hpp>
-#include <alps/ngs/signal.hpp>
-//#include "maxent.hpp"
 #include "default_model.hpp"
 
 

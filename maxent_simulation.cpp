@@ -28,28 +28,27 @@
 
 #include "maxent.hpp"
 #include <alps/config.h> // needed to set up correct bindings
-#include <boost/filesystem/operations.hpp>
 #include <boost/numeric/bindings/lapack/driver/gesv.hpp>
 #include <boost/numeric/ublas/matrix_proxy.hpp>
 #include <boost/numeric/bindings/ublas.hpp>
+#include <alps/hdf5/ublas/vector.hpp>
+#include <alps/hdf5/vector.hpp>
 
 
 
 
-
-MaxEntSimulation::MaxEntSimulation(const alps::params &parms,const std::string &outfile)
+MaxEntSimulation::MaxEntSimulation(const alps::params &parms)
 : MaxEntHelper(parms)
-, alps::mcbase(parms)
 , alpha((int)parms["N_ALPHA"])              //This is the # of \alpha parameters that should be tried.
 , norm(parms["NORM"]|1.0)                                             //The integral is normalized to NORM (use e.g. for self-energies
 , max_it(parms["MAX_IT"]|1000)                                       //The number of iterations done in the root finding procedure
-, name(outfile,0,outfile.size()-6)
 , Kernel_type(parms["KERNEL"]|"")
-, finished(false)
 , verbose(parms["VERBOSE"]|false)
 , text_output(parms["TEXT_OUTPUT"]|false)
 , self(parms["SELF"]|false)
 {
+  std::string bn=parms["BASENAME"]; name=bn;
+
   if(norm != 1.) std::cerr<<"WARNING: Redefinition of parameter NORM: Input (and output) data are assumed to be normalized to NORM."<<std::endl;
   const double alpha_min = parms["ALPHA_MIN"];                                          //Smallest value of \alpha that is tried
   const double alpha_max = parms["ALPHA_MAX"];                                          //Largest  value of \alpha that is tried
@@ -58,18 +57,8 @@ MaxEntSimulation::MaxEntSimulation(const alps::params &parms,const std::string &
     alpha[a] =  alpha[a-1] * std::pow(alpha_min/alpha_max, 1./double(alpha.size()-1));
 }
 
-
-MaxEntSimulation::~MaxEntSimulation() 
+void MaxEntSimulation::run()
 {
-}
-
-
-
-
-void MaxEntSimulation::dostep() 
-{
-  if (finished)
-    return;
   vector_type lprob(alpha.size());
   vector_type chi_sq(alpha.size());
   std::vector<vector_type> spectra(alpha.size());
@@ -191,7 +180,7 @@ void MaxEntSimulation::dostep()
   
   if(Kernel_type=="anomalous"){ //for the anomalous function: use A(omega)=Im Sigma(omega)/(pi omega).
     std::ofstream maxspec_anom_str((name+"maxspec_anom.dat").c_str());
-    std::ofstream avspec_anom_str (boost::filesystem::absolute(name+"avspec_anom.dat", dir).string().c_str());
+    std::ofstream avspec_anom_str ((name+"avspec_anom.dat", dir).c_str());
     vector_type spec(avspec.size());
     for (std::size_t  i=0; i<avspec.size(); ++i){ 
       //if(omega_coord(i)>=0.)
@@ -212,7 +201,7 @@ void MaxEntSimulation::dostep()
       spec[i] = avspec[i]*omega_coord(i)*M_PI;
     }
     if (text_output) {
-      std::ofstream avspec_anom_str(boost::filesystem::absolute(name+"maxspec_bose.dat", dir).string().c_str());
+      std::ofstream avspec_anom_str((name+"maxspec_bose.dat", dir).c_str());
       for (std::size_t  i=0; i<avspec.size(); ++i){
       //if(omega_coord(i)>=0.)
         avspec_anom_str << omega_coord(i) << " " << avspec[i]*omega_coord(i)*M_PI<<std::endl;
@@ -224,7 +213,7 @@ void MaxEntSimulation::dostep()
       spec[i] = spectra[max_a][i]*norm*omega_coord(i)*M_PI;
     }
     if (text_output) {
-      std::ofstream maxspec_anom_str (boost::filesystem::absolute(name+"avspec_bose.dat", dir).string().c_str());
+      std::ofstream maxspec_anom_str ((name+"avspec_bose.dat", dir).c_str());
       for (std::size_t i=0; i<spectra[0].size(); ++i){
         maxspec_anom_str << omega_coord(i) << " " << spectra[max_a][i]*norm*omega_coord(i)*M_PI << std::endl;
       }
@@ -241,8 +230,8 @@ void MaxEntSimulation::dostep()
     // here we compute Im Sigma out of A:
     //
     // for the self energy: use Im Sigma(omega)=-A(omega)*pi
-    std::ofstream maxspec_self_str(boost::filesystem::absolute(name+"maxspec_self.dat", dir).string().c_str());
-    std::ofstream avspec_self_str (boost::filesystem::absolute(name+"avspec_self.dat", dir).string().c_str());
+    std::ofstream maxspec_self_str((name+"maxspec_self.dat", dir).c_str());
+    std::ofstream avspec_self_str ((name+"avspec_self.dat", dir).c_str());
     for (std::size_t  i=0; i<avspec.size(); ++i){ 
       avspec_self_str << omega_coord(i) << " " << -avspec[i]*M_PI<<std::endl;
     }
@@ -251,7 +240,6 @@ void MaxEntSimulation::dostep()
     }
   }
  
-  finished = true;
 }
 
 
@@ -314,18 +302,4 @@ MaxEntSimulation::vector_type MaxEntSimulation::iteration(vector_type u, const d
   ublas::vector<fortran_int_t> ipiv(b.size());
   bindings::lapack::gesv(M, ipiv, B);
   return ublas::matrix_column<matrix_type>(B, 0);
-}
-
-
-
-//this function is nonsensical. Why do we need it? It has zero content!
-void MaxEntSimulation::write_xml_body(alps::oxstream& out, const boost::filesystem::path&, bool write_all_xml) const
-{
-  if (write_all_xml) {
-    out << alps::start_tag("AVERAGES");
-    out << alps::start_tag("SCALAR_AVERAGE") << alps::attribute("name","Zeug") << alps::no_linebreak
-    << alps::start_tag("MEAN") << 42 << alps::end_tag("MEAN")
-    << alps::end_tag("SCALAR_AVERAGE");
-    out << alps::end_tag("AVERAGES");
-  }
 }

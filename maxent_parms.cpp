@@ -33,6 +33,7 @@
 #include <boost/numeric/bindings/lapack/driver/syev.hpp>
 #include <boost/numeric/bindings/lapack/driver/gesvd.hpp>
 #include <boost/numeric/bindings/upper.hpp>
+#include <alps/hdf5/vector.hpp>
 
 ContiParameters::ContiParameters(const alps::params& p) :
 //Default_(make_default_model(p, "DEFAULT_MODEL")),
@@ -42,7 +43,7 @@ y_(ndat_),sigma_(ndat_), x_(ndat_),K_(),t_array_(nfreq_+1)
 {
   if (ndat_<4) 
     boost::throw_exception(std::invalid_argument("NDAT too small"));
-    std::string p_f_grid = p["FREQUENCY_GRID"]|"";
+  std::string p_f_grid = p["FREQUENCY_GRID"]|"";
   if (p_f_grid=="Lorentzian") {
     double cut = p["CUT"]|0.01;
     std::vector<double> temp(nfreq_+1);
@@ -78,17 +79,17 @@ y_(ndat_),sigma_(ndat_), x_(ndat_),K_(),t_array_(nfreq_+1)
       t_array_[i]  = temp[i-1]/temp[temp.size()-1];
   }
   else if (p_f_grid=="log") {
-//      double om_min = p.value_or_default("OMEGA_MIN",1e-4),om_max=p["OMEGA_MAX"];
-      double t_min = p["LOG_MIN"]|1.0e-4,t_max=0.5;
-      double scale=std::log(t_max/t_min)/((float) (nfreq_/2-1));
-      t_array_[nfreq_/2] = 0.5;
-      for (int i=0; i<nfreq_/2; ++i) {
-        t_array_[nfreq_/2+i+1]  = 0.5+t_min*std::exp(((float) i)*scale);
-        t_array_[nfreq_/2-i-1]  = 0.5-t_min*std::exp(((float) i)*scale);
-      }
-      //if we have an odd # of frequencies, this catches the last element
-      if(nfreq_%2!=0)
-        t_array_[nfreq_/2+nfreq_/2+1] =0.5+t_min*std::exp(((float) nfreq_/2)*scale);
+    //      double om_min = p.value_or_default("OMEGA_MIN",1e-4),om_max=p["OMEGA_MAX"];
+    double t_min = p["LOG_MIN"]|1.0e-4,t_max=0.5;
+    double scale=std::log(t_max/t_min)/((float) (nfreq_/2-1));
+    t_array_[nfreq_/2] = 0.5;
+    for (int i=0; i<nfreq_/2; ++i) {
+      t_array_[nfreq_/2+i+1]  = 0.5+t_min*std::exp(((float) i)*scale);
+      t_array_[nfreq_/2-i-1]  = 0.5-t_min*std::exp(((float) i)*scale);
+    }
+    //if we have an odd # of frequencies, this catches the last element
+    if(nfreq_%2!=0)
+      t_array_[nfreq_/2+nfreq_/2+1] =0.5+t_min*std::exp(((float) nfreq_/2)*scale);
   }
   else if (p_f_grid=="linear") {
     for (int i=0; i<nfreq_; ++i) 
@@ -96,79 +97,79 @@ y_(ndat_),sigma_(ndat_), x_(ndat_),K_(),t_array_(nfreq_+1)
   }
   else 
     boost::throw_exception(std::invalid_argument("No valid frequency grid specified"));
-// We provide a file with data points and error bars, the latter are used only if
-// COVARIANCE_MATRIX is not set. The format is
-//
-// index data error
-//
-// index is ignored, but MUST be an integer
-// If we whish to continue imaginary frequency data, the structure must be:
-// index_re data_re error_re index_im data_im error_im
-//
-// again, index_re and index_im MUST be integers and are ignored
-//
-// In case we provide data in a HDF5 file (DATA_IN_HDF5 = 1) we use
-// the following convention:
-// The data are consecutively contained in directory /Data. If we have complex
-// data, we expect the sequence real1 imag1 real2 imag2 ...
-// If we do not provide the covariance matrix, error bars will be read from directory
-// /Error, otherwise the covariance matrix will be read from directory /Covariance
-// as a ndat*ndat field, i.e. it should have been stored according to i*ndat+j
-// As with the data, we adopt the convention that for complex data the sequence
-// will be real imag.
+  // We provide a file with data points and error bars, the latter are used only if
+  // COVARIANCE_MATRIX is not set. The format is
+  //
+  // index data error
+  //
+  // index is ignored, but MUST be an integer
+  // If we whish to continue imaginary frequency data, the structure must be:
+  // index_re data_re error_re index_im data_im error_im
+  //
+  // again, index_re and index_im MUST be integers and are ignored
+  //
+  // In case we provide data in a HDF5 file (DATA_IN_HDF5 = 1) we use
+  // the following convention:
+  // The data are consecutively contained in directory /Data. If we have complex
+  // data, we expect the sequence real1 imag1 real2 imag2 ...
+  // If we do not provide the covariance matrix, error bars will be read from directory
+  // /Error, otherwise the covariance matrix will be read from directory /Covariance
+  // as a ndat*ndat field, i.e. it should have been stored according to i*ndat+j
+  // As with the data, we adopt the convention that for complex data the sequence
+  // will be real imag.
 
   if (p.defined("DATA")) {
-      std::string fname = p["DATA"]|"";
-      if(p.defined("DATA_IN_HDF5") && p["DATA_IN_HDF5"]|false) {
-          //attempt to read from h5 archive
-          alps::hdf5::archive ar(fname, alps::hdf5::archive::READ);
-          std::vector<double> tmp(ndat());
-          std::stringstream path;
-          path<<"/Data";
-          ar>>alps::make_pvp(path.str(),tmp);
-          for(std::size_t i=0; i<ndat(); i++)
-             y_(i) = tmp[i]/static_cast<double>(p["NORM"]);
-          path.str("");
-          if (!p.defined("COVARIANCE_MATRIX")) {
-            path<<"/Error";
-            ar>>alps::make_pvp(path.str(),tmp);
-            for(std::size_t i=0; i<ndat(); i++)
-               sigma_(i) = tmp[i]/static_cast<double>(p["NORM"]);
-          } else {
-            path<<"/Covariance";
-            cov_.resize(ndat(),ndat());
-            tmp.clear();
-            tmp.resize(ndat()*ndat());
-            ar>>alps::make_pvp(path.str(),tmp);
-            for(std::size_t i=0; i<ndat(); i++)
-              for(std::size_t j=0; j<ndat(); j++)
-                cov_(i,j) = tmp[i*ndat()+j];
-          }
+    std::string fname = p["DATA"]|"";
+    if(p.defined("DATA_IN_HDF5") && p["DATA_IN_HDF5"]|false) {
+      //attempt to read from h5 archive
+      alps::hdf5::archive ar(fname, alps::hdf5::archive::READ);
+      std::vector<double> tmp(ndat());
+      std::stringstream path;
+      path<<"/Data";
+      ar>>alps::make_pvp(path.str(),tmp);
+      for(std::size_t i=0; i<ndat(); i++)
+        y_(i) = tmp[i]/static_cast<double>(p["NORM"]);
+      path.str("");
+      if (!p.defined("COVARIANCE_MATRIX")) {
+        path<<"/Error";
+        ar>>alps::make_pvp(path.str(),tmp);
+        for(std::size_t i=0; i<ndat(); i++)
+          sigma_(i) = tmp[i]/static_cast<double>(p["NORM"]);
       } else {
-        std::ifstream datstream(fname.c_str());
-        if (!datstream)
-            boost::throw_exception(std::invalid_argument("could not open data file: "+fname));
-        while (datstream) {
-            int i;
-            double X_i,dX_i;
-            datstream >> i >> X_i >> dX_i;
-            if (i<ndat()) {
-                y_(i) = X_i/static_cast<double>(p["NORM"]);
-                sigma_(i) = dX_i/static_cast<double>(p["NORM"]);
-            }
+        path<<"/Covariance";
+        cov_.resize(ndat(),ndat());
+        tmp.clear();
+        tmp.resize(ndat()*ndat());
+        ar>>alps::make_pvp(path.str(),tmp);
+        for(std::size_t i=0; i<ndat(); i++)
+          for(std::size_t j=0; j<ndat(); j++)
+            cov_(i,j) = tmp[i*ndat()+j];
+      }
+    } else {
+      std::ifstream datstream(fname.c_str());
+      if (!datstream)
+        boost::throw_exception(std::invalid_argument("could not open data file: "+fname));
+      while (datstream) {
+        int i;
+        double X_i,dX_i;
+        datstream >> i >> X_i >> dX_i;
+        if (i<ndat()) {
+          y_(i) = X_i/static_cast<double>(p["NORM"]);
+          sigma_(i) = dX_i/static_cast<double>(p["NORM"]);
         }
       }
+    }
   } else {
-      if(!p.defined("NORM")){ throw std::runtime_error("parameter NORM missing!"); }
-      else std::cerr<<"Data normalized to: "<<static_cast<double>(p["NORM"])<<std::endl;
-      for (int i=0; i<ndat(); ++i){
-          if(!p.defined("X_"+boost::lexical_cast<std::string>(i))){ throw std::runtime_error("parameter X_i missing!"); }
-          y_(i) = static_cast<double>(p["X_"+boost::lexical_cast<std::string>(i)])/static_cast<double>(p["NORM"]);          
-          if (!p.defined("COVARIANCE_MATRIX")){ 
-              if(!p.defined("SIGMA_"+boost::lexical_cast<std::string>(i))) { throw std::runtime_error(std::string("parameter SIGMA_i missing!")+"SIGMA_"+boost::lexical_cast<std::string>(i)); }
-              sigma_(i) = static_cast<double>(p["SIGMA_"+boost::lexical_cast<std::string>(i)])/static_cast<double>(p["NORM"]);
-          }
+    if(!p.defined("NORM")){ throw std::runtime_error("parameter NORM missing!"); }
+    else std::cerr<<"Data normalized to: "<<static_cast<double>(p["NORM"])<<std::endl;
+    for (int i=0; i<ndat(); ++i){
+      if(!p.defined("X_"+boost::lexical_cast<std::string>(i))){ throw std::runtime_error("parameter X_i missing!"); }
+      y_(i) = static_cast<double>(p["X_"+boost::lexical_cast<std::string>(i)])/static_cast<double>(p["NORM"]);
+      if (!p.defined("COVARIANCE_MATRIX")){
+        if(!p.defined("SIGMA_"+boost::lexical_cast<std::string>(i))) { throw std::runtime_error(std::string("parameter SIGMA_i missing!")+"SIGMA_"+boost::lexical_cast<std::string>(i)); }
+        sigma_(i) = static_cast<double>(p["SIGMA_"+boost::lexical_cast<std::string>(i)])/static_cast<double>(p["NORM"]);
       }
+    }
 
   }
 }
@@ -183,11 +184,9 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
   std::string p_data = p["DATASPACE"]|"time";
   std::string p_kernel = p["KERNEL"]|"fermionic";
   if(p_data=="time") {
-    if (alps::is_master())
-      std::cerr << "assume time space data" << std::endl;
+    std::cerr << "assume time space data" << std::endl;
     if (p_kernel == "fermionic") {
-      if (alps::is_master())
-        std::cerr << "Using fermionic kernel" << std::endl;
+      std::cerr << "Using fermionic kernel" << std::endl;
       for (int i=0; i<ndat(); ++i) {
         double tau;
         if (p.defined("TAU_"+boost::lexical_cast<std::string>(i)))
@@ -201,8 +200,7 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
       }
     }
     else if (p_kernel == "bosonic") {
-      if (alps::is_master())
-        std::cerr << "Using bosonic kernel" << std::endl;
+      std::cerr << "Using bosonic kernel" << std::endl;
       for (int i=0; i<ndat(); ++i) {
         double tau;
         if (p.defined("TAU_"+boost::lexical_cast<std::string>(i)))
@@ -218,8 +216,7 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
     }
     //for zero temperature, only positive frequency matters 
     else if (p_kernel == "Boris") {
-      if (alps::is_master())
-        std::cerr << "Using Boris' kernel" << std::endl;
+      std::cerr << "Using Boris' kernel" << std::endl;
       for (int i=0; i<ndat(); ++i) {
         double tau = p["TAU_"+boost::lexical_cast<std::string>(i)]; 
         for (int j=0; j<ntab; ++j) {
@@ -232,7 +229,7 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
       boost::throw_exception(std::invalid_argument("unknown integration kernel"));
   } 
   else if (p_data == "frequency" && p_kernel == "fermionic" &&
-           (p["PARTICLE_HOLE_SYMMETRY"]|false)) {
+      (p["PARTICLE_HOLE_SYMMETRY"]|false)) {
     std::cerr << "using particle hole symmetric kernel for fermionic data" << std::endl;
     for (int i=0; i<ndat(); ++i) {
       double omegan = (2*i+1)*M_PI*T_;
@@ -243,7 +240,7 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
     }
   } 
   else if (p_data == "frequency" && p_kernel == "bosonic" &&
-           (p["PARTICLE_HOLE_SYMMETRY"]|false)) {
+      (p["PARTICLE_HOLE_SYMMETRY"]|false)) {
     //std::cerr << "using particle hole symmetric kernel for bosonic data" << std::endl;
     //std::cerr<<"ndat is: "<<ndat()<<" ntab: "<<ntab<<std::endl;
     //std::cerr<<"freqs: "<<freq[0]<<" "<<freq[ntab-1]<<std::endl;
@@ -265,7 +262,7 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
     //std::cout<<"debug kernel checksum is: "<<z<<std::endl;
   } 
   else if (p_data == "frequency" && p_kernel == "anomalous" &&
-           (p["PARTICLE_HOLE_SYMMETRY"]|false)) {
+      (p["PARTICLE_HOLE_SYMMETRY"]|false)) {
     std::cerr << "using particle hole symmetric kernel for anomalous fermionic data" << std::endl;
     for(int i=0;i<ndat();++i){
       double omegan = (2*i+1)*M_PI*T_;
@@ -276,12 +273,10 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
     }
   } 
   else if (p_data == "frequency") {
-    if (alps::is_master())
-      std::cerr << "assume frequency space data" << std::endl;
+    std::cerr << "assume frequency space data" << std::endl;
     ublas::matrix<std::complex<double>, ublas::column_major> Kc(ndat_/2, ntab);
     if (p_kernel == "fermionic") {
-      if (alps::is_master())
-        std::cerr << "Using fermionic kernel" << std::endl;
+      std::cerr << "Using fermionic kernel" << std::endl;
       for (int i=0; i<ndat()/2; ++i) {
         std::complex<double> iomegan(0, (2*i+1)*M_PI*T_);
         for (int j=0; j<ntab; ++j) {
@@ -291,8 +286,7 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
       }
     }
     else if (p_kernel == "bosonic") {
-      if (alps::is_master())
-        std::cerr << "Using bosonic kernel" << std::endl;
+      std::cerr << "Using bosonic kernel" << std::endl;
       for (int i=0; i<ndat()/2; ++i) {
         std::complex<double> iomegan(0, 2*i*M_PI*T_);
         for (int j=1; j<ntab; ++j) {
@@ -323,12 +317,11 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
   }
   else
     boost::throw_exception(std::invalid_argument("unknown value for parameter DATASPACE"));
-//  vector_type sigma_(ndat());
+  //  vector_type sigma_(ndat());
   if (p.defined("COVARIANCE_MATRIX")) {
     if(!(p.defined("DATA_IN_HDF5") && p["DATA_IN_HDF5"]|false)) {
       cov_.resize(ndat(),ndat());
-      if (alps::is_master())
-        std::cerr << "Reading covariance matrix\n";
+      std::cerr << "Reading covariance matrix\n";
       std::string fname = p["COVARIANCE_MATRIX"]|"";
       std::ifstream covstream(fname.c_str());
       if (!covstream)
@@ -338,7 +331,7 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
       while (covstream) {
         covstream >> i >> j >> covariance;
         if (i<ndat() && j<ndat())
-        cov_(i,j) = covariance;
+          cov_(i,j) = covariance;
       }
     }
     vector_type var(ndat());
@@ -346,7 +339,7 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
     matrix_type cov_trans = ublas::trans(cov_);
     matrix_type K_loc = ublas::prec_prod(cov_trans, K_);
     vector_type y_loc = ublas::prec_prod(cov_trans, y_);
-    if (alps::is_master() && p["VERBOSE"]|false)
+    if (p["VERBOSE"]|false)
       std::cout << "# Eigenvalues of the covariance matrix:\n";
     // We drop eigenvalues of the covariance matrix which are smaller than 1e-10
     // as they represent bad data directions (usually there is a steep drop
@@ -356,8 +349,7 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
       if (var[new_ndat_]>1e-10) break;
     // This is the number of good data
     ndat_ = old_ndat_ - new_ndat_;
-    if (alps::is_master())
-      std::cout << "# Ignoring singular eigenvalues (0-" << new_ndat_-1 << " out of " << old_ndat_ << ")\n";
+    std::cout << "# Ignoring singular eigenvalues (0-" << new_ndat_-1 << " out of " << old_ndat_ << ")\n";
     // Now resize kernel and data matrix and fill it with the values for the
     // good data directions
     K_.resize(ndat_,ntab);
@@ -370,8 +362,8 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
       }
     }
     for (int i=0; i<ndat(); ++i) {
-        sigma_[i] = std::abs(var(new_ndat_+i))/static_cast<double>(p["NORM"]);
-      if (alps::is_master() && p["VERBOSE"]|false)
+      sigma_[i] = std::abs(var(new_ndat_+i))/static_cast<double>(p["NORM"]);
+      if (p["VERBOSE"]|false)
         std::cout << "# " << var(new_ndat_+i) << "\n";
     }
   } 
@@ -381,9 +373,8 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
   //}
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
   if (p_data == "hillibilli" && !(p["PARTICLE_HOLE_SYMMETRY"]|true))  {
-//      if (p["DATASPACE"]=="frequency" && !p.value_or_default("PARTICLE_HOLE_SYMMETRY",true))  {
-    if (alps::is_master())
-          std::cerr << "Kernel for complex data\n";
+    //      if (p["DATASPACE"]=="frequency" && !p.value_or_default("PARTICLE_HOLE_SYMMETRY",true))  {
+    std::cerr << "Kernel for complex data\n";
     for (int i=0; i<ndat()/2; i+=2) {
       std::complex<double> y(y_[i],y_[i+1]),s(sigma_[i],sigma_[i+1]);
       y /= s;
@@ -415,15 +406,15 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
     }
     y_[ndat()-1]=1./artificial_norm_enforcement_sigma;
   }
-    std::cerr << "Kernel set up\n";
+  std::cerr << "Kernel set up\n";
 }
 
 
 //MaxEntParameters::MaxEntParameters(const alps::Parameters& p) :
 MaxEntParameters::MaxEntParameters(const alps::params& p) :
-ContiParameters(p),
-U_(ndat(), ndat()), Vt_(ndat(), nfreq()), Sigma_(ndat(), ndat()), 
-omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0)
+    ContiParameters(p),
+    U_(ndat(), ndat()), Vt_(ndat(), nfreq()), Sigma_(ndat(), ndat()),
+    omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0)
 {
   using namespace boost::numeric;
   for (int i=0; i<nfreq(); ++i) {
@@ -432,13 +423,13 @@ omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0)
   }
 
   setup_kernel(p, nfreq(), omega_coord_);
-  
+
   //perform the SVD decomposition K = U Sigma V^T
   vector_type S(ndat());
   matrix_type Kt = K_; // gesvd destroys K!
   bindings::lapack::gesvd('S','S',Kt, S, U_, Vt_); 
   if (p["VERBOSE"]|false) std::cout << "# Singular values of the Kernel:\n";
-    const double prec = std::sqrt(std::numeric_limits<double>::epsilon())*nfreq()*S[0];
+  const double prec = std::sqrt(std::numeric_limits<double>::epsilon())*nfreq()*S[0];
   if (p["VERBOSE"]|false) std::cout << "# eps = " << sqrt(std::numeric_limits<double>::epsilon()) << std::endl << "# prec = " << prec << std::endl;
   for (unsigned int s=0; s<S.size(); ++s) {
     if (p["VERBOSE"]|false)std::cout << "# " << s << "\t" << S[s] <<"\n";
@@ -446,12 +437,12 @@ omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0)
   }
   if (ns() == 0)
     boost::throw_exception(std::logic_error("all singular values smaller than the precision"));
-  
+
   //(truncated) U has dimension ndat() * ns_; ndat() is # of input (matsubara frequency/imag time) points
   //(truncated) Sigma has dimension ns_*ns_ (number of singular eigenvalues)
   //(truncated) V^T has dimensions ns_* nfreq(); nfreq() is number of output (real) frequencies
   //ns_ is the dimension of the singular space.
-  
+
   U_.resize(ndat(), ns_, true);
   Vt_.resize(ns_, nfreq(), true);
   Sigma_.resize(ns_, ns_);
