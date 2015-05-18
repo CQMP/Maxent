@@ -70,9 +70,9 @@ TEST(TabFunction, TabFunctionConstructionWithMoreLines){
   write_minimal_tab_file(tf);
   TabFunction T(p, tabparamname);
   boost::filesystem::remove(tf);
-  EXPECT_EQ(T(-20.),1./40);
-  EXPECT_EQ(T(20.),1./40);
-  EXPECT_EQ(T(0.),1./40);
+  EXPECT_NEAR(T(-20.),1./40, 1.e-12);
+  EXPECT_NEAR(T(20.),1./40, 1.e-12);
+  EXPECT_NEAR(T(0.),1./40, 1.e-12);
 }
 TEST(TabFunction, OutsideMinMaxIsZero){
   alps::params p; p["OMEGA_MAX"]=20; p["OMEGA_MIN"]=-20;
