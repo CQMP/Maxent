@@ -35,8 +35,6 @@
 #include <alps/hdf5/vector.hpp>
 
 
-
-
 MaxEntSimulation::MaxEntSimulation(const alps::params &parms)
 : MaxEntHelper(parms)
 , alpha((int)parms["N_ALPHA"])              //This is the # of \alpha parameters that should be tried.
@@ -64,11 +62,15 @@ void MaxEntSimulation::run()
   std::vector<vector_type> spectra(alpha.size());
   vector_type u = transform_into_singular_space(Default());
 
+  std::ofstream spectral_function_file;
+  std::ofstream chi_squared_file;
+  std::ofstream chispec_str;
+  std::ofstream fits_str;
+  std::ofstream prob_str;
+
   if (text_output) {
-    spex_str.open((name+"spex.dat").c_str());
-    chisq_str.open((name+"chi2.dat").c_str());
-    avspec_str.open((name+"avspec.dat").c_str());
-    maxspec_str.open((name+"maxspec.dat").c_str());
+    spectral_function_file.open((name+"spex.dat").c_str());
+    chi_squared_file.open((name+"chi2.dat").c_str());
     chispec_str.open((name+"chispec.dat").c_str());
     fits_str.open((name+"fits.dat").c_str());
     prob_str.open((name+"prob.dat").c_str());
@@ -84,10 +86,10 @@ void MaxEntSimulation::run()
     //computation of normalization
     std::cerr << "norm: " << boost::numeric::ublas::sum(transform_into_real_space(u)) << "\t";
     if (text_output) {
-      spex_str<<"# alpha: "<<alpha[a]<<std::endl;
+      spectral_function_file<<"# alpha: "<<alpha[a]<<std::endl;
       for (std::size_t i=0; i<A.size(); ++i)
-        spex_str << omega_coord(i) << " " << A[i] << "\n";
-      spex_str << "\n";
+        spectral_function_file << omega_coord(i) << " " << A[i] << "\n";
+      spectral_function_file << "\n";
     }
     //computation of probability
     lprob[a] = log_prob(u, alpha[a]);
@@ -102,9 +104,9 @@ void MaxEntSimulation::run()
   
   //everything from here on down is evaluation.
   if (text_output) {
-    spex_str << "\n";
+    spectral_function_file << "\n";
     for (std::size_t a=0; a<chi_sq.size(); ++a)
-      chisq_str << alpha[a] << " " << chi_sq[a] << std::endl;
+      chi_squared_file << alpha[a] << " " << chi_sq[a] << std::endl;
   }
   int a_chi = 0;
   double diff = std::abs(chi_sq[0]-ndat());
@@ -117,9 +119,10 @@ void MaxEntSimulation::run()
   }
 
   vector_type def = get_spectrum(transform_into_singular_space(Default()));
-  if (text_output)
+  if (text_output){
     for (std::size_t i=0; i<spectra[0].size(); ++i)
       chispec_str << omega_coord(i) << " " << spectra[a_chi][i]*norm << " " << def[i]*norm << std::endl;
+  }
   boost::numeric::ublas::vector<double>::const_iterator max_lprob = std::max_element(lprob.begin(), lprob.end());  
   const int max_a = max_lprob-lprob.begin();
   const double factor = chi_scale_factor(spectra[max_a], chi_sq[max_a], alpha[max_a]);
@@ -133,8 +136,12 @@ void MaxEntSimulation::run()
   ar<<alps::make_pvp("/spectrum/omega",om);
       
   //output 'maximum' spectral function (classical maxent metod)
-  if (text_output) for (std::size_t i=0; i<spectra[0].size(); ++i)
-    maxspec_str << omega_coord(i) << " " << spectra[max_a][i]*norm << " " << def[i]*norm << std::endl;
+  if (text_output){
+    std::ofstream maxspec_file;
+    maxspec_file.open((name+"maxspec.dat").c_str());
+    for (std::size_t i=0; i<spectra[0].size(); ++i)
+      maxspec_file << omega_coord(i) << " " << spectra[max_a][i]*norm << " " << def[i]*norm << std::endl;
+  }
   {
     vector_type specmax = spectra[max_a]*norm,specchi = spectra[a_chi]*norm;
     ar << alps::make_pvp("/spectrum/chi",specchi);
@@ -173,8 +180,12 @@ void MaxEntSimulation::run()
   avspec *= norm;
   varspec *= norm*norm;
   
-  if (text_output) for (std::size_t  i=0; i<avspec.size(); ++i)
-    avspec_str << omega_coord(i) << " " << avspec[i] << " " << def[i]*norm << std::endl;
+  if (text_output){
+    std::ofstream avspec_file;
+    avspec_file.open((name+"avspec.dat").c_str());
+    for (std::size_t  i=0; i<avspec.size(); ++i)
+    avspec_file << omega_coord(i) << " " << avspec[i] << " " << def[i]*norm << std::endl;
+  }
   ar << alps::make_pvp("/spectrum/average",avspec);
   ar << alps::make_pvp("/spectrum/variance",varspec);
   

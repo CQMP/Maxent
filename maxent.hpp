@@ -147,12 +147,5 @@ private:
   std::string name,Kernel_type;
   bool verbose,text_output,self;
   boost::filesystem::path dir;
-  std::ofstream spex_str;
-  std::ofstream chisq_str;
-  std::ofstream avspec_str;
-  std::ofstream maxspec_str;
-  std::ofstream chispec_str;
-  std::ofstream fits_str;
-  std::ofstream prob_str;
 }; 
 
