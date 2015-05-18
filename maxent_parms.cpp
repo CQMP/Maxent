@@ -34,6 +34,7 @@
 #include <boost/numeric/bindings/lapack/driver/gesvd.hpp>
 #include <boost/numeric/bindings/upper.hpp>
 #include <alps/hdf5/vector.hpp>
+#include <boost/lexical_cast.hpp>
 
 ContiParameters::ContiParameters(const alps::params& p) :
 //Default_(make_default_model(p, "DEFAULT_MODEL")),
