@@ -37,7 +37,7 @@
 #include <boost/lexical_cast.hpp>
 
 ContiParameters::ContiParameters(const alps::params& p) :
-//Default_(make_default_model(p, "DEFAULT_MODEL")),
+Default_(make_default_model(p, "DEFAULT_MODEL")),
 T_(p["T"]|1./static_cast<double>(p["BETA"])),
 ndat_(p["NDAT"]), nfreq_(p["NFREQ"]),
 y_(ndat_),sigma_(ndat_), x_(ndat_),K_(),t_array_(nfreq_+1)

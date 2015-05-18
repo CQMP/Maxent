@@ -47,7 +47,6 @@ public :
   typedef MaxEntParameters::vector_type vector_type;
   typedef MaxEntParameters::omega_complex_type omega_complex_type;
 
-  //  MaxEntHelper(const alps::Parameters& p);
   MaxEntHelper(const alps::params& p);
 
   double omega_coord(const int i) const { return MaxEntParameters::omega_coord(i); }
