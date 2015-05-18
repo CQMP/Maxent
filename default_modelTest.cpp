@@ -87,3 +87,39 @@ TEST(TabFunction, OutsideMinMaxIsZero){
   EXPECT_EQ(T(21.),0.);
 
 }
+TEST(Gaussian, TwoGaussiansIsGaussian){
+  alps::params p;
+  p["SIGMA1"]=1;
+  p["SIGMA2"]=1;
+  p["SHIFT1"]=0;
+  p["SHIFT2"]=-1;
+  p["NORM1"]=1;
+
+  TwoGaussians TG(p);
+  alps::params q;
+  q["SIGMA"]=1;
+
+  Gaussian G(q);
+
+  for(int i=-5;i<5;++i){
+    EXPECT_NEAR(TG(i),G(i),1.e-10);
+  }
+}
+TEST(Gaussian, TwoGaussiansIsDoubleGaussian){
+  alps::params p;
+  p["SIGMA1"]=1;
+  p["SIGMA2"]=1;
+  p["SHIFT1"]=1;
+  p["SHIFT2"]=-1;
+  p["NORM1"]=0.5;
+
+  TwoGaussians TG(p);
+  alps::params q;
+  q["SIGMA"]=1;
+  q["SHIFT"]=1;
+
+  DoubleGaussian D(q);
+  for(int i=-5;i<5;++i){
+    EXPECT_NEAR(TG(i),D(i),1.e-10);
+  }
+}
