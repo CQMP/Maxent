@@ -45,10 +45,8 @@ public:
   typedef boost::numeric::ublas::vector<std::complex<double> > complex_vector_type;
   typedef std::pair<vector_type, complex_vector_type> omega_complex_type;
 
-//  ContiParameters(const alps::Parameters& p);
   ContiParameters(const alps::params& p);
   
-  const DefaultModel& Default() const { return *Default_; }  
   double y(const int i) const { return y_[i]; }
   double cov(const int i,const int j) const { return cov_(i,j); }
   double sigma(const int i) const { return sigma_[i]; }
@@ -61,9 +59,12 @@ public:
 
 private:
   
-  boost::shared_ptr<DefaultModel> Default_;
   const double T_;
   int ndat_;
+
+  void read_data_from_text_file(const alps::params& p);
+  void read_data_from_hdf5_file(const alps::params& p);
+  void read_data_from_param_file(const alps::params& p);
 
 protected:
 
@@ -93,9 +94,10 @@ public:
   double delta_omega(const int i) const { return delta_omega_[i]; }
   int ns() const { return ns_; }
   int nfreq() const { return nfreq_; }
+  const DefaultModel& Default() const { return *Default_; }
 
 private:
-
+  boost::shared_ptr<DefaultModel> Default_;
   matrix_type U_;
   matrix_type Vt_;
   matrix_type Sigma_;

@@ -70,6 +70,7 @@ public:
 
   ///equidistant mapping from [0,1] to [omega_min, omega_max]
   double omega_of_t(const double t) const { return omega_min + (omega_max-omega_min)*t; }
+
   ///equidistant mapping from [omega_min, omega_max] to [0,1]
   double t_of_omega(const double omega) const { return (omega-omega_min)/(omega_max-omega_min); }
 

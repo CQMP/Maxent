@@ -36,8 +36,79 @@
 #include <alps/hdf5/vector.hpp>
 #include <boost/lexical_cast.hpp>
 
+void ContiParameters::read_data_from_text_file(const alps::params& p) {
+  std::string fname = p["DATA"];
+  std::ifstream datstream(fname.c_str());
+  if (!datstream){
+    boost::throw_exception(
+        std::invalid_argument("could not open data text file: " + fname+"data should be specified in parameter DATA"));
+  }
+  while (datstream) {
+    int i;
+    double X_i, dX_i;
+    datstream >> i >> X_i >> dX_i;
+    if (i < ndat()) {
+      y_(i) = X_i / static_cast<double>(p["NORM"]);
+      sigma_(i) = dX_i / static_cast<double>(p["NORM"]);
+    }
+  }
+}
+
+void ContiParameters::read_data_from_hdf5_file(const alps::params& p) {
+  std::string fname = p["DATA"];
+  //attempt to read from h5 archive
+  alps::hdf5::archive ar(fname, alps::hdf5::archive::READ);
+  std::vector<double> tmp(ndat());
+  std::stringstream path;
+  path << "/Data";
+  ar >> alps::make_pvp(path.str(), tmp);
+  for (std::size_t i = 0; i < ndat(); i++)
+    y_(i) = tmp[i] / static_cast<double>(p["NORM"]);
+  path.str("");
+  if (!p.defined("COVARIANCE_MATRIX")) {
+    path << "/Error";
+    ar >> alps::make_pvp(path.str(), tmp);
+    for (std::size_t i = 0; i < ndat(); i++)
+      sigma_(i) = tmp[i] / static_cast<double>(p["NORM"]);
+  } else {
+    path << "/Covariance";
+    cov_.resize(ndat(), ndat());
+    tmp.clear();
+    tmp.resize(ndat() * ndat());
+    ar >> alps::make_pvp(path.str(), tmp);
+    for (std::size_t i = 0; i < ndat(); i++)
+      for (std::size_t j = 0; j < ndat(); j++)
+        cov_(i, j) = tmp[i * ndat() + j];
+  }
+}
+
+void ContiParameters::read_data_from_param_file(const alps::params& p) {
+  if (!p.defined("NORM")) {
+    throw std::runtime_error("parameter NORM missing!");
+  } else
+    std::cerr << "Data normalized to: " << static_cast<double>(p["NORM"])
+        << std::endl;
+
+  for (int i = 0; i < ndat(); ++i) {
+    if (!p.defined("X_" + boost::lexical_cast<std::string>(i))) {
+      throw std::runtime_error("parameter X_i missing!");
+    }
+    y_(i) = static_cast<double>(p["X_" + boost::lexical_cast<std::string>(i)])
+        / static_cast<double>(p["NORM"]);
+    if (!p.defined("COVARIANCE_MATRIX")) {
+      if (!p.defined("SIGMA_" + boost::lexical_cast<std::string>(i))) {
+        throw std::runtime_error(
+            std::string("parameter SIGMA_i missing!") + "SIGMA_"
+                + boost::lexical_cast<std::string>(i));
+      }
+      sigma_(i) = static_cast<double>(p["SIGMA_"
+          + boost::lexical_cast<std::string>(i)])
+          / static_cast<double>(p["NORM"]);
+    }
+  }
+}
+
 ContiParameters::ContiParameters(const alps::params& p) :
-Default_(make_default_model(p, "DEFAULT_MODEL")),
 T_(p["T"]|1./static_cast<double>(p["BETA"])),
 ndat_(p["NDAT"]), nfreq_(p["NFREQ"]),
 y_(ndat_),sigma_(ndat_), x_(ndat_),K_(),grid_(p)
@@ -51,7 +122,7 @@ y_(ndat_),sigma_(ndat_), x_(ndat_),K_(),grid_(p)
   // index data error
   //
   // index is ignored, but MUST be an integer
-  // If we whish to continue imaginary frequency data, the structure must be:
+  // If we wish to continue imaginary frequency data, the structure must be:
   // index_re data_re error_re index_im data_im error_im
   //
   // again, index_re and index_im MUST be integers and are ignored
@@ -67,58 +138,14 @@ y_(ndat_),sigma_(ndat_), x_(ndat_),K_(),grid_(p)
   // will be real imag.
 
   if (p.defined("DATA")) {
-    std::string fname = p["DATA"]|"";
-    if(p.defined("DATA_IN_HDF5") && p["DATA_IN_HDF5"]|false) {
+    if(p.defined("DATA_IN_HDF5") && (p["DATA_IN_HDF5"]|false)) {
       //attempt to read from h5 archive
-      alps::hdf5::archive ar(fname, alps::hdf5::archive::READ);
-      std::vector<double> tmp(ndat());
-      std::stringstream path;
-      path<<"/Data";
-      ar>>alps::make_pvp(path.str(),tmp);
-      for(std::size_t i=0; i<ndat(); i++)
-        y_(i) = tmp[i]/static_cast<double>(p["NORM"]);
-      path.str("");
-      if (!p.defined("COVARIANCE_MATRIX")) {
-        path<<"/Error";
-        ar>>alps::make_pvp(path.str(),tmp);
-        for(std::size_t i=0; i<ndat(); i++)
-          sigma_(i) = tmp[i]/static_cast<double>(p["NORM"]);
-      } else {
-        path<<"/Covariance";
-        cov_.resize(ndat(),ndat());
-        tmp.clear();
-        tmp.resize(ndat()*ndat());
-        ar>>alps::make_pvp(path.str(),tmp);
-        for(std::size_t i=0; i<ndat(); i++)
-          for(std::size_t j=0; j<ndat(); j++)
-            cov_(i,j) = tmp[i*ndat()+j];
-      }
+      read_data_from_hdf5_file(p);
     } else {
-      std::ifstream datstream(fname.c_str());
-      if (!datstream)
-        boost::throw_exception(std::invalid_argument("could not open data file: "+fname));
-      while (datstream) {
-        int i;
-        double X_i,dX_i;
-        datstream >> i >> X_i >> dX_i;
-        if (i<ndat()) {
-          y_(i) = X_i/static_cast<double>(p["NORM"]);
-          sigma_(i) = dX_i/static_cast<double>(p["NORM"]);
-        }
-      }
+      read_data_from_text_file(p);
     }
   } else {
-    if(!p.defined("NORM")){ throw std::runtime_error("parameter NORM missing!"); }
-    else std::cerr<<"Data normalized to: "<<static_cast<double>(p["NORM"])<<std::endl;
-    for (int i=0; i<ndat(); ++i){
-      if(!p.defined("X_"+boost::lexical_cast<std::string>(i))){ throw std::runtime_error("parameter X_i missing!"); }
-      y_(i) = static_cast<double>(p["X_"+boost::lexical_cast<std::string>(i)])/static_cast<double>(p["NORM"]);
-      if (!p.defined("COVARIANCE_MATRIX")){
-        if(!p.defined("SIGMA_"+boost::lexical_cast<std::string>(i))) { throw std::runtime_error(std::string("parameter SIGMA_i missing!")+"SIGMA_"+boost::lexical_cast<std::string>(i)); }
-        sigma_(i) = static_cast<double>(p["SIGMA_"+boost::lexical_cast<std::string>(i)])/static_cast<double>(p["NORM"]);
-      }
-    }
-
+    read_data_from_param_file(p);
   }
 }
 
@@ -267,7 +294,7 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
     boost::throw_exception(std::invalid_argument("unknown value for parameter DATASPACE"));
   //  vector_type sigma_(ndat());
   if (p.defined("COVARIANCE_MATRIX")) {
-    if(!(p.defined("DATA_IN_HDF5") && p["DATA_IN_HDF5"]|false)) {
+    if(!(p.defined("DATA_IN_HDF5") && (p["DATA_IN_HDF5"]|false))) {
       cov_.resize(ndat(),ndat());
       std::cerr << "Reading covariance matrix\n";
       std::string fname = p["COVARIANCE_MATRIX"]|"";
@@ -361,6 +388,7 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
 //MaxEntParameters::MaxEntParameters(const alps::Parameters& p) :
 MaxEntParameters::MaxEntParameters(const alps::params& p) :
     ContiParameters(p),
+    Default_(make_default_model(p, "DEFAULT_MODEL")),
     U_(ndat(), ndat()), Vt_(ndat(), nfreq()), Sigma_(ndat(), ndat()),
     omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0)
 {
