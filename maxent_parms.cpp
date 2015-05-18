@@ -34,11 +34,8 @@
 #include <boost/numeric/bindings/lapack/driver/gesvd.hpp>
 #include <boost/numeric/bindings/upper.hpp>
 
-//this definition is brain dead. What is it doing here?!?
-//#define MAXIMUM(a,b) ((a>b) ? a : a)
-
 ContiParameters::ContiParameters(const alps::params& p) :
-Default_(make_default_model(p, "DEFAULT_MODEL")),
+//Default_(make_default_model(p, "DEFAULT_MODEL")),
 T_(p["T"]|1./static_cast<double>(p["BETA"])),
 ndat_(p["NDAT"]), nfreq_(p["NFREQ"]),
 y_(ndat_),sigma_(ndat_), x_(ndat_),K_(),t_array_(nfreq_+1)
@@ -429,29 +426,11 @@ U_(ndat(), ndat()), Vt_(ndat(), nfreq()), Sigma_(ndat(), ndat()),
 omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0)
 {
   using namespace boost::numeric;
-//  if (ndat() > nfreq())
-//    boost::throw_exception(std::invalid_argument("NDAT should be smaller than NFREQ"));
-/*  for (int i=0; i<nfreq(); ++i) {
-    omega_coord_[i] = Default().omega_of_t(t_array_[i]); //(Default().omega_of_t(t_array_[i]) + Default().omega_of_t(t_array_[i+1]))/2.;
-    if (i>0 && i<nfreq()-1)
-      delta_omega_[i] = (Default().omega_of_t(t_array_[i+1]) - Default().omega_of_t(t_array_[i-1]))/2.0; //    delta_omega_[i] = (Default().omega_of_t(t_array_[MAXIMUM(i+1,nfreq()-1)]) - Default().omega_of_t(t_array_[MAXIMUM(0,i-1)]))/2.0; //Default().omega_of_t(t_array_[i+1]) - Default().omega_of_t(t_array_[i]);
-    else if (i==0)
-      delta_omega_[i] = (Default().omega_of_t(t_array_[i+1]) - Default().omega_of_t(t_array_[i]))/2.0; //    delta_omega_[i] = (Default().omega_of_t(t_array_[MAXIMUM(i+1,nfreq()-1)]) - Default().omega_of_t(t_array_[MAXIMUM(0,i-1)]))/2.0; //Default().omega_of_t(t_array_[i+1]) - Default().omega_of_t(t_array_[i]);
-    else
-      delta_omega_[i] = (Default().omega_of_t(t_array_[i]) - Default().omega_of_t(t_array_[i-1]))/2.0; //    delta_omega_[i] = (Default().omega_of_t(t_array_[MAXIMUM(i+1,nfreq()-1)]) - Default().omega_of_t(t_array_[MAXIMUM(0,i-1)]))/2.0; //Default().omega_of_t(t_array_[i+1]) - Default().omega_of_t(t_array_[i]);
-//
-//      delta_omega_[i] = (Default().omega_of_t(t_array_[MAXIMUM(i+1,nfreq()-1)]) - Default().omega_of_t(t_array_[MAXIMUM(0,i-1)]))/2.0; //    delta_omega_[i] = (Default().omega_of_t(t_array_[MAXIMUM(i+1,nfreq()-1)]) - Default().omega_of_t(t_array_[MAXIMUM(0,i-1)]))/2.0; //Default().omega_of_t(t_array_[i+1]) - Default().omega_of_t(t_array_[i]);
-*/
-//      std::cout << i << " " << omega_coord_[i] << " " << delta_omega_[i] << std::endl;
-//  }
   for (int i=0; i<nfreq(); ++i) {
     omega_coord_[i] = (Default().omega_of_t(t_array_[i]) + Default().omega_of_t(t_array_[i+1]))/2.;
     delta_omega_[i] = Default().omega_of_t(t_array_[i+1]) - Default().omega_of_t(t_array_[i]);
   }
-  //std::cerr<<"debug: omega and delta: "<<std::endl;
-  //for(int i=0;i<nfreq();++i){
-  //  std::cout<<omega_coord_[i]<<" "<<delta_omega_[i]<<std::endl;
-  //}
+
   setup_kernel(p, nfreq(), omega_coord_);
   
   //perform the SVD decomposition K = U Sigma V^T

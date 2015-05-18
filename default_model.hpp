@@ -55,8 +55,6 @@ public:
   DefaultModel(const alps::params& p) :
     omega_max(p["OMEGA_MAX"]),
     omega_min(static_cast<double>(p["OMEGA_MIN"]|(-omega_max))){ //we had a 0 here in the bosonic case. That's not a good idea if you're continuing symmetric functions like chi(omega)/omega. Change omega_min to zero manually if you need it.
-    if(p.defined("BLOW_UP"))
-      throw std::logic_error("Previous versions supported a parameter \'blowup\'. I've removed this from the code, I don't think it should exist");
   }
 
   virtual ~DefaultModel(){}
@@ -259,10 +257,12 @@ public:
 
   ///given a number x between 0 and 1, find the frequency omega belonging to x.
   double omega(const double x) const;
-  /// returns the value of the model function at frequency omega
+
+  ///D returns the derivative of the integrated default model
+  ///i.e. just the value of the model function at frequency omega
   double D(const double omega) const;
 
-  //I have no idea what this does.
+  ///returns the integrated default model
   double x(const double t) const;
 
 private:

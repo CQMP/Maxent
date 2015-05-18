@@ -60,10 +60,16 @@ double TabFunction::operator()(const double omega) {
   //for values outside the grid point: return zero:
   if(omega < Omega_[0] || omega > Omega_.back())
     return 0.;
+  //if we happen to exactly hit the first or last point
+  if(omega == Omega_[0])
+    return Def_[0];
+  if(omega == Omega_.back())
+    return Def_.back();
 
   //otherwise linear interpolation
   std::vector<double>::const_iterator ub = std::upper_bound(Omega_.begin(), Omega_.end(), omega);
   int index = ub - Omega_.begin();
+
   double om1 = Omega_[index-1];
   double om2 = Omega_[index];
   double D1 = Def_[index-1];
