@@ -89,6 +89,9 @@ y_(ndat_),sigma_(ndat_), x_(ndat_),K_(),t_array_(nfreq_+1)
         t_array_[nfreq_/2+i+1]  = 0.5+t_min*std::exp(((float) i)*scale);
         t_array_[nfreq_/2-i-1]  = 0.5-t_min*std::exp(((float) i)*scale);
       }
+      //if we have an odd # of frequencies, this catches the last element
+      if(nfreq_%2!=0)
+        t_array_[nfreq_/2+nfreq_/2+1] =0.5+t_min*std::exp(((float) nfreq_/2)*scale);
   }
   else if (p_f_grid=="linear") {
     for (int i=0; i<nfreq_; ++i) 
