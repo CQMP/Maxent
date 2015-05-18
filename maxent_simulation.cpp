@@ -63,17 +63,11 @@ void MaxEntSimulation::run()
   vector_type u = transform_into_singular_space(Default());
 
   std::ofstream spectral_function_file;
-  std::ofstream chi_squared_file;
-  std::ofstream chispec_str;
-  std::ofstream fits_str;
-  std::ofstream prob_str;
+  std::ofstream fits_file;
 
   if (text_output) {
     spectral_function_file.open((name+"spex.dat").c_str());
-    chi_squared_file.open((name+"chi2.dat").c_str());
-    chispec_str.open((name+"chispec.dat").c_str());
-    fits_str.open((name+"fits.dat").c_str());
-    prob_str.open((name+"prob.dat").c_str());
+    fits_file.open((name+"fits.dat").c_str());
   }
   //this loop is the 'core' of the maxent program: iterate over all alphas, compute the spectra, normalization, and probabilities
   //loop over all alpha values
@@ -99,14 +93,16 @@ void MaxEntSimulation::run()
     chi_sq[a] = chi_squared;
     if (verbose) std::cerr << "0.5*chi2  : " << 0.5*chi_squared;
     std::cerr << std::endl;
-    if (text_output) print_chi2(transform_into_real_space(u), fits_str);
+    if (text_output) print_chi2(transform_into_real_space(u), fits_file);
   }
-  
+
   //everything from here on down is evaluation.
   if (text_output) {
-    spectral_function_file << "\n";
-    for (std::size_t a=0; a<chi_sq.size(); ++a)
+    std::ofstream chi_squared_file;
+    chi_squared_file.open((name+"chi2.dat").c_str());
+    for (std::size_t a=0; a<chi_sq.size(); ++a){
       chi_squared_file << alpha[a] << " " << chi_sq[a] << std::endl;
+    }
   }
   int a_chi = 0;
   double diff = std::abs(chi_sq[0]-ndat());
@@ -120,21 +116,24 @@ void MaxEntSimulation::run()
 
   vector_type def = get_spectrum(transform_into_singular_space(Default()));
   if (text_output){
-    for (std::size_t i=0; i<spectra[0].size(); ++i)
-      chispec_str << omega_coord(i) << " " << spectra[a_chi][i]*norm << " " << def[i]*norm << std::endl;
+    std::ofstream chispec_file;
+    chispec_file.open((name+"chispec.dat").c_str());
+    for (std::size_t i=0; i<spectra[0].size(); ++i){
+      chispec_file << omega_coord(i) << " " << spectra[a_chi][i]*norm << " " << def[i]*norm << std::endl;
+    }
   }
   boost::numeric::ublas::vector<double>::const_iterator max_lprob = std::max_element(lprob.begin(), lprob.end());  
   const int max_a = max_lprob-lprob.begin();
   const double factor = chi_scale_factor(spectra[max_a], chi_sq[max_a], alpha[max_a]);
   if (verbose) std::cerr << "chi scale factor: " << factor << std::endl;
-  
+
   alps::hdf5::archive ar(name+"out.h5", alps::hdf5::archive::WRITE);
   ar << alps::make_pvp("/alpha/values",alpha);
-  
+
   vector_type om(spectra[0].size());
   for (int i=0;i<om.size();i++) om[i] = omega_coord(i);        
   ar<<alps::make_pvp("/spectrum/omega",om);
-      
+
   //output 'maximum' spectral function (classical maxent metod)
   if (text_output){
     std::ofstream maxspec_file;
@@ -155,14 +154,18 @@ void MaxEntSimulation::run()
     probnorm += 0.5*(prob[a]+prob[a+1])*(alpha[a]-alpha[a+1]);
   prob /= probnorm;
   ar << alps::make_pvp("/alpha/probability",prob);
-  if (text_output) for (std::size_t a=0; a<prob.size(); ++a) {
-    prob_str << alpha[a] << "\t" << prob[a] << "\n";
+  if (text_output){
+    std::ofstream prob_str;
+    prob_str.open((name+"prob.dat").c_str());
+    for (std::size_t a=0; a<prob.size(); ++a) {
+      prob_str << alpha[a] << "\t" << prob[a] << "\n";
+    }
   }
   double postprobdef = 0;
   for (std::size_t a=0; a<lprob.size()-1; ++a) 
     postprobdef += 0.5*(exp(lprob[a])+exp(lprob[a+1]))*(alpha[a]-alpha[a+1]);
   std::cout << "posterior probability of the default model: " << postprobdef << std::endl;
-  
+
   //compute 'average' spectral function (Brian's method)
   vector_type avspec(spectra[0].size());
   for (std::size_t i=0; i<avspec.size(); ++i) {
@@ -175,20 +178,20 @@ void MaxEntSimulation::run()
   for (std::size_t i=0; i<varspec.size(); ++i) {
     varspec[i] = 0.;
     for (std::size_t a=0; a<prob.size()-1; ++a)
-    varspec[i] += 0.5*(prob[a]*(spectra[a][i]-avspec[i])*(spectra[a][i]-avspec[i]) + prob[a+1]*(spectra[a+1][i]-avspec[i])*(spectra[a+1][i]-avspec[i]))*(alpha[a]-alpha[a+1]);
+      varspec[i] += 0.5*(prob[a]*(spectra[a][i]-avspec[i])*(spectra[a][i]-avspec[i]) + prob[a+1]*(spectra[a+1][i]-avspec[i])*(spectra[a+1][i]-avspec[i]))*(alpha[a]-alpha[a+1]);
   }
   avspec *= norm;
   varspec *= norm*norm;
-  
+
   if (text_output){
     std::ofstream avspec_file;
     avspec_file.open((name+"avspec.dat").c_str());
     for (std::size_t  i=0; i<avspec.size(); ++i)
-    avspec_file << omega_coord(i) << " " << avspec[i] << " " << def[i]*norm << std::endl;
+      avspec_file << omega_coord(i) << " " << avspec[i] << " " << def[i]*norm << std::endl;
   }
   ar << alps::make_pvp("/spectrum/average",avspec);
   ar << alps::make_pvp("/spectrum/variance",varspec);
-  
+
   if(Kernel_type=="anomalous"){ //for the anomalous function: use A(omega)=Im Sigma(omega)/(pi omega).
     std::ofstream maxspec_anom_str((name+"maxspec_anom.dat").c_str());
     std::ofstream avspec_anom_str ((name+"avspec_anom.dat", dir).c_str());
@@ -214,7 +217,7 @@ void MaxEntSimulation::run()
     if (text_output) {
       std::ofstream avspec_anom_str((name+"maxspec_bose.dat", dir).c_str());
       for (std::size_t  i=0; i<avspec.size(); ++i){
-      //if(omega_coord(i)>=0.)
+        //if(omega_coord(i)>=0.)
         avspec_anom_str << omega_coord(i) << " " << avspec[i]*omega_coord(i)*M_PI<<std::endl;
       }
     }
@@ -250,7 +253,7 @@ void MaxEntSimulation::run()
       maxspec_self_str << omega_coord(i) << " " << -spectra[max_a][i]*norm*M_PI << std::endl;
     }
   }
- 
+
 }
 
 
@@ -283,7 +286,7 @@ MaxEntSimulation::vector_type MaxEntSimulation::levenberg_marquardt(vector_type 
       else if (mu<1e20) {
         mu *= nu;
       }
-      
+
     } 
     u += delta;
     if (convergence(u, alpha)<=1e-4)
