@@ -326,7 +326,7 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
   }
   else
     boost::throw_exception(std::invalid_argument("unknown value for parameter DATASPACE"));
-//  vector_type sigma(ndat());
+//  vector_type sigma_(ndat());
   if (p.defined("COVARIANCE_MATRIX")) {
     if(!(p.defined("DATA_IN_HDF5") && p["DATA_IN_HDF5"]|false)) {
       cov_.resize(ndat(),ndat());
@@ -380,9 +380,9 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
   } 
   //else {
   //  for (int i=0; i<ndat(); ++i)
-  //    sigma[i] = static_cast<double>(p["SIGMA_"+boost::lexical_cast<std::string>(i)])/static_cast<double>(p["NORM"]);
+  //    sigma_[i] = static_cast<double>(p["SIGMA_"+boost::lexical_cast<std::string>(i)])/static_cast<double>(p["NORM"]);
   //}
-  //Look around Eq. D.5 in Sebastian's thesis. We have sigma = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma=SIGMA_X. The then define y := \bar{G}/sigma and K := (1/sigma)\tilde{K}
+  //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
   if (p_data == "hillibilli" && !(p["PARTICLE_HOLE_SYMMETRY"]|true))  {
 //      if (p["DATASPACE"]=="frequency" && !p.value_or_default("PARTICLE_HOLE_SYMMETRY",true))  {
     if (alps::is_master())

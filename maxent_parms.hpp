@@ -86,7 +86,6 @@ class MaxEntParameters : public ContiParameters
 {
 public:
   
-//  MaxEntParameters(const alps::Parameters& p);
   MaxEntParameters(const alps::params& p);
   
   const vector_type& y() const { return y_; }

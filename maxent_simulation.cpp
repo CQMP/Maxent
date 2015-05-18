@@ -206,7 +206,7 @@ void MaxEntSimulation::dostep()
     }
     ar << alps::make_pvp("/spectrum/anomalous/maximum",spec);
   }
-  if(Kernel_type=="bosonic"){ //for the anomalous function: use A(Omega)=Im chi(Omega)/(pi Omega) (as for anomalous)
+  if(Kernel_type=="bosonic"){ //for the anomalous function: use A(Omega_)=Im chi(Omega_)/(pi Omega_) (as for anomalous)
     vector_type spec(avspec.size());
     for (std::size_t  i=0; i<avspec.size(); ++i){
       spec[i] = avspec[i]*omega_coord(i)*M_PI;

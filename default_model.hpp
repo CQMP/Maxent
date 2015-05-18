@@ -103,7 +103,7 @@ public:
 };
 
 
-
+///general class for a model function. Implements operator() which, given a frequency omega, will give back the value of the default model at that frequency.
 class Model
 {
 public:
@@ -112,19 +112,31 @@ public:
 };
 
 
-
+///a model function that implements a Gaussian, i.e.
+/// \f$D(\omega)= \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{\omega^2}{2\sigma^2}} \f$.
+///
+/// \f$\sigma\f$ has to be specified as a parameter SIGMA.
+/// This is one of the standard model functions you should always try.
 class Gaussian : public Model 
 {
 public:
-  Gaussian(const alps::params& p) : sigma(static_cast<double>(p["SIGMA"])) {}
+  Gaussian(const alps::params& p) : sigma_(static_cast<double>(p["SIGMA"])) {}
 
   virtual double operator()(const double omega) {
-    return std::exp(-omega*omega/2./sigma/sigma)/sqrt(2*M_PI)/sigma;
+    return std::exp(-omega*omega/2./sigma_/sigma_)/sqrt(2*M_PI)/sigma_;
   }
 
 private:
-  const double sigma;
+  const double sigma_;
 };
+
+///a model function that implements two Gaussians with arbitrary relative norms and arbitrary points around which they are centered.
+///
+/// \f$\sigma\f$ has to be specified as a parameter SIGMA1 and SIGMA2 for the two gaussians.
+/// shift has to be defined as SHIFT1 and SHIFT2 for each Gaussian.
+/// NORM1 has to be defined to specify the relative weight of the two spectral functions.
+///
+/// \f$D(\omega)=\frac{norm1}{\sqrt{2\pi}\sigma1}e^{-\frac{(\omega-shift1)^2}{2\sigma1^2}}+ \frac{(1-norm1)}{\sqrt{2\pi}\sigma2}e^{-\frac{(\omega-shift2)^2}{2\sigma2^2}}\f$
 
 class TwoGaussians : public Model
 {
@@ -144,22 +156,29 @@ private:
 };
 
 
+///a model function that implements a Gaussian that is not centered at zero but at some other frequency, i.e.
+/// \f$D(\omega)= \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(\omega-shift)^2}{2\sigma^2}} \f$.
+///
+/// \f$\sigma\f$ has to be specified as a parameter SIGMA, and shift has to be specified as parameter SHIFT.
 class ShiftedGaussian : public Gaussian
 {
 public:
-  //  ShiftedGaussian(const alps::Parameters& p) :
   ShiftedGaussian(const alps::params& p) :
-    Gaussian(p), shift(static_cast<double>(p["SHIFT"])){}
+    Gaussian(p), shift_(static_cast<double>(p["SHIFT"])){}
 
   double operator()(const double omega) {
-    return Gaussian::operator()(omega-shift);
+    return Gaussian::operator()(omega-shift_);
   }
 
 protected:
-  const double shift;
+  const double shift_;
 };
 
 
+///a model function that implements a sum of two Gaussians, each of them shifted by +/- shift.
+/// \f$D(\omega)=\frac{1}{2} \left( \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(\omega-shift)^2}{2\sigma^2}}+ \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(\omega+shift)^2}{2\sigma^2}}\right)\f$
+/// \f$\sigma\f$ has to be specified as a parameter SIGMA, and \f$shift_\f$ has to be specified as parameter SHIFT.
+/// Try this to try to model a system with 'side peaks'.
 class DoubleGaussian : public ShiftedGaussian
 {
 public:
@@ -167,7 +186,7 @@ public:
     ShiftedGaussian(p){}
 
   double operator()(const double omega) {
-    return 0.5*(Gaussian::operator()(omega-shift) + Gaussian::operator()(omega+shift));
+    return 0.5*(Gaussian::operator()(omega-shift_) + Gaussian::operator()(omega+shift_));
   }
 };
 
@@ -197,17 +216,17 @@ class GeneralDoubleGaussian : public ShiftedGaussian
 {
 public:
   GeneralDoubleGaussian(const alps::params& p) :
-    ShiftedGaussian(p), bnorm(static_cast<double>(p["BOSE_NORM"])) {}
+    ShiftedGaussian(p), bnorm_(static_cast<double>(p["BOSE_NORM"])) {}
 
   double operator()(const double omega) {
     if (omega > 0)
       return Gaussian::operator()(omega);
     else
-      return bnorm*Gaussian::operator()(omega+shift);
+      return bnorm_*Gaussian::operator()(omega+shift_);
   }
 
 private:
-  const double bnorm; 
+  const double bnorm_; 
 };
 
 ///This class deals with tabulated model functions
@@ -220,12 +239,14 @@ public:
   /// anything after that: ignored.
   TabFunction(const alps::params& p, std::string const& name);
 
-  //return value of default model. If INSIDE interval we have data in: return linearly interpolated data. Otherwise: return zero.
+  ///return value of default model. If INSIDE interval we have data in: return linearly interpolated data. Otherwise: return zero.
   double operator()(const double omega);
 
 private:
-  std::vector<double> Omega;
-  std::vector<double> Def;
+  ///private variable to store the frequency grid
+  std::vector<double> Omega_;
+  ///private variable to store the tabulated value of the default model at a frequency belonging to Omega_
+  std::vector<double> Def_;
 };
 
 

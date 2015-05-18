@@ -44,30 +44,30 @@ TabFunction::TabFunction(const alps::params& p, std::string const& name){
     if(line.size()>0 && line[0]=='#') continue;
     std::stringstream linestream(line);
     linestream>>om>>D;
-    Omega.push_back(om);
-    Def.push_back(D);
+    Omega_.push_back(om);
+    Def_.push_back(D);
   }
   double omega_max = p["OMEGA_MAX"];
   double omega_min(static_cast<double>(p["OMEGA_MIN"]|-omega_max)); //we had a 0 here in the bosonic case. That's not a good idea if you're continuing symmetric functions like chi(omega)/omega. Change omega_min to zero manually if you need it.
-  if (Omega[0]!=omega_min || Omega.back()!=omega_max){
-    std::cout<<"Omega[ 0] "<<Omega[0]<<" omega min: "<<omega_min<<std::endl;
-    std::cout<<"Omega[-1] "<<Omega.back()<<" omega max: "<<omega_max<<std::endl;
+  if (Omega_[0]!=omega_min || Omega_.back()!=omega_max){
+    std::cout<<"Omega[ 0] "<<Omega_[0]<<" omega min: "<<omega_min<<std::endl;
+    std::cout<<"Omega[-1] "<<Omega_.back()<<" omega max: "<<omega_max<<std::endl;
   }
 }
 
-//regturn value of default model. If INSIDE interval we have data in: return linearly interpolated data. Otherwise: return zero.
+//return value of default model. If INSIDE interval we have data in: return linearly interpolated data. Otherwise: return zero.
 double TabFunction::operator()(const double omega) {
   //for values outside the grid point: return zero:
-  if(omega < Omega[0] || omega > Omega.back())
+  if(omega < Omega_[0] || omega > Omega_.back())
     return 0.;
 
   //otherwise linear interpolation
-  std::vector<double>::const_iterator ub = std::upper_bound(Omega.begin(), Omega.end(), omega);
-  int index = ub - Omega.begin();
-  double om1 = Omega[index-1];
-  double om2 = Omega[index];
-  double D1 = Def[index-1];
-  double D2 = Def[index];
+  std::vector<double>::const_iterator ub = std::upper_bound(Omega_.begin(), Omega_.end(), omega);
+  int index = ub - Omega_.begin();
+  double om1 = Omega_[index-1];
+  double om2 = Omega_[index];
+  double D1 = Def_[index-1];
+  double D2 = Def_[index];
   return -(D2-D1)/(om2-om1)*(om2-omega)+D2;
 }
 
