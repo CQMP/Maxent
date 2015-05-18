@@ -40,64 +40,11 @@ ContiParameters::ContiParameters(const alps::params& p) :
 Default_(make_default_model(p, "DEFAULT_MODEL")),
 T_(p["T"]|1./static_cast<double>(p["BETA"])),
 ndat_(p["NDAT"]), nfreq_(p["NFREQ"]),
-y_(ndat_),sigma_(ndat_), x_(ndat_),K_(),t_array_(nfreq_+1)
+y_(ndat_),sigma_(ndat_), x_(ndat_),K_(),grid_(p)
 {
   if (ndat_<4) 
     boost::throw_exception(std::invalid_argument("NDAT too small"));
-  std::string p_f_grid = p["FREQUENCY_GRID"]|"";
-  if (p_f_grid=="Lorentzian") {
-    double cut = p["CUT"]|0.01;
-    std::vector<double> temp(nfreq_+1);
-    for (int i=0; i<nfreq_+1; ++i)
-      temp[i] = tan(M_PI * (double(i)/(nfreq_)*(1.-2*cut)+cut - 0.5));
-    for (int i=0; i<nfreq_+1; ++i) 
-      t_array_[i] = (temp[i] - temp[0])/(temp[temp.size()-1] - temp[0]);
-  }
-  else if (p_f_grid=="half Lorentzian") {
-    double cut = p["CUT"]|0.01;
-    std::vector<double> temp(nfreq_+1);
-    for (int i=0; i<nfreq_+1; ++i)
-      temp[i] = tan(M_PI * (double(i+nfreq_)/(2*nfreq_-1)*(1.-2*cut)+cut - 0.5));
-    for (int i=0; i<nfreq_+1; ++i) 
-      t_array_[i] = (temp[i] - temp[0])/(temp[temp.size()-1] - temp[0]);\
-  }
-  else if (p_f_grid=="quadratic") {
-    double s = p["SPREAD"]|4;
-    if (s<1) 
-      boost::throw_exception(std::invalid_argument("the parameter SPREAD must be greater than 1"));
-    std::vector<double> temp(nfreq_);
-    double t=0;
-    for (int i=0; i<nfreq_-1; ++i) {
-      double a = double(i)/(nfreq_-1);
-      double factor = 4*(s-1)*(a*a-a)+s;
-      factor /= double(nfreq_-1)/(3.*(nfreq_-2))*((nfreq_-1)*(2+s)-4+s);
-      double delta_t = factor;
-      t += delta_t;
-      temp[i] = t;
-    }
-    t_array_[0] = 0.;
-    for (int i=1; i<nfreq_; ++i) 
-      t_array_[i]  = temp[i-1]/temp[temp.size()-1];
-  }
-  else if (p_f_grid=="log") {
-    //      double om_min = p.value_or_default("OMEGA_MIN",1e-4),om_max=p["OMEGA_MAX"];
-    double t_min = p["LOG_MIN"]|1.0e-4,t_max=0.5;
-    double scale=std::log(t_max/t_min)/((float) (nfreq_/2-1));
-    t_array_[nfreq_/2] = 0.5;
-    for (int i=0; i<nfreq_/2; ++i) {
-      t_array_[nfreq_/2+i+1]  = 0.5+t_min*std::exp(((float) i)*scale);
-      t_array_[nfreq_/2-i-1]  = 0.5-t_min*std::exp(((float) i)*scale);
-    }
-    //if we have an odd # of frequencies, this catches the last element
-    if(nfreq_%2!=0)
-      t_array_[nfreq_/2+nfreq_/2+1] =0.5+t_min*std::exp(((float) nfreq_/2)*scale);
-  }
-  else if (p_f_grid=="linear") {
-    for (int i=0; i<nfreq_; ++i) 
-      t_array_[i] = double(i)/(nfreq_-1);
-  }
-  else 
-    boost::throw_exception(std::invalid_argument("No valid frequency grid specified"));
+
   // We provide a file with data points and error bars, the latter are used only if
   // COVARIANCE_MATRIX is not set. The format is
   //
@@ -419,8 +366,8 @@ MaxEntParameters::MaxEntParameters(const alps::params& p) :
 {
   using namespace boost::numeric;
   for (int i=0; i<nfreq(); ++i) {
-    omega_coord_[i] = (Default().omega_of_t(t_array_[i]) + Default().omega_of_t(t_array_[i+1]))/2.;
-    delta_omega_[i] = Default().omega_of_t(t_array_[i+1]) - Default().omega_of_t(t_array_[i]);
+    omega_coord_[i] = (Default().omega_of_t(grid_(i)) + Default().omega_of_t(grid_(i+1)))/2.;
+    delta_omega_[i] = Default().omega_of_t(grid_(i+1)) - Default().omega_of_t(grid_(i));
   }
 
   setup_kernel(p, nfreq(), omega_coord_);

@@ -33,6 +33,7 @@
 #include <boost/numeric/bindings/ublas.hpp>
 #include <boost/numeric/ublas/io.hpp>
 #include "default_model.hpp"
+#include "maxent_grid.hpp"
 
 
 class ContiParameters {
@@ -70,7 +71,7 @@ protected:
   const int nfreq_;
   vector_type y_,sigma_,x_;
   matrix_type K_,cov_;
-  vector_type t_array_;
+  grid grid_;
 };
 
 
