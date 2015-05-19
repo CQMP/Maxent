@@ -16,6 +16,7 @@ add_executable(maxent
 maxent.cpp
 maxent_helper.cpp
 maxent_parms.cpp
+maxent_parmsTest.cpp
 maxent_grid.cpp
 maxent_simulation.cpp
 default_modelTest.cpp

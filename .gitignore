@@ -3,6 +3,7 @@
 !.gitignore
 !maxent_helper.cpp
 !maxent_parms.cpp
+!maxent_parmsTest.cpp
 !maxent_grid.cpp
 !maxent_grid.hpp
 !maxent_parms.h
