@@ -48,27 +48,32 @@ public:
   ///constructs the kernel and grid from the parameters p. Also reads in the data.
   ContiParameters(const alps::params& p);
   
-  ///value of the data at index i
+  ///value of the Matsubara data at index i
   double y(const int i) const { return y_[i]; }
+  ///value of the Matsubara data
+  const vector_type& y() const { return y_; }
   ///value of the covariance matrix
   double cov(const int i,const int j) const { return cov_(i,j); }
   ///value of the error (if covariance not given)
   double sigma(const int i) const { return sigma_[i]; }
-  ///to be checked.
-  double x(const int i) const { return x_[i]; }
   ///value of the inverse temperature
   double T() const { return T_; }
   ///number of data points
   int ndat() const { return ndat_; }
+  ///number of frequency points on the real axis
+  int nfreq() const { return nfreq_; }
   ///value of the Kernel matrix K(i,j).
-  double K(const int i, const int j) const {
-    return K_(i,j);
-  }
+  double K(const int i, const int j) const {return K_(i,j);}
+  ///returns the entire kernel matrix
+  const matrix_type& K() const { return K_; }
 
 private:
-  
+  ///temperature
   const double T_;
+  ///number of fitting data points / size of y
   int ndat_;
+  ///number of real frequencies
+  const int nfreq_;
 
   void read_data_from_text_file(const alps::params& p);
   void read_data_from_hdf5_file(const alps::params& p);
@@ -77,23 +82,27 @@ private:
 protected:
 
   void setup_kernel(const alps::params& p, const int ntab, const vector_type& freq);
-  const int nfreq_;
-  vector_type y_,sigma_,x_;
-  matrix_type K_,cov_;
+  ///vector of Matsubara data
+  vector_type y_;
+  ///vector of errors on y
+  vector_type sigma_;
+  ///Kernel matrix
+  matrix_type K_;
+  ///covariance matrix
+  matrix_type cov_;
+  ///real frequency grid
   grid grid_;
 };
 
 
 
-
+///This class contains all of the maxent specific parameters
 class MaxEntParameters : public ContiParameters
 {
 public:
-  
+  ///constructs the maxent specific parameters out of parameters p
   MaxEntParameters(const alps::params& p);
   
-  const vector_type& y() const { return y_; }
-  const matrix_type& K() const { return K_; }
   const matrix_type& U() const { return U_; }
   const matrix_type& Vt() const { return Vt_; }
   const matrix_type& Sigma() const { return Sigma_; }
@@ -101,16 +110,17 @@ public:
   const vector_type& omega_coord() const { return omega_coord_; }
   double delta_omega(const int i) const { return delta_omega_[i]; }
   int ns() const { return ns_; }
-  int nfreq() const { return nfreq_; }
   const DefaultModel& Default() const { return *Default_; }
 
 private:
+  ///The default model
   boost::shared_ptr<DefaultModel> Default_;
   matrix_type U_;
   matrix_type Vt_;
   matrix_type Sigma_;
   vector_type omega_coord_;
   vector_type delta_omega_;
+  ///the number of singular values
   int ns_;
 };
 

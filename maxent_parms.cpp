@@ -140,7 +140,7 @@ void ContiParameters::read_data_from_param_file(const alps::params& p) {
 ContiParameters::ContiParameters(const alps::params& p) :
 T_(p["T"]|1./static_cast<double>(p["BETA"])),
 ndat_(p["NDAT"]), nfreq_(p["NFREQ"]),
-y_(ndat_),sigma_(ndat_), x_(ndat_),K_(),grid_(p)
+y_(ndat_),sigma_(ndat_),K_(),grid_(p)
 {
   if (ndat_<4) 
     boost::throw_exception(std::invalid_argument("NDAT too small"));
@@ -392,7 +392,6 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
 }
 
 
-//MaxEntParameters::MaxEntParameters(const alps::Parameters& p) :
 MaxEntParameters::MaxEntParameters(const alps::params& p) :
     ContiParameters(p),
     Default_(make_default_model(p, "DEFAULT_MODEL")),

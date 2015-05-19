@@ -36,27 +36,11 @@
 #include <boost/numeric/bindings/lower.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
 
-/*
-MaxEntHelper::MaxEntHelper(const alps::Parameters& p) : 
-MaxEntParameters(p) , def_(nfreq())
-{
-  for (int i=0; i<nfreq(); ++i) 
-    def_[i] = MaxEntParameters::Default().D(omega_coord(i)) * delta_omega(i); 
-  //std::cout<<"sum of def: "<<sum(def_)<<std::endl;
-  def_ /= sum(def_);
-  std::ofstream out;
-  out.open("deltaOmega.dat");
-  for (int i=0; i<nfreq(); ++i)
-    out << i<<" "<<delta_omega(i) << " "<<def_[i]<<std::endl;
-}
- */
-
 MaxEntHelper::MaxEntHelper(const alps::params& p) :
 MaxEntParameters(p) , def_(nfreq())
 {
     for (int i=0; i<nfreq(); ++i)
         def_[i] = MaxEntParameters::Default().D(omega_coord(i)) * delta_omega(i);
-    //std::cout<<"sum of def: "<<sum(def_)<<std::endl;
     def_ /= sum(def_);
     std::ofstream out;
     out.open("deltaOmega.dat");
@@ -80,8 +64,6 @@ MaxEntHelper::vector_type MaxEntHelper::transform_into_singular_space(vector_typ
   return prec_prod(Vt(), A);
 }
 
-
-
 //returns exp(V^T*u)*Default(i). This quantity is then usually called 'A'
 MaxEntHelper::vector_type MaxEntHelper::transform_into_real_space(vector_type u) const
 {
@@ -94,8 +76,6 @@ MaxEntHelper::vector_type MaxEntHelper::transform_into_real_space(vector_type u)
 }
 
 
-
-
 MaxEntHelper::vector_type MaxEntHelper::get_spectrum(const vector_type& u) const
 {
   vector_type A = transform_into_real_space(u);
@@ -103,7 +83,6 @@ MaxEntHelper::vector_type MaxEntHelper::get_spectrum(const vector_type& u) const
     A[i] /= delta_omega(i);
   return A;
 }
-
 
 
 //'left side' is defined as Sigma*(V^T*RealSpace(u)*V)*Sigma
@@ -134,8 +113,6 @@ MaxEntHelper::vector_type MaxEntHelper::right_side(const vector_type& u) const
   return b;
 }
 
-
-
 //this function constructs delta \dot (V^T*RealSpace(u)*V)
 double MaxEntHelper::step_length(const vector_type& delta, const vector_type& u) const 
 {
@@ -147,9 +124,6 @@ double MaxEntHelper::step_length(const vector_type& delta, const vector_type& u)
   L = prec_prod(Vt(), L);
   return inner_prod(delta, prec_prod(L, delta));
 }
-
-
-
 
 double MaxEntHelper::convergence(const vector_type& u, const double alpha) const 
 {
@@ -168,8 +142,6 @@ double MaxEntHelper::convergence(const vector_type& u, const double alpha) const
   return 2*inner_prod(diff, diff)/denom;
 }
 
-
-
 double MaxEntHelper::log_prob(const vector_type& u, const double alpha) const
 {
   matrix_type L = prec_prod_trans(K(), K());
@@ -185,8 +157,6 @@ double MaxEntHelper::log_prob(const vector_type& u, const double alpha) const
     log_det  += log(L(i,i)*L(i,i));
   return 0.5*( (nfreq())*log(alpha) - log_det ) - Q(u, alpha);
 }
-
-
 
 double MaxEntHelper::chi_scale_factor(vector_type A, const double chi_sq, const double alpha) const
 {
@@ -209,7 +179,6 @@ double MaxEntHelper::chi_scale_factor(vector_type A, const double chi_sq, const 
   return sqrt(chi_sq/(ndat()-Ng));
 }
 
-
 //This function computes chi^2 as in equation D.6 in Sebastian's thesis
 double MaxEntHelper::chi2(const vector_type& A) const 
 {
@@ -225,6 +194,7 @@ double MaxEntHelper::chi2(const vector_type& A) const
     c += del_G[i]*del_G[i];
   return c;
 }
+
 void MaxEntHelper::print_chi2(const vector_type& A, std::ostream &os) const 
 {
   vector_type backcont=prec_prod(K(), A);
@@ -235,7 +205,6 @@ void MaxEntHelper::print_chi2(const vector_type& A, std::ostream &os) const
   }
   os<<std::endl;
 }
-
 
 //This function computes the entropy as in Eq. D.7 in Sebastian's thesis
 double MaxEntHelper::entropy(const vector_type& A) const 
@@ -266,5 +235,3 @@ MaxEntHelper::vector_type MaxEntHelper::PrincipalValue(const vector_type &w,cons
     r[N-1] = w[N-3]*r[N-3]/w[N-1];
     return r;
 }
-
-
