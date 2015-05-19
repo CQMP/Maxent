@@ -356,6 +356,12 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
   //    sigma_[i] = static_cast<double>(p["SIGMA_"+boost::lexical_cast<std::string>(i)])/static_cast<double>(p["NORM"]);
   //}
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
+    for (int i=0; i<ndat(); i++) {
+        y_[i] /= sigma_[i];
+        for (int j=0; j<ntab; ++j) {
+            K_(i,j) /= sigma_[i];
+        }
+    }
 
   //this enforces a strict normalization if needed.
   //not sure that this is done properly. recheck!
