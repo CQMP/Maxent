@@ -28,7 +28,7 @@
 
 #include "default_model.hpp"
 #include <fstream>
-
+#include <boost/algorithm/string.hpp>
 
 
 
@@ -137,6 +137,7 @@ double GeneralDefaultModel::norm() {
 
 boost::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, std::string const& name){
   std::string p_name = parms[name]|"flat";
+  boost::to_lower(p_name);
   if (p_name == "flat") {
     std::cout << "Using flat default model" << std::endl;
     return boost::shared_ptr<DefaultModel>(new FlatDefaultModel(parms));
@@ -146,7 +147,7 @@ boost::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, st
     boost::shared_ptr<Model> Mod(new Gaussian(parms));
     return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
-  else if (p_name == "twogaussians") {
+  else if (p_name == "twogaussians" || p_name == "two gaussians") {
     std::cout << "Using sum of two Gaussians default model" << std::endl;
     boost::shared_ptr<Model> Mod(new TwoGaussians(parms));
     return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
