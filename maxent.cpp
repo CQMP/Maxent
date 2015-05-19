@@ -37,7 +37,7 @@ int main(int argc, char** argv)
   }
   alps::mcoptions options(argc, argv);
 
-  alps::params parms(alps::hdf5::archive(options.input_file));
+  alps::params parms(options.input_file);
   if(!parms.defined("BASENAME"))
     parms["BASENAME"]=options.output_file;
 
