@@ -31,6 +31,8 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/bindings/ublas.hpp>
 #include <boost/numeric/ublas/io.hpp>
+#include <boost/numeric/bindings/blas/level3/gemm.hpp>
+#include <boost/numeric/bindings/blas/level2/gemv.hpp>
 
 
 

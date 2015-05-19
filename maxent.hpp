@@ -33,8 +33,6 @@
 #include <fstream>
 #include "maxent_blas.hpp"
 #include "maxent_parms.hpp"
-#include <boost/numeric/bindings/blas/level3/gemm.hpp>
-#include <boost/numeric/bindings/blas/level2/gemv.hpp>
 
 #include"gtest/gtest.h"
 

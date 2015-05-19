@@ -28,7 +28,6 @@
 #ifndef ALPS_TOOL_MAXENT_PARMS_HPP
 #define ALPS_TOOL_MAXENT_PARMS_HPP
 
-#include <alps/config.h> // needed to set up correct bindings
 #include "default_model.hpp"
 #include "maxent_grid.hpp"
 #include "maxent_blas.hpp"
