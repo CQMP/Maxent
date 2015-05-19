@@ -27,6 +27,7 @@
 #pragma once
 #include<vector>
 #include<alps/ngs/params.hpp>
+#include"maxent_blas.hpp"
 
 class grid{
 public:

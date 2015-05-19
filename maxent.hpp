@@ -31,10 +31,10 @@
 #pragma once
 
 #include <fstream>
-#include <alps/config.h>
+#include "maxent_blas.hpp"
+#include "maxent_parms.hpp"
 #include <boost/numeric/bindings/blas/level3/gemm.hpp>
 #include <boost/numeric/bindings/blas/level2/gemv.hpp>
-#include "maxent_parms.hpp"
 
 #include"gtest/gtest.h"
 
@@ -42,10 +42,6 @@
 class MaxEntHelper : private MaxEntParameters
 {
 public : 
-
-  typedef MaxEntParameters::matrix_type matrix_type;
-  typedef MaxEntParameters::vector_type vector_type;
-  typedef MaxEntParameters::omega_complex_type omega_complex_type;
 
   MaxEntHelper(const alps::params& p);
 

@@ -48,7 +48,7 @@ MaxEntParameters(p) , def_(nfreq())
 
 //the opposite of 'transform_into_real_space'; takes a vector 'A' and makes a vector 'u' out of it:
 // u = V^T* log(A/Default)
-MaxEntHelper::vector_type MaxEntHelper::transform_into_singular_space(vector_type A) const
+vector_type MaxEntHelper::transform_into_singular_space(vector_type A) const
 {
   double D;
   for (unsigned int i=0; i<A.size(); ++i) {
@@ -62,7 +62,7 @@ MaxEntHelper::vector_type MaxEntHelper::transform_into_singular_space(vector_typ
 }
 
 //returns exp(V^T*u)*Default(i). This quantity is then usually called 'A'
-MaxEntHelper::vector_type MaxEntHelper::transform_into_real_space(vector_type u) const
+vector_type MaxEntHelper::transform_into_real_space(vector_type u) const
 {
   u = prec_prod(trans(Vt()), u);
   for (unsigned int i=0; i<u.size(); ++i) {
@@ -73,7 +73,7 @@ MaxEntHelper::vector_type MaxEntHelper::transform_into_real_space(vector_type u)
 }
 
 
-MaxEntHelper::vector_type MaxEntHelper::get_spectrum(const vector_type& u) const
+vector_type MaxEntHelper::get_spectrum(const vector_type& u) const
 {
   vector_type A = transform_into_real_space(u);
   for (unsigned int i=0; i<A.size(); ++i) 
@@ -84,7 +84,7 @@ MaxEntHelper::vector_type MaxEntHelper::get_spectrum(const vector_type& u) const
 
 //'left side' is defined as Sigma*(V^T*RealSpace(u)*V)*Sigma
 //see Bryan's paper near Eq. 11 
-MaxEntHelper::matrix_type MaxEntHelper::left_side(const vector_type& u) const 
+matrix_type MaxEntHelper::left_side(const vector_type& u) const
 {
   vector_type A = transform_into_real_space(u);
   matrix_type M = trans(Vt());
@@ -102,7 +102,7 @@ MaxEntHelper::matrix_type MaxEntHelper::left_side(const vector_type& u) const
 //this function computes
 //Sigma*U^T*(K*RealSpace(u)-y)
 //up to a factor of 2./ndat(). Compare this to Eq. D.12 in Sebastian's thesis
-MaxEntHelper::vector_type MaxEntHelper::right_side(const vector_type& u) const 
+vector_type MaxEntHelper::right_side(const vector_type& u) const
 {
   vector_type b = 2./ndat()*(prec_prod(K(), transform_into_real_space(u)) - y());
   b = prec_prod(trans(U()), b);
@@ -216,7 +216,7 @@ double MaxEntHelper::entropy(const vector_type& A) const
 
 // Generic principal-value integration. Assumes that spectral function does not vary too
 // strongly within [x_{i+1},x_i]
-MaxEntHelper::vector_type MaxEntHelper::PrincipalValue(const vector_type &w,const vector_type &a) const
+vector_type MaxEntHelper::PrincipalValue(const vector_type &w,const vector_type &a) const
 {
     int N = w.size();
     vector_type r(N);

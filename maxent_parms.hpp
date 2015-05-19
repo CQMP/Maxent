@@ -29,22 +29,15 @@
 #define ALPS_TOOL_MAXENT_PARMS_HPP
 
 #include <alps/config.h> // needed to set up correct bindings
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/bindings/ublas.hpp>
-#include <boost/numeric/ublas/io.hpp>
 #include "default_model.hpp"
 #include "maxent_grid.hpp"
+#include "maxent_blas.hpp"
 
 ///This class has all the information about general analytic continuation things. It does not know about specifics of maxent.
 class ContiParameters {
 
 public:
   
-  typedef boost::numeric::ublas::matrix<double, boost::numeric::ublas::column_major> matrix_type;
-  typedef boost::numeric::ublas::vector<double> vector_type;
-  typedef boost::numeric::ublas::vector<std::complex<double> > complex_vector_type;
-  typedef std::pair<vector_type, complex_vector_type> omega_complex_type;
-
   ///constructs the kernel and grid from the parameters p. Also reads in the data.
   ContiParameters(const alps::params& p);
   

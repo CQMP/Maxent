@@ -260,7 +260,7 @@ void MaxEntSimulation::evaluate(){
 
 //this is the levenberg marquardt fitting procedure. It minimizes the quantity Q = 1/2 chi^2 - \alpha S
 // 
-MaxEntSimulation::vector_type MaxEntSimulation::levenberg_marquardt(vector_type u, const double alpha) const 
+vector_type MaxEntSimulation::levenberg_marquardt(vector_type u, const double alpha) const
 {
   using namespace boost::numeric;
   double mu = 1e-18;
@@ -303,7 +303,7 @@ MaxEntSimulation::vector_type MaxEntSimulation::levenberg_marquardt(vector_type 
 
 //this function computes the change delta to the vector 'u' 
 //to be used in the Levenberg Marquardt fitting procedure
-MaxEntSimulation::vector_type MaxEntSimulation::iteration(vector_type u, const double alpha, const double mu) const 
+vector_type MaxEntSimulation::iteration(vector_type u, const double alpha, const double mu) const
 {
   using namespace boost::numeric;
   matrix_type M = left_side(u);

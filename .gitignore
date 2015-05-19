@@ -9,6 +9,7 @@
 !maxent_grid.hpp
 !maxent_parms.h
 !maxent_simulation.cpp
+!maxent_blas.hpp
 !maxent.cpp
 !maxent.h
 !default_model.hpp
