@@ -36,7 +36,6 @@
 
 #include"gtest/gtest.h"
 
-
 class MaxEntHelper : private MaxEntParameters
 {
 public : 
@@ -73,54 +72,6 @@ public :
   void print_chi2(const vector_type& u, std::ostream &os) const;
   double entropy(const vector_type& u) const;
 
-  ///matrix-vector multiplication. TODO: this should be delegated to a matrix library
-  vector_type prec_prod(const matrix_type &p, const vector_type &q) const{
-#ifdef ALPS_HAVE_LAPACK
-    vector_type r(p.size1());
-    double alpha=1.;
-    double beta=0.;
-    boost::numeric::bindings::blas::gemv( alpha, p,q,beta,r);
-    return r;
-#else
-    return boost::numeric::ublas::prec_prod(p,q);
-#endif
-  }
-  ///matrix-vector multiplication of transpose of matrix. TODO: this should be delegated to a matrix library
-  vector_type prec_prod_trans(const matrix_type &p, const vector_type &q) const{
-#ifdef ALPS_HAVE_LAPACK
-    vector_type r(p.size2());
-    double alpha=1.;
-    double beta=0.;
-    boost::numeric::bindings::blas::gemv( alpha, boost::numeric::ublas::trans(p),q,beta,r);
-    return r;
-#else
-    return boost::numeric::ublas::prec_prod(boost::numeric::ublas::trans(p),q);
-#endif
-  }
-  ///matrix-matrix multiplication. TODO: this should be delegated to a matrix library
-  matrix_type prec_prod(const matrix_type &p, const matrix_type &q) const{
-#ifdef ALPS_HAVE_LAPACK
-    matrix_type r(p.size1(), q.size2());
-    double alpha=1.;
-    double beta=0.;
-    boost::numeric::bindings::blas::gemm(alpha, p, q, beta, r);
-    return r;
-#else
-    return boost::numeric::ublas::prec_prod(p,q);
-#endif
-  }
-  ///matrix-matrix multiplication of transpose(p) with q. TODO: this should be delegated to a matrix library
-  matrix_type prec_prod_trans(const matrix_type &p, const matrix_type &q) const{
-#ifdef ALPS_HAVE_LAPACK
-    matrix_type r(p.size2(), q.size2());
-    double alpha=1.;
-    double beta=0.;
-    boost::numeric::bindings::blas::gemm(alpha, boost::numeric::ublas::trans(p), q, beta, r);
-    return r;
-#else
-    return boost::numeric::ublas::prec_prod(boost::numeric::ublas::trans(p),q);
-#endif
-  }
 private:
   ///discretized and normalized version of the default model.
   vector_type def_;

@@ -58,13 +58,13 @@ vector_type MaxEntHelper::transform_into_singular_space(vector_type A) const
     A[i] /= D;
     A[i] = A[i]==0. ? 0. : log(A[i]);
   }
-  return prec_prod(Vt(), A);
+  return maxent_prec_prod(Vt(), A);
 }
 
 //returns exp(V^T*u)*Default(i). This quantity is then usually called 'A'
 vector_type MaxEntHelper::transform_into_real_space(vector_type u) const
 {
-  u = prec_prod(trans(Vt()), u);
+  u = maxent_prec_prod(trans(Vt()), u);
   for (unsigned int i=0; i<u.size(); ++i) {
     u[i] = exp(u[i]);
     u[i] *= Default(i);
@@ -91,9 +91,9 @@ matrix_type MaxEntHelper::left_side(const vector_type& u) const
   for (unsigned int i=0; i<M.size1(); ++i) 
     for (unsigned int j=0; j<M.size2(); ++j) 
       M(i,j) *= A[i];
-  M = prec_prod(Vt(), M);
-  M = prec_prod(Sigma() ,M);
-  M = prec_prod(Sigma(), M);
+  M = maxent_prec_prod(Vt(), M);
+  M = maxent_prec_prod(Sigma() ,M);
+  M = maxent_prec_prod(Sigma(), M);
   M *= 2./ndat();
   return M;
 }
@@ -104,9 +104,9 @@ matrix_type MaxEntHelper::left_side(const vector_type& u) const
 //up to a factor of 2./ndat(). Compare this to Eq. D.12 in Sebastian's thesis
 vector_type MaxEntHelper::right_side(const vector_type& u) const
 {
-  vector_type b = 2./ndat()*(prec_prod(K(), transform_into_real_space(u)) - y());
-  b = prec_prod(trans(U()), b);
-  b = prec_prod(Sigma(), b);
+  vector_type b = 2./ndat()*(maxent_prec_prod(K(), transform_into_real_space(u)) - y());
+  b = maxent_prec_prod(trans(U()), b);
+  b = maxent_prec_prod(Sigma(), b);
   return b;
 }
 
@@ -118,8 +118,8 @@ double MaxEntHelper::step_length(const vector_type& delta, const vector_type& u)
   for (unsigned int i=0; i<L.size1(); ++i) 
     for (unsigned int j=0; j<L.size2(); ++j) 
       L(i,j) *= A[i];
-  L = prec_prod(Vt(), L);
-  return inner_prod(delta, prec_prod(L, delta));
+  L = maxent_prec_prod(Vt(), L);
+  return inner_prod(delta, maxent_prec_prod(L, delta));
 }
 
 double MaxEntHelper::convergence(const vector_type& u, const double alpha) const 
@@ -130,9 +130,9 @@ double MaxEntHelper::convergence(const vector_type& u, const double alpha) const
   for (unsigned int i=0; i<L.size1(); ++i) 
     for (unsigned int j=0; j<L.size2(); ++j) 
       L(i,j) *= A[i];
-  L = prec_prod(Vt(), L);
-  vector_type alpha_dSdu = -alpha*prec_prod(L, u);
-  vector_type dLdu = prec_prod(L, right_side(u));
+  L = maxent_prec_prod(Vt(), L);
+  vector_type alpha_dSdu = -alpha*maxent_prec_prod(L, u);
+  vector_type dLdu = maxent_prec_prod(L, right_side(u));
   vector_type diff = alpha_dSdu - dLdu;
   double denom = norm_2(alpha_dSdu) + norm_2(dLdu);
   denom = denom*denom;
@@ -141,7 +141,7 @@ double MaxEntHelper::convergence(const vector_type& u, const double alpha) const
 
 double MaxEntHelper::log_prob(const vector_type& u, const double alpha) const
 {
-  matrix_type L = prec_prod_trans(K(), K());
+  matrix_type L = maxent_prec_prod_trans(K(), K());
   const vector_type A = transform_into_real_space(u);
   for (unsigned int i=0; i<L.size1(); ++i)
     for (unsigned int j=0; j<L.size2(); ++j)
@@ -160,7 +160,7 @@ double MaxEntHelper::chi_scale_factor(vector_type A, const double chi_sq, const 
   for (unsigned int i=0; i<A.size(); ++i) 
     A[i] *= delta_omega(i);
   using namespace boost::numeric;
-  matrix_type L = prec_prod_trans(K(), K());
+  matrix_type L = maxent_prec_prod_trans(K(), K());
   for (unsigned int i=0; i<L.size1(); ++i)
     for (unsigned int j=0; j<L.size2(); ++j)
       L(i,j) *= sqrt(A[i])*sqrt(A[j]);
@@ -179,11 +179,11 @@ double MaxEntHelper::chi_scale_factor(vector_type A, const double chi_sq, const 
 //This function computes chi^2 as in equation D.6 in Sebastian's thesis
 double MaxEntHelper::chi2(const vector_type& A) const 
 {
-  vector_type del_G = prec_prod(K(), A) - y();
+  vector_type del_G = maxent_prec_prod(K(), A) - y();
   
   /*std::cout<<"in computation of chi2:"<<std::endl;
    for(int i=0;i<y().size();++i){
-   std::cout<<i<<" "<<prec_prod(K(), A)[i]<<" "<<y()[i]<<std::endl;
+   std::cout<<i<<" "<<maxent_prec_prod(K(), A)[i]<<" "<<y()[i]<<std::endl;
    }*/
   
   double c = 0;
@@ -194,8 +194,8 @@ double MaxEntHelper::chi2(const vector_type& A) const
 
 void MaxEntHelper::print_chi2(const vector_type& A, std::ostream &os) const 
 {
-  vector_type backcont=prec_prod(K(), A);
-  vector_type defaultm=prec_prod(K(), Default());
+  vector_type backcont=maxent_prec_prod(K(), A);
+  vector_type defaultm=maxent_prec_prod(K(), Default());
   os<<"#first column: index (Matsubara frequency). second column: fitted function. third: input data. fourth: default model."<<std::endl;
   for(int i=0;i<y().size();++i){
     os<<i<<" "<<backcont[i]<<" "<<y()[i]<<" "<<defaultm[i]<<std::endl;

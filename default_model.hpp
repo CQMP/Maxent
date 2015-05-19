@@ -176,7 +176,7 @@ protected:
 
 ///a model function that implements a sum of two Gaussians, each of them shifted by +/- shift.
 /// \f$D(\omega)=\frac{1}{2} \left( \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(\omega-shift)^2}{2\sigma^2}}+ \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(\omega+shift)^2}{2\sigma^2}}\right)\f$
-/// \f$\sigma\f$ has to be specified as a parameter SIGMA, and \f$shift_\f$ has to be specified as parameter SHIFT.
+/// \f$\sigma\f$ has to be specified as a parameter SIGMA, and \f$shift\f$ has to be specified as parameter SHIFT.
 /// Try this to try to model a system with 'side peaks'.
 class DoubleGaussian : public ShiftedGaussian
 {
