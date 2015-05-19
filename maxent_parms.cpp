@@ -356,30 +356,6 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
   //    sigma_[i] = static_cast<double>(p["SIGMA_"+boost::lexical_cast<std::string>(i)])/static_cast<double>(p["NORM"]);
   //}
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
-  // hillibilli? wtf??!?
-  if (p_data == "hillibilli" && !(p["PARTICLE_HOLE_SYMMETRY"]|true))  {
-    //      if (p["DATASPACE"]=="frequency" && !p.value_or_default("PARTICLE_HOLE_SYMMETRY",true))  {
-    std::cerr << "Kernel for complex data\n";
-    for (int i=0; i<ndat()/2; i+=2) {
-      std::complex<double> y(y_[i],y_[i+1]),s(sigma_[i],sigma_[i+1]);
-      y /= s;
-      y_[i] = y.real();
-      y_[i+1] = y.imag();
-      for (int j=0; j<ntab; ++j) {
-        std::complex<double> K(K_(i,j),K_(i+1,j));
-        K /= s;
-        K_(i,j) = K.real();
-        K_(i+1,j) = K.imag();
-      }
-    }
-  } else {
-    for (int i=0; i<ndat(); i++) {
-      y_[i] /= sigma_[i];
-      for (int j=0; j<ntab; ++j) {
-        K_(i,j) /= sigma_[i];
-      }
-    }
-  }
 
   //this enforces a strict normalization if needed.
   //not sure that this is done properly. recheck!
