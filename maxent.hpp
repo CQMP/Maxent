@@ -51,7 +51,9 @@ public :
 
   double omega_coord(const int i) const { return MaxEntParameters::omega_coord(i); }
 
+  ///getter function for the discretized default model
   double Default(const int i) const { return def_[i]; }  
+  ///getter function for the discretized default model
   const vector_type& Default() const { return def_; }
 
   //compute the 'free energy' Q (eq. 6.8 in Sebastian's thesis) according to equation D.8 in Sebastian's thesis
@@ -60,6 +62,7 @@ public :
     return 0.5*chi2(A)-alpha*entropy(A);
   }
 
+  ///number of points for the Matsubara data
   int ndat() const { return MaxEntParameters::ndat(); }
 
   vector_type transform_into_singular_space(vector_type A) const;
@@ -76,6 +79,7 @@ public :
   void print_chi2(const vector_type& u, std::ostream &os) const;
   double entropy(const vector_type& u) const;
 
+  ///matrix-vector multiplication. TODO: this should be delegated to a matrix library
   vector_type prec_prod(const matrix_type &p, const vector_type &q) const{
 #ifdef ALPS_HAVE_LAPACK
     vector_type r(p.size1());
@@ -87,6 +91,7 @@ public :
     return boost::numeric::ublas::prec_prod(p,q);
 #endif
   }
+  ///matrix-vector multiplication of transpose of matrix. TODO: this should be delegated to a matrix library
   vector_type prec_prod_trans(const matrix_type &p, const vector_type &q) const{
 #ifdef ALPS_HAVE_LAPACK
     vector_type r(p.size2());
@@ -98,6 +103,7 @@ public :
     return boost::numeric::ublas::prec_prod(boost::numeric::ublas::trans(p),q);
 #endif
   }
+  ///matrix-matrix multiplication. TODO: this should be delegated to a matrix library
   matrix_type prec_prod(const matrix_type &p, const matrix_type &q) const{
 #ifdef ALPS_HAVE_LAPACK
     matrix_type r(p.size1(), q.size2());
@@ -109,6 +115,7 @@ public :
     return boost::numeric::ublas::prec_prod(p,q);
 #endif
   }
+  ///matrix-matrix multiplication of transpose(p) with q. TODO: this should be delegated to a matrix library
   matrix_type prec_prod_trans(const matrix_type &p, const matrix_type &q) const{
 #ifdef ALPS_HAVE_LAPACK
     matrix_type r(p.size2(), q.size2());
@@ -121,7 +128,7 @@ public :
 #endif
   }
 private:
-
+  ///discretized and normalized version of the default model.
   vector_type def_;
 };
 

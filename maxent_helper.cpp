@@ -41,11 +41,8 @@ MaxEntParameters(p) , def_(nfreq())
 {
     for (int i=0; i<nfreq(); ++i)
         def_[i] = MaxEntParameters::Default().D(omega_coord(i)) * delta_omega(i);
+    //normalizing the default model
     def_ /= sum(def_);
-    std::ofstream out;
-    out.open("deltaOmega.dat");
-    for (int i=0; i<nfreq(); ++i)
-        out << i<<" "<<delta_omega(i) << " "<<def_[i]<<std::endl;
 }
 
 
