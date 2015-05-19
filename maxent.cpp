@@ -27,7 +27,8 @@
 
 #include "maxent.hpp"
 #include <alps/ngs/mcoptions.hpp>
-
+#include <boost/lexical_cast.hpp>
+#include <boost/filesystem/path.hpp>
 
 int main(int argc, char** argv)
 {
@@ -36,9 +37,13 @@ int main(int argc, char** argv)
     exit(RUN_ALL_TESTS());
   }
   alps::mcoptions options(argc, argv);
-
-  alps::params parms(options.input_file);
-  if(!parms.defined("BASENAME"))
+  boost::filesystem::path input_path(options.input_file);
+  alps::params parms;
+  if(input_path.extension() == ".h5")
+    parms =alps::params(alps::hdf5::archive(options.input_file));
+  else
+    parms =alps::params(options.input_file);
+   
     parms["BASENAME"]=options.output_file;
 
   MaxEntSimulation my_sim(parms);
