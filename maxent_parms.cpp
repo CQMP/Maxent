@@ -35,6 +35,7 @@
 #include <boost/numeric/bindings/upper.hpp>
 #include <alps/hdf5/vector.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 
   // We provide a file with data points and error bars, the latter are used only if
   // COVARIANCE_MATRIX is not set. The format is
@@ -164,6 +165,8 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
   K_.resize(ndat_, ntab);
   std::string p_data = p["DATASPACE"]|"time";
   std::string p_kernel = p["KERNEL"]|"fermionic";
+  boost::to_lower(p_data);
+  boost::to_lower(p_kernel);
   if(p_data=="time") {
     std::cerr << "assume time space data" << std::endl;
     if (p_kernel == "fermionic") {
@@ -196,7 +199,7 @@ void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const 
       }    
     }
     //for zero temperature, only positive frequency matters 
-    else if (p_kernel == "Boris") {
+    else if (p_kernel == "boris") {
       std::cerr << "Using Boris' kernel" << std::endl;
       for (int i=0; i<ndat(); ++i) {
         double tau = p["TAU_"+boost::lexical_cast<std::string>(i)]; 

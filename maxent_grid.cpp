@@ -26,16 +26,18 @@
  *****************************************************************************/
 #include "maxent_grid.hpp"
 #include<cmath>
+#include <boost/algorithm/string.hpp>    
 
 grid::grid(const alps::params &p):
 nfreq_(p["NFREQ"]),
 t_array_(nfreq_+1){
   std::string p_f_grid = p["FREQUENCY_GRID"];
-  if (p_f_grid=="Lorentzian") {
+  boost::to_lower(p_f_grid);
+  if (p_f_grid =="lorentzian") {
     double cut = p["CUT"]|0.01;
     initialize_lorentzian_grid(cut);
   }
-  else if (p_f_grid=="half Lorentzian") {
+  else if (p_f_grid=="half lorentzian") {
     double cut = p["CUT"]|0.01;
     initialize_half_lorentzian_grid(cut);
   }
