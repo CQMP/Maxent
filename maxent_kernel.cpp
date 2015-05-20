@@ -27,6 +27,7 @@
 #include "maxent_kernel.hpp"
 #include <cmath>
 #include <boost/algorithm/string.hpp>    
+#include <boost/lexical_cast.hpp>
 
 kernel::kernel(const alps::params &p, const vector_type& freq):
 ndat_(p["NDAT"]),
