@@ -177,6 +177,26 @@ boost::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, st
     boost::shared_ptr<Model> Mod(new QuadraticRiseExpDecay(parms));
     return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
+  else if (p_name == "lorentzian") {
+    std::cout << "Using Lorentzian default model" << std::endl;
+    boost::shared_ptr<Model> Mod(new Lorentzian(parms));
+    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+  }
+  else if (p_name == "twolorentzians" || p_name == "two lorentzians") {
+    std::cout << "Using sum of two Lorentzians default model" << std::endl;
+    boost::shared_ptr<Model> Mod(new TwoLorentzians(parms));
+    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+  }
+  else if (p_name == "shifted lorentzian") {
+    std::cout << "Using shifted Lorentzian default model" << std::endl;
+    boost::shared_ptr<Model> Mod(new ShiftedLorentzian(parms));
+    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+  }
+  else if (p_name == "double lorentzian") {
+    std::cout << "Using double Lorentzian default model" << std::endl;
+    boost::shared_ptr<Model> Mod(new DoubleLorentzian(parms));
+    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+  }
   else { 
     std::cout << "Using tabulated default model" << std::endl;
     boost::shared_ptr<Model> Mod(new TabFunction(parms, name));
