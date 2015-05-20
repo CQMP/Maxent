@@ -74,6 +74,7 @@ private:
 protected:
 
   void setup_kernel(const alps::params& p, const int ntab, const vector_type& freq);
+  void adjust_kernel(const alps::params& p, const int ntab, const vector_type& freq);
   ///vector of Matsubara data
   vector_type y_;
   ///vector of errors on y

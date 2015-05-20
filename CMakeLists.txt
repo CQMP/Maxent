@@ -18,6 +18,7 @@ maxent_helper.cpp
 maxent_parms.cpp
 maxent_parmsTest.cpp
 maxent_grid.cpp
+maxent_kernel.cpp
 maxent_simulation.cpp
 default_modelTest.cpp
 default_model.cpp

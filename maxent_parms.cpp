@@ -26,6 +26,7 @@
  *****************************************************************************/
 
 #include "maxent.hpp"
+#include "maxent_kernel.hpp"
 #include <alps/config.h> // needed to set up correct bindings
 #include <boost/numeric/bindings/ublas.hpp>
 #include <boost/numeric/ublas/matrix_proxy.hpp>
@@ -159,149 +160,9 @@ y_(ndat_),sigma_(ndat_),K_(),grid_(p)
   }
 }
 
-void ContiParameters::setup_kernel(const alps::params& p, const int ntab, const vector_type& freq)
-{
-  using namespace boost::numeric;
-  K_.resize(ndat_, ntab);
-  std::string p_data = p["DATASPACE"]|"time";
-  std::string p_kernel = p["KERNEL"]|"fermionic";
-  boost::to_lower(p_data);
-  boost::to_lower(p_kernel);
-  if(p_data=="time") {
-    std::cerr << "assume time space data" << std::endl;
-    if (p_kernel == "fermionic") {
-      std::cerr << "Using fermionic kernel" << std::endl;
-      for (int i=0; i<ndat(); ++i) {
-        double tau;
-        if (p.defined("TAU_"+boost::lexical_cast<std::string>(i)))
-          tau = p["TAU_"+boost::lexical_cast<std::string>(i)]; 
-        else 
-          tau = i / ((ndat()-1)* T_);
-        for (int j=0; j<ntab; ++j) {
-          double omega = freq[j]; //Default().omega_of_t(double(j)/(ntab-1));
-          K_(i,j) =  -1. / (std::exp(omega*tau) + std::exp(-omega*(1./T_-tau)));
-        }
-      }
-    }
-    else if (p_kernel == "bosonic") {
-      std::cerr << "Using bosonic kernel" << std::endl;
-      for (int i=0; i<ndat(); ++i) {
-        double tau;
-        if (p.defined("TAU_"+boost::lexical_cast<std::string>(i)))
-          tau = p["TAU_"+boost::lexical_cast<std::string>(i)]; 
-        else 
-          tau = i / ((ndat()-1) * T_);
-        K_(i,0) = T_;
-        for (int j=1; j<ntab; ++j) {
-          double omega = freq[j];
-          K_(i,j) = 0.5*omega * (std::exp(-omega*tau) + std::exp(-omega*(1./T_-tau))) / (1 - std::exp(-omega/T_));
-        }
-      }    
-    }
-    //for zero temperature, only positive frequency matters 
-    else if (p_kernel == "boris") {
-      std::cerr << "Using Boris' kernel" << std::endl;
-      for (int i=0; i<ndat(); ++i) {
-        double tau = p["TAU_"+boost::lexical_cast<std::string>(i)]; 
-        for (int j=0; j<ntab; ++j) {
-          double omega = freq[j];
-          K_(i,j) = -std::exp(-omega*tau);
-        }
-      }    
-    }
-    else 
-      boost::throw_exception(std::invalid_argument("unknown integration kernel"));
-  } 
-  else if (p_data == "frequency" && p_kernel == "fermionic" &&
-      (p["PARTICLE_HOLE_SYMMETRY"]|false)) {
-    std::cerr << "using particle hole symmetric kernel for fermionic data" << std::endl;
-    for (int i=0; i<ndat(); ++i) {
-      double omegan = (2*i+1)*M_PI*T_;
-      for (int j=0; j<ntab; ++j) {
-        double omega = freq[j]; 
-        K_(i,j) =  -omegan / (omegan*omegan + omega*omega);
-      }
-    }
-  } 
-  else if (p_data == "frequency" && p_kernel == "bosonic" &&
-      (p["PARTICLE_HOLE_SYMMETRY"]|false)) {
-    //std::cerr << "using particle hole symmetric kernel for bosonic data" << std::endl;
-    //std::cerr<<"ndat is: "<<ndat()<<" ntab: "<<ntab<<std::endl;
-    //std::cerr<<"freqs: "<<freq[0]<<" "<<freq[ntab-1]<<std::endl;
 
-    for (int i=0; i<ndat(); ++i) {
-      double Omegan = (2*i)*M_PI*T_;
-      for (int j=0; j<ntab; ++j) {
-        double Omega = freq[j]; 
-        if(Omega ==0) throw std::runtime_error("Bosonic kernel is singular at frequency zero. Please use grid w/o evaluation at zero.");
-        K_(i,j) =  -Omega*Omega / (Omegan*Omegan + Omega*Omega);
-      }
-    }
-    //double z=0;
-    //for (int i=0; i<ndat(); ++i) {
-    //  for (int j=0; j<ntab; ++j) {
-    //    z+=K_(i,j);
-    //  }
-    //}
-    //std::cout<<"debug kernel checksum is: "<<z<<std::endl;
-  } 
-  else if (p_data == "frequency" && p_kernel == "anomalous" &&
-      (p["PARTICLE_HOLE_SYMMETRY"]|false)) {
-    std::cerr << "using particle hole symmetric kernel for anomalous fermionic data" << std::endl;
-    for(int i=0;i<ndat();++i){
-      double omegan = (2*i+1)*M_PI*T_;
-      for (int j=0; j<ntab; ++j) {
-        double omega = freq[j]; 
-        K_(i,j) =  omega*omega / (omegan*omegan + omega*omega);
-      }
-    }
-  } 
-  else if (p_data == "frequency") {
-    std::cerr << "assume frequency space data" << std::endl;
-    ublas::matrix<std::complex<double>, ublas::column_major> Kc(ndat_/2, ntab);
-    if (p_kernel == "fermionic") {
-      std::cerr << "Using fermionic kernel" << std::endl;
-      for (int i=0; i<ndat()/2; ++i) {
-        std::complex<double> iomegan(0, (2*i+1)*M_PI*T_);
-        for (int j=0; j<ntab; ++j) {
-          double omega = freq[j]; 
-          Kc(i,j) =  1. / (iomegan - omega);
-        }
-      }
-    }
-    else if (p_kernel == "bosonic") {
-      std::cerr << "Using bosonic kernel" << std::endl;
-      for (int i=0; i<ndat()/2; ++i) {
-        std::complex<double> iomegan(0, 2*i*M_PI*T_);
-        for (int j=1; j<ntab; ++j) {
-          double omega = freq[j]; 
-          //Kc(i,j) =  -1. / (iomegan - omega);
-          Kc(i,j) =  omega / (iomegan - omega);
-        }
-      }    
-    }
-    else if (p_kernel == "anomalous"){
-      std::cerr<<"Using general anomalous kernel omega / (iomega_n - omega) for, e.g., omega*Delta"<<std::endl;
-      for (int i=0; i<ndat()/2; ++i) {
-        std::complex<double> iomegan(0, (2*i+1)*M_PI*T_);
-        for (int j=1; j<ntab; ++j) {
-          double omega = freq[j];
-          Kc(i,j) =  -omega / (iomegan - omega);
-        }
-      }   
-    }
-    else 
-      boost::throw_exception(std::invalid_argument("unknown integration kernel"));    
-    for (int i=0; i<ndat(); i+=2) {
-      for (int j=1; j<ntab; ++j) {
-        K_(i,j) = Kc(i/2,j).real();
-        K_(i+1,j) = Kc(i/2,j).imag();
-      }
-    }
-  }
-  else
-    boost::throw_exception(std::invalid_argument("unknown value for parameter DATASPACE"));
-  //  vector_type sigma_(ndat());
+void ContiParameters::adjust_kernel(const alps::params& p, const int ntab, const vector_type& freq){
+  using namespace boost::numeric;
   if (p.defined("COVARIANCE_MATRIX")) {
     if(!(p.defined("DATA_IN_HDF5") && (p["DATA_IN_HDF5"]|false))) {
       cov_.resize(ndat(),ndat());
@@ -389,7 +250,11 @@ MaxEntParameters::MaxEntParameters(const alps::params& p) :
     delta_omega_[i] = Default().omega_of_t(grid_(i+1)) - Default().omega_of_t(grid_(i));
   }
 
-  setup_kernel(p, nfreq(), omega_coord_);
+  //build a kernel
+  kernel ker(p,omega_coord_);
+  K_=ker();
+
+  adjust_kernel(p, nfreq(), omega_coord_);
 
   //perform the SVD decomposition K = U Sigma V^T
   vector_type S(ndat());

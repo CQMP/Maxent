@@ -6,7 +6,9 @@
 !maxent_parms.cpp
 !maxent_parmsTest.cpp
 !maxent_grid.cpp
+!maxent_kernel.cpp
 !maxent_grid.hpp
+!maxent_kernel.hpp
 !maxent_parms.h
 !maxent_simulation.cpp
 !maxent_blas.hpp
