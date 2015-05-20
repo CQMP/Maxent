@@ -188,6 +188,78 @@ public:
     return 0.5*(Gaussian::operator()(omega-shift_) + Gaussian::operator()(omega+shift_));
   }
 };
+///a model function that implements a Lorentzian, i.e.
+/// \f$D(\omega)=\dfrac{1}{\pi\gamma\left[1+\left(\frac{\omega}{\gamma}\right)^{2}\right]}\f$
+///
+/// \f$\gamma\f$ is specified as a parameter GAMMA
+/// This is another helpful function to try if the Gaussian decays too quickly
+class Lorentzian : public Model
+{
+public:
+  Lorentzian(const alps::params& p): gamma_(static_cast<double>(p["GAMMA"])) {}
+
+  virtual double operator()(const double omega){
+    return 1/(M_PI*gamma_) * 1.0/(1+(omega/gamma_)*(omega/gamma_));
+  }
+private:
+  const double gamma_;
+};
+
+///a model function that implements a Lorentzian centered at some SHIFT, i.e.
+/// \f$D(\omega)=\dfrac{1}{\pi\gamma\left[1+\left(\frac{\omega-shift}{\gamma}\right)^{2}\right]}\f$
+///
+/// \f$\gamma\f$ is specified as a parameter GAMMA, and shift has to be specified as parameter SHIFT
+class ShiftedLorentzian : public Lorentzian
+{
+public:
+  ShiftedLorentzian(const alps::params& p): 
+  Lorentzian(p), shift_(static_cast<double>(p["SHIFT"])) {}
+
+  double operator()(const double omega){
+    return Lorentzian::operator()(omega-shift_);
+  }
+protected:
+  const double shift_;
+};
+
+///a model function that implements two Lorentzians with arbitrary relative norms and arbitrary points around which they are centered.
+///
+/// \f$\gamma\f$ has to be specified as a parameter GAMMA1 and GAMMA2 for the two Lorentzians.
+/// shift has to be defined as SHIFT1 and SHIFT2 for each Lorentzian.
+///
+/// \f$2D(\omega)=\dfrac{1}{\pi\gamma_{1}\left[1+\left(\frac{\omega-shift1}{\gamma_{1}}\right)^{2}\right]}+\dfrac{1}{\pi\gamma_{2}\left[1+\left(\frac{\omega-shift2}{\gamma_{2}}\right)^{2}\right]}\f$
+
+class TwoLorentzians : public Model
+{
+public:
+  TwoLorentzians(const alps::params& p) : gamma1_(static_cast<double>(p["GAMMA1"])),
+  gamma2_(static_cast<double>(p["GAMMA2"])),
+  shift1(static_cast<double>(p["SHIFT1"]|0.0)),
+  shift2(static_cast<double>(p["SHIFT2"])) {}
+
+  virtual double operator()(const double omega) {
+    return 1.0/(2*M_PI*gamma1_) * 1.0/(1+((omega-shift1)*(omega-shift1)/gamma1_/gamma1_))+1.0/(2*M_PI*gamma2_) * 1.0/(1+((omega-shift2)*(omega-shift2)/gamma2_/gamma2_));
+  }
+
+private:
+  const double gamma1_,gamma2_,shift1,shift2;
+};
+
+
+///a model function that implements a sum of two Lorentzians, each of them shifted by +/- shift.
+/// \f$2D(\omega)=\dfrac{1}{\pi\gamma\left[1+\left(\frac{\omega-shift}{\gamma}\right)^{2}\right]}+\dfrac{1}{\pi\gamma\left[1+\left(\frac{\omega+shift}{\gamma}\right)^{2}\right]}\f$
+/// \f$\gamma\f$ has to be specified as a parameter GAMMA, and \f$shift\f$ has to be specified as parameter SHIFT.
+/// Try this to try to model a system with 'side peaks', along with DoubleGaussian
+class DoubleLorentzian : public ShiftedLorentzian
+{
+public:
+  DoubleLorentzian(const alps::params& p) :
+    ShiftedLorentzian(p){}
+
+  double operator()(const double omega) {
+    return 0.5*(Lorentzian::operator()(omega-shift_) + Lorentzian::operator()(omega+shift_));
+  }
+};
 
 class LinearRiseExpDecay : public Model{
 public:
