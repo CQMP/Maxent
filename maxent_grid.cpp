@@ -83,7 +83,7 @@ void grid::initialize_quadratic_grid(double spread) {
 
   std::vector<double> temp(nfreq_);
   double t = 0;
-  for (int i = 0; i < nfreq_ - 1; ++i) {
+  for (int i = 0; i < nfreq_; ++i) {
     double a = double(i) / (nfreq_ - 1);
     double factor = 4 * (spread - 1) * (a * a - a) + spread;
     factor /= double(nfreq_ - 1) / (3. * (nfreq_ - 2))
@@ -93,7 +93,7 @@ void grid::initialize_quadratic_grid(double spread) {
     temp[i] = t;
   }
   t_array_[0] = 0.;
-  for (int i = 1; i < nfreq_; ++i)
+  for (int i = 1; i < nfreq_+1; ++i)
     t_array_[i] = temp[i - 1] / temp[temp.size() - 1];
 }
 
