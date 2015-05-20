@@ -144,7 +144,7 @@ T_(p["T"]|1./static_cast<double>(p["BETA"]))
 
     for (int i=0; i<ndat_; i+=2) {
       //TODO: understand the j=1 here
-      for (int j=1; j<nfreq_; ++j) {
+      for (int j=0; j<nfreq_; ++j) {
         K_(i,j) = Kc(i/2,j).real();
         K_(i+1,j) = Kc(i/2,j).imag();
       }

@@ -160,24 +160,52 @@ y_(ndat_),sigma_(ndat_),K_(),grid_(p)
   }
 }
 
+void ContiParameters::enforce_strict_normalization(double sigma_normalization,
+    double norm, const int ntab) {
+  std::cout << "enforcing strict normalization." << std::endl;
+  double artificial_norm_enforcement_sigma = sigma_normalization / norm;
+  for (int j = 0; j < ntab; ++j) {
+    K_(ndat() - 1, j) = 1. / artificial_norm_enforcement_sigma;
+  }
+  y_[ndat() - 1] = 1. / artificial_norm_enforcement_sigma;
+}
+
+void ContiParameters::scale_data_with_error(const int ntab) {
+  //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
+  for (int i = 0; i < ndat(); i++) {
+    y_[i] /= sigma_[i];
+    for (int j = 0; j < ntab; ++j) {
+      K_(i, j) /= sigma_[i];
+    }
+  }
+}
+
+void ContiParameters::read_covariance_matrix_from_textfile(
+    const std::string& fname) {
+  cov_.resize(ndat(), ndat());
+  std::cerr << "Reading covariance matrix\n";
+  std::ifstream covstream(fname.c_str());
+  if (!covstream)
+    boost::throw_exception(
+        std::invalid_argument(
+            "could not open covariance matrix file: " + fname));
+
+  int i, j;
+  double covariance;
+  while (covstream) {
+    covstream >> i >> j >> covariance;
+    if (i < ndat() && j < ndat())
+      cov_(i, j) = covariance;
+  }
+}
 
 void ContiParameters::adjust_kernel(const alps::params& p, const int ntab, const vector_type& freq){
   using namespace boost::numeric;
   if (p.defined("COVARIANCE_MATRIX")) {
+    //this is probably the wrong place to do this. Read should be done where we have the hdf5 read of the covariance matrix!
     if(!(p.defined("DATA_IN_HDF5") && (p["DATA_IN_HDF5"]|false))) {
-      cov_.resize(ndat(),ndat());
-      std::cerr << "Reading covariance matrix\n";
-      std::string fname = p["COVARIANCE_MATRIX"]|"";
-      std::ifstream covstream(fname.c_str());
-      if (!covstream)
-        boost::throw_exception(std::invalid_argument("could not open covariance matrix file: "+fname));
-      int i, j;
-      double covariance;
-      while (covstream) {
-        covstream >> i >> j >> covariance;
-        if (i<ndat() && j<ndat())
-          cov_(i,j) = covariance;
-      }
+      std::string fname = p["COVARIANCE_MATRIX"];
+      read_covariance_matrix_from_textfile(fname);
     }
     vector_type var(ndat());
     bindings::lapack::syev('V', bindings::upper(cov_) , var, bindings::lapack::optimal_workspace());
@@ -212,27 +240,15 @@ void ContiParameters::adjust_kernel(const alps::params& p, const int ntab, const
         std::cout << "# " << var(new_ndat_+i) << "\n";
     }
   } 
-  //else {
-  //  for (int i=0; i<ndat(); ++i)
-  //    sigma_[i] = static_cast<double>(p["SIGMA_"+boost::lexical_cast<std::string>(i)])/static_cast<double>(p["NORM"]);
-  //}
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
-    for (int i=0; i<ndat(); i++) {
-        y_[i] /= sigma_[i];
-        for (int j=0; j<ntab; ++j) {
-            K_(i,j) /= sigma_[i];
-        }
-    }
+  scale_data_with_error(ntab);
 
   //this enforces a strict normalization if needed.
   //not sure that this is done properly. recheck!
   if(p["ENFORCE_NORMALIZATION"]|false) {
-    std::cout<<"enforcing strict normalization."<<std::endl;
-    double artificial_norm_enforcement_sigma=static_cast<double>(p["SIGMA_NORMALIZATION"])/static_cast<double>(p["NORM"]);
-    for(int j=0;j<ntab;++j){
-      K_(ndat()-1,j) = 1./artificial_norm_enforcement_sigma;
-    }
-    y_[ndat()-1]=1./artificial_norm_enforcement_sigma;
+    double sigma_normalization=p["SIGMA_NORMALIZATION"];
+    double norm=p["NORM"];
+    enforce_strict_normalization(sigma_normalization, norm, ntab);
   }
   std::cerr << "Kernel set up\n";
 }

@@ -70,10 +70,15 @@ private:
   void read_data_from_text_file(const alps::params& p);
   void read_data_from_hdf5_file(const alps::params& p);
   void read_data_from_param_file(const alps::params& p);
+  ///This function removes the last element from the kernel and replaces it with a condition that enforces a strict normalization
+  void enforce_strict_normalization(double sigma_normalization, double norm,
+      const int ntab);
+  ///This function scales both the y (data) and the kernel with the errors
+  void scale_data_with_error(const int ntab);
+  void read_covariance_matrix_from_textfile(const std::string& fname);
 
 protected:
 
-  void setup_kernel(const alps::params& p, const int ntab, const vector_type& freq);
   void adjust_kernel(const alps::params& p, const int ntab, const vector_type& freq);
   ///vector of Matsubara data
   vector_type y_;
