@@ -70,16 +70,16 @@ private:
   void read_data_from_text_file(const alps::params& p);
   void read_data_from_hdf5_file(const alps::params& p);
   void read_data_from_param_file(const alps::params& p);
-  ///This function removes the last element from the kernel and replaces it with a condition that enforces a strict normalization
-  void enforce_strict_normalization(double sigma_normalization, double norm,
-      const int ntab);
-  ///This function scales both the y (data) and the kernel with the errors
-  void scale_data_with_error(const int ntab);
-  void read_covariance_matrix_from_textfile(const std::string& fname);
+  void read_covariance_matrix_from_text_file(const std::string& fname);
 
 protected:
 
-  void adjust_kernel(const alps::params& p, const int ntab, const vector_type& freq);
+  void decompose_covariance_matrix(const alps::params& p);
+  ///This function scales both the y (data) and the kernel with the errors
+  void scale_data_with_error(const int ntab);
+  ///This function removes the last element from the kernel and replaces it with a condition that enforces a strict normalization
+  void enforce_strict_normalization(double sigma_normalization, double norm, const int ntab);
+
   ///vector of Matsubara data
   vector_type y_;
   ///vector of errors on y
@@ -122,6 +122,11 @@ private:
   vector_type delta_omega_;
   ///the number of singular values
   int ns_;
+
+  ///compute the minimal chi2 that is possible given the SVD of the kernel
+  void compute_minimal_chi2() const;
+  void truncate_to_singular_space(const vector_type& S);
+  void singular_value_decompose_kernel(bool verbose, vector_type& S);
 };
 
     

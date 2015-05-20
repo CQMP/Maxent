@@ -34,7 +34,6 @@
 #include <boost/numeric/bindings/ublas.hpp>
 #include <boost/numeric/bindings/upper.hpp>
 #include <boost/numeric/bindings/lower.hpp>
-#include <boost/math/special_functions/fpclassify.hpp>
 
 MaxEntHelper::MaxEntHelper(const alps::params& p) :
 MaxEntParameters(p) , def_(nfreq())

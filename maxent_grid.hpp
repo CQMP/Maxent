@@ -35,6 +35,7 @@ public:
   const std::vector<double> &t_array() const{return t_array_;}
   double operator()(int i)const{return t_array_[i];}
 private:
+  ///the number of (real) frequency point for this grid.
   int nfreq_;
   std::vector<double> t_array_;
 
