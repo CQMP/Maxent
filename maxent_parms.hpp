@@ -25,8 +25,7 @@
 *
 *****************************************************************************/
 
-#ifndef ALPS_TOOL_MAXENT_PARMS_HPP
-#define ALPS_TOOL_MAXENT_PARMS_HPP
+#pragma once
 
 #include "default_model.hpp"
 #include "maxent_grid.hpp"
@@ -125,9 +124,8 @@ private:
 
   ///compute the minimal chi2 that is possible given the SVD of the kernel
   void compute_minimal_chi2() const;
+  ///reduce the matrices to the number of non-zero singular values
   void truncate_to_singular_space(const vector_type& S);
+  ///take the kernel and compute its singular value decomposition
   void singular_value_decompose_kernel(bool verbose, vector_type& S);
 };
-
-    
-#endif

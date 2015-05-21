@@ -28,11 +28,12 @@
 #include<vector>
 #include<alps/ngs/params.hpp>
 #include"maxent_blas.hpp"
-
+///enum that enumerates if we're in time or in frequency
 enum dataspace_type{
   time_dataspace,
   frequency_dataspace
 };
+///we have a range of different kernels that all need different input parameters. This enum enumerates them.
 enum kernel_type{
   time_fermionic_kernel,
   time_bosonic_kernel,

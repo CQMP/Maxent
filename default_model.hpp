@@ -75,7 +75,9 @@ public:
   double t_of_omega(const double omega) const { return (omega-omega_min)/(omega_max-omega_min); }
 
 protected:
+  ///highest frequency of grid
   const double omega_max;
+  ///lowest frequency of grid
   const double omega_min;
 };
 
@@ -85,6 +87,7 @@ class FlatDefaultModel : public DefaultModel
 {
 public:
 
+  ///construct a default model that is constant (value 1/(omega_max-omega_min) ) everywhere
   FlatDefaultModel(const alps::params& p) : DefaultModel(p) {}
 
   double omega(const double x) const {
