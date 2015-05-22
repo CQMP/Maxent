@@ -127,6 +127,7 @@ private:
   void compute_minimal_chi2() const;
   void truncate_to_singular_space(const vector_type& S);
   void singular_value_decompose_kernel(bool verbose, vector_type& S);
+  void check_high_frequency_limit(const vector_type& y);
 };
 
     
