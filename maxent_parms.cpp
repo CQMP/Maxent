@@ -286,7 +286,19 @@ void MaxEntParameters::singular_value_decompose_kernel(bool verbose,
     boost::throw_exception(
         std::logic_error("all singular values smaller than the precision"));
 }
+void MaxEntParameters::check_high_frequency_limit(const vector_type& y){
+    //we know that the limit of a green's function is ~ -1/iwn
+    //this checks that we have a good high frequency limit
+    //within the tolerance of the error bar
+    int n = (ndat()-2)/2; //this is the real n; due to weird vector structure
 
+    //limit = G(iwn)*iwn
+    double limit = y(ndat()-1)*(2*n+1)*M_PI*T();
+    if(std::abs(1+limit)>sigma(ndat()-1)){
+        std::cerr<<"The high frequency limit is not 1!: " << limit
+        <<" Check norm?"<< std:: endl;
+    }
+}
 MaxEntParameters::MaxEntParameters(const alps::params& p) :
     ContiParameters(p),
     Default_(make_default_model(p, "DEFAULT_MODEL")),
@@ -307,6 +319,8 @@ MaxEntParameters::MaxEntParameters(const alps::params& p) :
   if (p.defined("COVARIANCE_MATRIX"))
     decompose_covariance_matrix(p);
 
+  check_high_frequency_limit(y());
+
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
   scale_data_with_error(ndat());
 
@@ -316,7 +330,7 @@ MaxEntParameters::MaxEntParameters(const alps::params& p) :
     double norm=p["NORM"];
     enforce_strict_normalization(sigma_normalization, norm, ndat());
   }
-  std::cerr << "Kernel set up\n";
+  std::cerr << "Kernel is set up\n";
 
   vector_type S(ndat());
   bool verbose=p["VERBOSE"]|false;
