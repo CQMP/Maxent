@@ -100,13 +100,13 @@ TEST(TabFunction, FailOutsideRange){
     FAIL() << "Expected to fail parameters out of range";
   }
   catch(std::logic_error const & err){
+    boost::filesystem::remove(tf);
     EXPECT_EQ(err.what(),std::string("Input range outside of default model"));
   }
   catch(...){
+    boost::filesystem::remove(tf);
     FAIL() << "expected parameters out of range error";
   }
-  boost::filesystem::remove(tf);
-  
 }
 TEST(Gaussian, TwoGaussiansIsGaussian){
   alps::params p;
