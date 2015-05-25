@@ -87,6 +87,27 @@ TEST(TabFunction, OutsideMinMaxIsZero){
   EXPECT_EQ(T(21.),0.);
 
 }
+TEST(TabFunction, FailOutsideRange){
+  //tab file is [-20,20]
+  //ask for range [-20,25] so it will fail
+  alps::params p; p["OMEGA_MAX"]=25; p["OMEGA_MIN"]=-20;
+  std::string tabparamname="TABFILE";
+  std::string tf=alps::temporary_filename("tab_file.dat");
+  p[tabparamname]=tf;
+  write_minimal_tab_file(tf);
+  try{
+    TabFunction T(p, tabparamname);
+    FAIL() << "Expected to fail parameters out of range";
+  }
+  catch(std::logic_error const & err){
+    EXPECT_EQ(err.what(),std::string("Input range outside of default model"));
+  }
+  catch(...){
+    FAIL() << "expected parameters out of range error";
+  }
+  boost::filesystem::remove(tf);
+  
+}
 TEST(Gaussian, TwoGaussiansIsGaussian){
   alps::params p;
   p["SIGMA1"]=1;

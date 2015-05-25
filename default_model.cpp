@@ -49,6 +49,9 @@ TabFunction::TabFunction(const alps::params& p, std::string const& name){
   }
   double omega_max = p["OMEGA_MAX"];
   double omega_min(static_cast<double>(p["OMEGA_MIN"]|-omega_max)); //we had a 0 here in the bosonic case. That's not a good idea if you're continuing symmetric functions like chi(omega)/omega. Change omega_min to zero manually if you need it.
+  if(Omega_[0]>omega_min || Omega_.back()<omega_max)
+      boost::throw_exception(std::logic_error(std::logic_error("Input range outside of default model")));
+    
   if (Omega_[0]!=omega_min || Omega_.back()!=omega_max){
     std::cout<<"Omega[ 0] "<<Omega_[0]<<" omega min: "<<omega_min<<std::endl;
     std::cout<<"Omega[-1] "<<Omega_.back()<<" omega max: "<<omega_max<<std::endl;
