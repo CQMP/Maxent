@@ -287,18 +287,33 @@ void MaxEntParameters::singular_value_decompose_kernel(bool verbose,
         std::logic_error("all singular values smaller than the precision"));
 }
 void MaxEntParameters::check_high_frequency_limit(const vector_type& y){
-    //we know that the limit of a green's function is ~ -1/iwn
+    //TODO: expand check into time/bosonic domain
+    //we know that the limit of a green's function is ~ -1/iw_{n}
     //this checks that we have a good high frequency limit
     //within the tolerance of the error bar
     int n = (ndat()-2)/2; //this is the real n; due to weird vector structure
 
     //limit = G(iwn)*iwn
-    double limit = y(ndat()-1)*(2*n+1)*M_PI*T();
+    std::complex<double> iwn(0,(2*n+1)*M_PI*T());
+    double limit = y(ndat()-1)*iwn.imag();
     if(std::abs(1+limit)>sigma(ndat()-1)){
-        std::cerr<<"The high frequency limit is not 1!: " << limit
+        std::cerr<<"The high frequency limit is not 1!: " << std::abs(limit)
         <<" Check norm?"<< std:: endl;
     }
+    //now backcontinue default model and check high frequency limit
+    // G(iw_{n})=\sum_{m}K_{nm}A_{m}
+    std::complex<double> G;
+    iwn.imag()= (2*2000+1)*M_PI*T();
+    for(int j=0;j<nfreq();j++){
+        G+= 1.0/(iwn-omega_coord(j))*Default().D(omega_coord(j)) * delta_omega(j);
+    }
+    limit = G.imag()*iwn.imag();
+    if(std::abs(1+limit)>.01){
+        std::cerr<<"The high frequency limit of the default model is not 1!: "
+        << std::abs(limit) <<" Check norm?"<< std:: endl;
+    }
 }
+
 MaxEntParameters::MaxEntParameters(const alps::params& p) :
     ContiParameters(p),
     Default_(make_default_model(p, "DEFAULT_MODEL")),
@@ -318,8 +333,10 @@ MaxEntParameters::MaxEntParameters(const alps::params& p) :
   //scale lhs and rhs according to errors, etc.
   if (p.defined("COVARIANCE_MATRIX"))
     decompose_covariance_matrix(p);
-
-  check_high_frequency_limit(y());
+    
+  if(boost::lexical_cast<std::string>(p["DATASPACE"])=="frequency"){
+    check_high_frequency_limit(y());
+  }
 
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
   scale_data_with_error(ndat());
