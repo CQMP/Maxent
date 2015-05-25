@@ -114,7 +114,9 @@ T_(p["T"]|1./static_cast<double>(p["BETA"]))
   else{
     ublas::matrix<std::complex<double>, ublas::column_major> Kc(ndat_/2, nfreq_);
     if (ktype_==frequency_fermionic_kernel) {
-      ///TODO: note that this is WEIRD: if we use no ph symmetry, NDAT uses half as many physical frequencies as with ph symmetry!
+      ///ndat/2 is defined as such below because ndat=number of points inputed
+      ///if ph symmetry, then ndat=number of imag points
+      ///otherwise ndat=total number of real+imag points = ndat/2 data points
       for (int i=0; i<ndat_/2; ++i) {
         std::complex<double> iomegan(0, (2*i+1)*M_PI*T_);
         for (int j=0; j<nfreq_; ++j) {
