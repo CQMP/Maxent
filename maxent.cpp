@@ -51,36 +51,43 @@ int main(int argc, char** argv)
     }
   else
     basename=boost::lexical_cast<std::string>(parms["BASENAME"]);
-    
-    //allow for multiple default model runs
-    //set MODEL_RUNS = #runs
-    //then place:
-    //RUN_0 = "Model1"
-    //RUN_1 = "Model2"
-    //..etc
-    if(parms.defined("MODEL_RUNS")){
-        int nruns=parms["MODEL_RUNS"];
-        std::cout<<"Performing " << nruns <<" runs" <<std::endl;
-        for(int i=0;i<nruns;i++){
-            if(!parms.defined("RUN_" + boost::lexical_cast<std::string>(i))) {
-                throw std::runtime_error("parameter RUN_i missing!");
+  try{
+        //allow for multiple default model runs
+        //set MODEL_RUNS = #runs
+        //then place:
+        //RUN_0 = "Model1"
+        //RUN_1 = "Model2"
+        //..etc
+        if(parms.defined("MODEL_RUNS")){
+            int nruns=parms["MODEL_RUNS"];
+            std::cout<<"Performing " << nruns <<" runs" <<std::endl;
+            for(int i=0;i<nruns;i++){
+                if(!parms.defined("RUN_" + boost::lexical_cast<std::string>(i))) {
+                    throw std::runtime_error("parameter RUN_i missing!");
+                }
+                std::string currModel = boost::lexical_cast<std::string>(
+                                             parms["RUN_" + boost::lexical_cast<std::string>(i)]);
+                parms["DEFAULT_MODEL"]= currModel;
+                
+                //run a simulation with the new default model.
+                //Change the basename to match
+                parms["BASENAME"] = basename+'.'+currModel;
+                MaxEntSimulation my_sim(parms);
+                my_sim.run();
+                my_sim.evaluate();
             }
-            std::string currModel = boost::lexical_cast<std::string>(
-                                         parms["RUN_" + boost::lexical_cast<std::string>(i)]);
-            parms["DEFAULT_MODEL"]= currModel;
-            
-            //run a simulation with the new default model.
-            //Change the basename to match
-            parms["BASENAME"] = basename+'.'+currModel;
-            MaxEntSimulation my_sim(parms);
-            my_sim.run();
-            my_sim.evaluate();
         }
-    }
-  else{
-      MaxEntSimulation my_sim(parms);
-      my_sim.run();
-      my_sim.evaluate();
+      else{
+          MaxEntSimulation my_sim(parms);
+          my_sim.run();
+          my_sim.evaluate();
+      }
   }
+    catch(const std::exception &e){
+        std::cerr << "Caught Exception " << boost::diagnostic_information(e);
+    }
+    catch(...){
+        std::cerr << "Caught Exception" << boost::current_exception_diagnostic_information();
+    }
 }
 
