@@ -8,6 +8,7 @@
 !maxent_grid.cpp
 !maxent_kernel.cpp
 !maxent_grid.hpp
+!maxent_gridTest.cpp
 !maxent_kernel.hpp
 !maxent_parms.h
 !maxent_simulation.cpp
