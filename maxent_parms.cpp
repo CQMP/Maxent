@@ -26,7 +26,6 @@
  *****************************************************************************/
 
 #include "maxent.hpp"
-#include "maxent_kernel.hpp"
 #include <alps/config.h> // needed to set up correct bindings
 #include <boost/numeric/bindings/ublas.hpp>
 #include <boost/numeric/ublas/matrix_proxy.hpp>
@@ -286,31 +285,38 @@ void MaxEntParameters::singular_value_decompose_kernel(bool verbose,
     boost::throw_exception(
         std::logic_error("all singular values smaller than the precision"));
 }
-void MaxEntParameters::check_high_frequency_limit(const vector_type& y){
+void MaxEntParameters::check_high_frequency_limit(const vector_type& y,const kernel_type kt){
     //TODO: expand check into time/bosonic domain
     //we know that the limit of a green's function is ~ -1/iw_{n}
     //this checks that we have a good high frequency limit
     //within the tolerance of the error bar
-    int n = (ndat()-2)/2; //this is the real n; due to weird vector structure
-
-    //limit = G(iwn)*iwn
-    std::complex<double> iwn(0,(2*n+1)*M_PI*T());
-    double limit = y(ndat()-1)*iwn.imag();
-    if(std::abs(1+limit)>sigma(ndat()-1)){
-        std::cerr<<"The high frequency limit is not 1!: " << std::abs(limit)
-        <<" Check norm?"<< std:: endl;
-    }
-    //now backcontinue default model and check high frequency limit
-    // G(iw_{n})=\sum_{m}K_{nm}A_{m}
-    std::complex<double> G;
-    iwn.imag()= (2*2000+1)*M_PI*T();
-    for(int j=0;j<nfreq();j++){
-        G+= 1.0/(iwn-omega_coord(j))*Default().D(omega_coord(j)) * delta_omega(j);
-    }
-    limit = G.imag()*iwn.imag();
-    if(std::abs(1+limit)>.01){
-        std::cerr<<"The high frequency limit of the default model is not 1!: "
-        << std::abs(limit) <<" Check norm?"<< std:: endl;
+    
+    int n=0;
+    if (kt==frequency_fermionic_kernel)
+        n = (ndat()-2)/2; //this is the real n; due to weird vector structure
+    if (kt==frequency_fermionic_ph_kernel)
+        n=ndat()-1;
+    
+    if(n!=0){
+        //limit = G(iwn)*iwn
+        std::complex<double> iwn(0,(2*n+1)*M_PI*T());
+        double limit = y(ndat()-1)*iwn.imag();
+        if(std::abs(1+limit)>sigma(ndat()-1)){
+            std::cerr<<"The high frequency limit is not 1!: " << std::abs(limit)
+            <<" Check norm?"<< std:: endl;
+        }
+        //now backcontinue default model and check high frequency limit
+        // G(iw_{n})=\sum_{m}K_{nm}A_{m}
+        std::complex<double> G;
+        iwn.imag()= (2*2000+1)*M_PI*T();
+        for(int j=0;j<nfreq();j++){
+            G+= 1.0/(iwn-omega_coord(j))*Default().D(omega_coord(j)) * delta_omega(j);
+        }
+        limit = G.imag()*iwn.imag();
+        if(std::abs(1+limit)>.01){
+            std::cerr<<"The high frequency limit of the default model is not 1!: "
+            << std::abs(limit) <<" Check norm?"<< std:: endl;
+        }
     }
 }
 
@@ -334,9 +340,7 @@ MaxEntParameters::MaxEntParameters(const alps::params& p) :
   if (p.defined("COVARIANCE_MATRIX"))
     decompose_covariance_matrix(p);
     
-  if(boost::lexical_cast<std::string>(p["DATASPACE"])=="frequency"){
-    check_high_frequency_limit(y());
-  }
+    check_high_frequency_limit(y(),ker.getKernelType());
 
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
   scale_data_with_error(ndat());

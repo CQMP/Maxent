@@ -29,6 +29,7 @@
 
 #include "default_model.hpp"
 #include "maxent_grid.hpp"
+#include "maxent_kernel.hpp"
 #include "maxent_blas.hpp"
 
 ///This class has all the information about general analytic continuation things. It does not know about specifics of maxent.
@@ -129,5 +130,5 @@ private:
   ///take the kernel and compute its singular value decomposition
   void singular_value_decompose_kernel(bool verbose, vector_type& S);
   ///check G~-1/iw_{n} and default model back continues same limit
-  void check_high_frequency_limit(const vector_type& y);
+  void check_high_frequency_limit(const vector_type& y, const kernel_type kt);
 };

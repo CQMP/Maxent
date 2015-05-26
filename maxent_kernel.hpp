@@ -51,6 +51,11 @@ public:
 
   ///getter function for the kernel matrix
   const matrix_type &operator()()const{return K_;}
+  ///getter function for kernel type
+  const kernel_type getKernelType() const{return ktype_;}
+  ///getter function for dataspace type
+  const dataspace_type getDataspaceType() const{return dtype_;}
+    
 private:
   ///figure out which kernel is to be used
   void set_kernel_type(const std::string &dataspace_name, const std::string &kernel_name, bool ph_symmetry);
