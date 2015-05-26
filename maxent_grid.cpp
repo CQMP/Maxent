@@ -56,9 +56,8 @@ t_array_(nfreq_+1){
     boost::throw_exception(std::invalid_argument("No valid frequency grid specified"));
 }
 void grid::initialize_linear_grid() {
-  ///TODO: t_array_ has size nfreq+1. Why is it only initialized to t_array_[nfreq-1]?
-  for (int i = 0; i < nfreq_; ++i)
-    t_array_[i] = double(i) / (nfreq_ - 1);
+  for (int i = 0; i < nfreq_+1; ++i)
+    t_array_[i] = double(i) / (nfreq_);
 }
 
 void grid::initialize_logarithmic_grid(double t_min) {
