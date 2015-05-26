@@ -29,6 +29,7 @@
 #include <alps/ngs/mcoptions.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/exception/diagnostic_information.hpp> 
 
 int main(int argc, char** argv)
 {
