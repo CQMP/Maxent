@@ -32,8 +32,8 @@
 kernel::kernel(const alps::params &p, const vector_type& freq):
 ndat_(p["NDAT"]),
 nfreq_(p["NFREQ"]),
-K_(ndat_,nfreq_),
-T_(p["T"]|1./static_cast<double>(p["BETA"]))
+T_(p["T"]|1./static_cast<double>(p["BETA"])),
+K_(ndat_,nfreq_)
 {
   using namespace boost::numeric;
   K_.clear();
