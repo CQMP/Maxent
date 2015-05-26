@@ -2,7 +2,10 @@ cmake_minimum_required(VERSION 2.8)
 find_package(ALPS REQUIRED NO_SYSTEM_ENVIRONMENT_PATH)
 include(${ALPS_USE_FILE})
 
-set (GTEST_ROOT gtest )
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+include(UseGtest)
+
+#set (GTEST_ROOT gtest )
 set (GTEST_INCLUDE_DIR ${GTEST_ROOT}/include )
 set (GTEST_SRC_DIR ${GTEST_ROOT}/src)
 

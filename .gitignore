@@ -19,7 +19,10 @@
 !default_model.cpp
 !default_modelTest.cpp
 !CMakeLists.txt
+!cmake/
 !doxygen/Doxyfile
+
+.DS_Store
 
 #C++ Files
 # Compiled Object files
