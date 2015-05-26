@@ -343,7 +343,7 @@ MaxEntParameters::MaxEntParameters(const alps::params& p) :
     check_high_frequency_limit(y(),ker.getKernelType());
 
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
-  scale_data_with_error(ndat());
+  scale_data_with_error(nfreq());
 
   //this enforces a strict normalization if needed. not sure that this is done properly. recheck!
   if(p["ENFORCE_NORMALIZATION"]|false) {
