@@ -38,6 +38,8 @@ enum kernel_type{
   time_fermionic_kernel,
   time_bosonic_kernel,
   time_boris_kernel,
+  time_fermionic_legendre_kernel,
+  time_bosonic_legendre_kernel, //TODO determine boris->legendre
   frequency_fermionic_ph_kernel,
   frequency_bosonic_ph_kernel,
   frequency_anomalous_ph_kernel,
@@ -47,7 +49,7 @@ enum kernel_type{
 };
 class kernel{
 public:
-  kernel(const alps::params &p, const vector_type& freq);
+  kernel(const alps::params &p, const vector_type& freq, const int lmax);
 
   ///getter function for the kernel matrix
   const matrix_type &operator()()const{return K_;}
@@ -58,8 +60,11 @@ public:
     
 private:
   ///figure out which kernel is to be used
-  void set_kernel_type(const std::string &dataspace_name, const std::string &kernel_name, bool ph_symmetry);
-  ///number of Matsubara points
+  void set_kernel_type(const std::string &dataspace_name, const std::string &kernel_name,
+                       bool ph_symmetry, bool legdr_transform);
+  ///set up kernel with the legendre transform
+  void setup_legendre_kernel(const alps::params &p, const vector_type& freq, const int lmax);
+  ///number; of Matsubara points
   int ndat_;
   ///number of real frequency points
   int nfreq_;

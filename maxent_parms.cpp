@@ -36,6 +36,8 @@
 #include <alps/hdf5/vector.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/math/special_functions/legendre.hpp> //needed for Legendre transform
+namespace bmth = boost::math;
 
   // We provide a file with data points and error bars, the latter are used only if
   // COVARIANCE_MATRIX is not set. The format is
@@ -320,6 +322,64 @@ void MaxEntParameters::check_high_frequency_limit(const vector_type& y,const ker
     }
 }
 
+void MaxEntParameters::legendre_transform(const alps::params &p){
+    const int maxl = p["MAXL"];     //this is the max iteration version of lmax
+    vector_type Gl(maxl+1);
+    double I,tau;
+    double G0_lmax=0; //use a point to backcontinue to find cutoff
+    double G0_prev=0;
+    
+    vector_type tau_points(ndat()); //TODO: make a seperate implimentation that imports this
+    
+    if(p.defined("TAU_1")) //hack to see if we have imported tau points
+        for(int j=0;j<ndat();j++)
+            tau_points[j]=p["TAU_"+boost::lexical_cast<std::string>(j)];
+    else
+        for(int j=0;j<ndat();j++)
+            tau_points[j] = j / ((ndat_)* T()); //TODO: standardize tau grid
+
+    while(lmax<maxl){
+        lmax++;
+        I=0;
+        //int [0,beta] P_l(x(tau))*G(tau)
+        for(int i=0;i<ndat()-1;i++){
+            I+= bmth::legendre_p(lmax, 2*tau_points[i]*T()-1)
+                *y()[i]*(tau_points[i+1]-tau_points[i]);
+        }
+        I+= bmth::legendre_p(lmax, 2*tau_points[ndat()-1]*T()-1)
+            *y()[ndat()-1]*(tau_points[ndat()-1]-tau_points[ndat()-2]);
+        Gl[lmax] = sqrt(2*lmax+1)*I;
+        
+        //after some l, subsequent points only contribute noise
+        //this is essentially a convergence check
+        G0_lmax=0;
+        G0_prev=0;
+        for(int l=0;l<lmax;l++){
+            G0_prev+= sqrt(2*l+1)*T()*bmth::legendre_p(l, 2*tau_points[ndat()/2]*T()-1)
+                        *Gl[l];
+        }
+        G0_lmax=G0_prev + sqrt(2*lmax+1)*T()*bmth::legendre_p(lmax, 2*tau_points[ndat()/2]*T()-1)
+                          *Gl[lmax];
+        //if(std::abs(y()[ndat()/2]-G0_lmax)>std::abs(y()[ndat()/2]-G0_prev) && 0.01>std::abs(y()[ndat()/2]-G0_prev))
+        //    break;
+    }
+    
+    lmax--;
+    std::cout<<"Using " << lmax << " Legendre points" << std::endl;
+    if(p["VERBOSE"]|false)
+        std::cout << "With an error of:" <<std::abs(y()[0]-G0_prev) << std::endl;
+    
+    //switch data
+    y_.resize(lmax);
+    for(int i=0;i<lmax;i++)
+        y_[i]=Gl[i];
+    if(p["VERBOSE"]|false)
+        std::cout<<"Gl points:"<<std::endl<<y_<<std::endl;
+    ndat_=lmax;
+    
+    
+}
+
 MaxEntParameters::MaxEntParameters(const alps::params& p) :
     ContiParameters(p),
     Default_(make_default_model(p, "DEFAULT_MODEL")),
@@ -331,9 +391,12 @@ MaxEntParameters::MaxEntParameters(const alps::params& p) :
     omega_coord_[i] = (Default().omega_of_t(grid_(i)) + Default().omega_of_t(grid_(i+1)))/2.;
     delta_omega_[i] = Default().omega_of_t(grid_(i+1)) - Default().omega_of_t(grid_(i));
   }
-
+  //if we have a legendre kernel, transform G(tau)->Gl here, and determine lmax
+    if(p["LEGENDRE"]|false){
+        legendre_transform(p);
+    }
   //build a kernel matrix
-  kernel ker(p,omega_coord_);
+  kernel ker(p,omega_coord_,lmax);
   K_=ker();
 
   //scale lhs and rhs according to errors, etc.

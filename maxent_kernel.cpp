@@ -28,8 +28,10 @@
 #include <cmath>
 #include <boost/algorithm/string.hpp>    
 #include <boost/lexical_cast.hpp>
+#include <boost/math/special_functions/legendre.hpp> //for Legendre kernel
+namespace bmth = boost::math;
 
-kernel::kernel(const alps::params &p, const vector_type& freq):
+kernel::kernel(const alps::params &p, const vector_type& freq, const int lmax):
 ndat_(p["NDAT"]),
 nfreq_(p["NFREQ"]),
 T_(p["T"]|1./static_cast<double>(p["BETA"])),
@@ -43,16 +45,17 @@ K_(ndat_,nfreq_)
   boost::to_lower(dataspace_name);
   boost::to_lower(kernel_name);
   bool ph_symmetry=p["PARTICLE_HOLE_SYMMETRY"]|false;
+  bool legdr_transform=p["LEGENDRE"]|false;
   std::cout<<"using kernel "<<kernel_name<<" in domain "<<dataspace_name;
   if(ph_symmetry) std::cout<<" with ph symmetry"; else std::cout<<" without ph symmetry"; std::cout<<std::endl;
 
-  set_kernel_type(dataspace_name,kernel_name, ph_symmetry);
+  set_kernel_type(dataspace_name,kernel_name, ph_symmetry,legdr_transform);
 
   if(ktype_==time_fermionic_kernel){
       for (int i=0; i<ndat_; ++i) {
         double tau;
-        if (p.defined("TAU_"+boost::lexical_cast<std::string>(i)))
-          tau = p["TAU_"+boost::lexical_cast<std::string>(i)];
+        if (p.defined("TAU_"+boost::lexical_cast<std::string>(i))) //TODO: why is tau here and not centralized
+          tau = p["TAU_"+boost::lexical_cast<std::string>(i)];     //like the freq below
         else
           tau = i / ((ndat_-1)* T_);
         for (int j=0; j<nfreq_; ++j) {
@@ -75,6 +78,8 @@ K_(ndat_,nfreq_)
         }
       }
     }
+    else if(ktype_== time_fermionic_legendre_kernel || ktype_==time_bosonic_legendre_kernel)
+        setup_legendre_kernel(p,freq,lmax);
     //for zero temperature, only positive frequency matters
     else if (ktype_ == time_boris_kernel) {
       for (int i=0; i<ndat_; ++i) {
@@ -84,7 +89,22 @@ K_(ndat_,nfreq_)
           K_(i,j) = -std::exp(-omega*tau);
         }
       }
-    }else if(ktype_==frequency_fermionic_ph_kernel) {
+    }
+    else if(ktype_==time_fermionic_kernel){
+        for (int i=0; i<ndat_; ++i) {
+            double tau;
+            if (p.defined("TAU_"+boost::lexical_cast<std::string>(i)))
+                tau = p["TAU_"+boost::lexical_cast<std::string>(i)];
+            else
+                tau = i / ((ndat_-1)* T_);
+            for (int j=0; j<nfreq_; ++j) {
+                double omega = freq[j];
+                K_(i,j) =  -1.;
+            }
+        }
+
+    }
+    else if(ktype_==frequency_fermionic_ph_kernel) {
     for (int i=0; i<ndat_; ++i) {
       double omegan = (2*i+1)*M_PI*T_;
       for (int j=0; j<nfreq_; ++j) {
@@ -155,7 +175,8 @@ K_(ndat_,nfreq_)
   }
 }
 
-void kernel::set_kernel_type(const std::string &dataspace_name, const std::string &kernel_name, bool ph_symmetry){
+void kernel::set_kernel_type(const std::string &dataspace_name, const std::string &kernel_name,
+                             bool ph_symmetry, bool legdr_transform){
   if(dataspace_name=="time"){
     dtype_=time_dataspace;
   }else if(dataspace_name=="frequency"){
@@ -165,9 +186,15 @@ void kernel::set_kernel_type(const std::string &dataspace_name, const std::strin
 
   if(dtype_==time_dataspace){
     if(kernel_name=="fermionic")
-      ktype_=time_fermionic_kernel;
+            if(legdr_transform)
+                ktype_=time_fermionic_legendre_kernel;
+            else
+                ktype_=time_fermionic_kernel;
     else if(kernel_name=="bosonic")
-      ktype_=time_bosonic_kernel;
+            if(legdr_transform)
+                ktype_=time_bosonic_legendre_kernel;
+            else
+                ktype_=time_bosonic_kernel;
     else if(kernel_name=="boris")
       ktype_=time_boris_kernel;
     else throw std::invalid_argument("unknown kernel name. In the time domain it should be fermionic, bosonic, or boris.");
@@ -193,4 +220,38 @@ void kernel::set_kernel_type(const std::string &dataspace_name, const std::strin
 
 }
 
+void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& freq,const int lmax){
+    //sign of kernel +/- => fermionic/bosonic
+    const double sign =std::pow(-1.0,(int)ktype_==time_bosonic_legendre_kernel);
+
+    const double PI = std::acos(-1);
+    //recall that ndat()=lmax, lmax=size of K
+    //here ndat_ = # tau points
+    K_.resize(lmax,nfreq_);
+    vector_type tau_points(ndat_); //TODO: make a seperate implimentation that imports this
+    if(p.defined("TAU_1")) //hack to see if we have imported tau points
+        for(int j=0;j<ndat_;j++)
+            tau_points[j]=p["TAU_"+boost::lexical_cast<std::string>(j)];
+    else
+        for(int j=0;j<ndat_;j++)
+            tau_points[j] = j / ((ndat_)* T_); //TODO: determine if this (from backcont) or ndat()-1 is more common
+    
+    for(int l=0;l<lmax;l++){
+        for(int j=0;j<nfreq_;j++){
+            double I=0;
+            double omega =freq[j];
+            //int Pl(x(tau))*exp(-tau*omega)/(1\pm exp(-beta*omega))
+            for(int t=0;t<ndat_-1;t++){
+                double tau = tau_points[t];
+                double dtau = tau_points[t+1]-tau;
+                I+= bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+sign*std::exp(-omega/T_))*dtau;
+            }
+            double tau = tau_points[ndat_-1];
+            double dtau = tau-tau_points[ndat_-2];
+            I+= bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+sign*std::exp(-omega/T_))*dtau;
+            
+            K_(l,j) = -sqrt(2*l+1)*PI*I; //TODO: pi issues
+        }
+    }
+}
 

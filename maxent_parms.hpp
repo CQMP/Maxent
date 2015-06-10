@@ -62,8 +62,6 @@ public:
 private:
   ///temperature
   const double T_;
-  ///number of fitting data points / size of y
-  int ndat_;
   ///number of real frequencies
   const int nfreq_;
 
@@ -80,6 +78,8 @@ protected:
   ///This function removes the last element from the kernel and replaces it with a condition that enforces a strict normalization
   void enforce_strict_normalization(double sigma_normalization, double norm, const int ntab);
 
+  ///number of fitting data points / size of y
+  int ndat_; //TODO: find a better way of changing this. If we use Gl, we change the size of y
   ///vector of Matsubara data
   vector_type y_;
   ///vector of errors on y
@@ -122,7 +122,8 @@ private:
   vector_type delta_omega_;
   ///the number of singular values
   int ns_;
-
+  ///computed l cut off of legendre transform
+  int lmax =-1;
   ///compute the minimal chi2 that is possible given the SVD of the kernel
   void compute_minimal_chi2() const;
   ///reduce the matrices to the number of non-zero singular values
@@ -131,4 +132,6 @@ private:
   void singular_value_decompose_kernel(bool verbose, vector_type& S);
   ///check G~-1/iw_{n} and default model back continues same limit
   void check_high_frequency_limit(const vector_type& y, const kernel_type kt);
+  ///convert from G(tau) to Gl
+  void legendre_transform(const alps::params &p);
 };
