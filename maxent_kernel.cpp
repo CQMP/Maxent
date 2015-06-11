@@ -250,7 +250,7 @@ void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& fre
             double dtau = tau-tau_points[ndat_-2];
             I+= bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+sign*std::exp(-omega/T_))*dtau;
             
-            K_(l,j) = -sqrt(2*l+1)*PI*I; //TODO: pi issues
+            K_(l,j) = -sqrt(2*l+1)*I; //TODO: pi issues
         }
     }
 }
