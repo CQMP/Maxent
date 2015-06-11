@@ -360,7 +360,7 @@ void MaxEntParameters::legendre_transform(const alps::params &p){
         }
         G0_lmax=G0_prev + sqrt(2*lmax+1)*T()*bmth::legendre_p(lmax, 2*tau_points[ndat()/2]*T()-1)
                           *Gl[lmax];
-        //if(std::abs(y()[ndat()/2]-G0_lmax)>std::abs(y()[ndat()/2]-G0_prev) && 0.01>std::abs(y()[ndat()/2]-G0_prev))
+        //if(std::abs(y()[ndat()/2]-G0_lmax)>std::abs(y()[ndat()/2]-G0_prev) && 0.0001>std::abs(y()[ndat()/2]-G0_prev))
         //    break;
     }
     
