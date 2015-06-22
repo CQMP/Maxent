@@ -29,6 +29,7 @@
 #include <boost/algorithm/string.hpp>    
 #include <boost/lexical_cast.hpp>
 #include <boost/math/special_functions/legendre.hpp> //for Legendre kernel
+#include <boost/math/special_functions/factorials.hpp> //for Legendre kernel
 namespace bmth = boost::math;
 
 kernel::kernel(const alps::params &p, const vector_type& freq, const int lmax):
@@ -221,10 +222,14 @@ void kernel::set_kernel_type(const std::string &dataspace_name, const std::strin
 }
 
 void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& freq,const int lmax){
+    if(lmax>boost::math::max_factorial<double>::value)
+        throw std::runtime_error("lmax is greater than boost factorial precision");
+    
     //sign of kernel +/- => fermionic/bosonic
     const double sign =std::pow(-1.0,(int)ktype_==time_bosonic_legendre_kernel);
 
     const double PI = std::acos(-1);
+    const std::complex<double> CONE(0,1);
     //recall that ndat()=lmax, lmax=size of K
     //here ndat_ = # tau points
     K_.resize(lmax,nfreq_);
@@ -238,19 +243,40 @@ void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& fre
     
     for(int l=0;l<lmax;l++){
         for(int j=0;j<nfreq_;j++){
-            double I=0;
+            double I=1;
+            double I1=0;
             double omega =freq[j];
+            //riemann sum version of integral:
             //int Pl(x(tau))*exp(-tau*omega)/(1\pm exp(-beta*omega))
+            
             for(int t=0;t<ndat_-1;t++){
                 double tau = tau_points[t];
                 double dtau = tau_points[t+1]-tau;
-                I+= bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+sign*std::exp(-omega/T_))*dtau;
+                I1+= bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+sign*std::exp(-omega/T_))*dtau;
             }
+            
             double tau = tau_points[ndat_-1];
             double dtau = tau-tau_points[ndat_-2];
-            I+= bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+sign*std::exp(-omega/T_))*dtau;
+            I1+= bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+sign*std::exp(-omega/T_))*dtau;
             
-            K_(l,j) = -sqrt(2*l+1)*I; //TODO: pi issues
+            //commented out integrated Kernel, until convergence is explained
+            //integrated form of Kernel:
+           /* I *= 1/(2*T_)*1/(1+sign*exp(-omega/T_));
+            double Ip=0;
+            for(int v=0;v<=l;v++){
+                Ip+=2*std::pow(omega/T_,-v-1)*bmth::factorial<double>(l+v)/
+                (bmth::factorial<double>(v)*bmth::factorial<double>(l-v))*(std::pow(-1.0,l+v)-exp(-omega/T_));
+            }
+            I*=Ip;
+            double err = I1-I;
+            if(std::abs(err)>0.1)
+                std::cout<<err<<" " << l<<" " << j<<" " <<omega << std::endl;
+            if(std::abs(omega)>1)
+                K_(l,j) = -sqrt(2*l+1)*I; //TODO: pi issues
+            else*/
+                K_(l,j) = -sqrt(2*l+1)*I1;
+            
+            
         }
     }
 }
