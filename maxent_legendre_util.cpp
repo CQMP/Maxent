@@ -1,10 +1,16 @@
 
 #include "maxent_legendre_util.hpp"
 #include <boost/math/special_functions/legendre.hpp> //needed for Legendre transform
-namespace bmth = boost::math;
-legendre_util::legendre_util(const double T,const int ndat, int maxl, const vector_type y):T_(T),ndat_(ndat),maxl_(maxl),y_(y) {}
+#include <numeric>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/normal_distribution.hpp>
+#include <boost/random/variate_generator.hpp>
+#include <boost/random.hpp>
 
-void legendre_util::constructTauPoints(const alps::params &p){
+namespace bmth = boost::math;
+Legendre_util::Legendre_util(const double T,const int ndat, int maxl, const vector_type y):T_(T),ndat_(ndat),maxl_(maxl),y_(y) {}
+
+void Legendre_util::constructTauPoints(const alps::params &p){
     tau_points.resize(ndat_);
     if(p.defined("TAU_1")) //hack to see if we have imported tau points
         for(int j=0;j<ndat_;j++)
@@ -14,51 +20,74 @@ void legendre_util::constructTauPoints(const alps::params &p){
             tau_points[j] = j / ((ndat_)* T_); //TODO: standardize tau grid
 
 }
-
-void legendre_util::convertTauToGl(const alps::params &p){
+vector_type Legendre_util::generateGaussNoise(vector_type data, vector_type err){
+    boost::mt19937 rng;
+    typedef boost::variate_generator<boost::mt19937,boost::normal_distribution<double> > ran_gen;
+    
+    const int N = data.size();
+    vector_type data_noise(N);
+    for(int i=0;i<N;i++){
+        boost::normal_distribution<> s(data[i],err[i]);
+        data_noise[i] = ran_gen(rng,s)();
+    }
+    return data_noise;
+}
+Legendre_util::return_type Legendre_util::bootstrap(double (*f)(vector_type,void*),const vector_type data,
+                                                       const vector_type err, void *args, const int maxit){
+    std::vector<double> newData(maxit);
+    for(int i=0;i<maxit;i++){
+        vector_type temp_data = generateGaussNoise(data, err);
+        newData.push_back(f(temp_data,args));
+    }
+    //calculate statistics
+    double mean = std::accumulate(newData.begin(), newData.end(), 0.0)/(newData.size()-1);
+    double sq_mean = std::inner_product(newData.begin(), newData.end(), newData.begin(), 0.0)/(newData.size()-1);
+    double stdev = std::sqrt(sq_mean - mean*mean);
+    double std_err = stdev/std::sqrt(newData.size());
+    
+    //return (data,err)
+    return_type r;
+    r.first = mean;
+    r.second = std_err;
+    return r;
+}
+///Gl=sqrt(2l+1) \int d\tau P_l(x(\tau))*G(\tau)
+double Legendre_util::generateGl(vector_type gtau, int l){
+    double gsum= 0.0;
+    //TODO: implement higher order integration
+    //      given good number of data
+    
+    for(int i=0;i<ndat_-1;i++){
+        double dtau = tau_points[i+1]-tau_points[i];
+        gsum+=dtau*(bmth::legendre_p(l, 2*tau_points[i]*T_-1)*gtau[i]);
+    }
+    //endpoint:
+    double dtau=tau_points[ndat_-1]-tau_points[ndat_-2];
+    gsum+=dtau*(bmth::legendre_p(l, 2*tau_points[ndat_-1]*T_-1)*gtau[ndat_-1]);
+    
+    return std::sqrt(2*l+1)*gsum;
+}
+void Legendre_util::convertTauToGl(const alps::params &p){
 
     Gl.resize(maxl_+1);
     constructTauPoints(p);
     
-    double I,tau;
-    double G0_lmax=0; //use a point to backcontinue to find cutoff
-    double G0_prev=0;
-    
-    
     while(lmax_<maxl_){
         lmax_++;
-        I=0;
-        //int [0,beta] P_l(x(tau))*G(tau)
-        for(int i=0;i<ndat_-1;i++){
-            I+= bmth::legendre_p(lmax_, 2*tau_points[i]*T_-1)
-            *y_[i]*(tau_points[i+1]-tau_points[i]);
-        }
-        I+= bmth::legendre_p(lmax_, 2*tau_points[ndat_-1]*T_-1)
-        *y_[ndat_-1]*(tau_points[ndat_-1]-tau_points[ndat_-2]);
-        Gl[lmax_] = sqrt(2*lmax_+1)*I;
+
+        Gl[lmax_] = generateGl(y_,lmax_);//sqrt(2*lmax_+1)*I;
         
-        //after some l, subsequent points only contribute noise
-        //this is essentially a convergence check
-        G0_lmax=0;
-        G0_prev=0;
-        for(int l=0;l<lmax_;l++){
-            G0_prev+= sqrt(2*l+1)*T_*bmth::legendre_p(l, 2*tau_points[ndat_/2]*T_-1)
-            *Gl[l];
-        }
-        G0_lmax=G0_prev + sqrt(2*lmax_+1)*T_*bmth::legendre_p(lmax_, 2*tau_points[ndat_/2]*T_-1)
-        *Gl[lmax_];
-        //if(std::abs(y()[ndat()/2]-G0_lmax)>std::abs(y()[ndat()/2]-G0_prev) && 0.0001>std::abs(y()[ndat()/2]-G0_prev))
-        //    break;
+        //TODO: check to see if Gl is within error bars
     }
     
     lmax_--;
     std::cout<<"Using " << lmax_ << " Legendre points" << std::endl;
     if(p["VERBOSE"]|false)
-        std::cout << "With an error of:" <<std::abs(y_[0]-G0_prev) << std::endl;
+        std::cout << "With an error of:" <<std::abs(1) << std::endl;
     //return Gl;
 }
 
-void legendre_util::reassignData(vector_type &y, int &ndat,int &lmax, bool verbose){
+void Legendre_util::reassignData(vector_type &y,vector_type &sigma, int &ndat,int &lmax, bool verbose){
     //switch data
     y.resize(lmax_);
     for(int i=0;i<lmax_;i++)

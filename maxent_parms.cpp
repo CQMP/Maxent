@@ -396,9 +396,9 @@ MaxEntParameters::MaxEntParameters(const alps::params& p) :
     if(p["LEGENDRE"]|false){
         //legendre_transform(p);
         int maxl = p["MAXL"];
-        legendre_util l(T(),ndat_,maxl,y());
+        Legendre_util l(T(),ndat_,maxl,y());
         l.convertTauToGl(p);
-        l.reassignData(y_, ndat_,lmax,p["VERBOSE"]|false);
+        l.reassignData(y_,sigma_, ndat_,lmax,p["VERBOSE"]|false);
     }
   //build a kernel matrix
   kernel ker(p,omega_coord_,lmax);
