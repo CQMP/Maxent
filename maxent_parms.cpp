@@ -38,6 +38,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/math/special_functions/legendre.hpp> //needed for Legendre transform
 namespace bmth = boost::math;
+#include "maxent_legendre_util.hpp"
 
   // We provide a file with data points and error bars, the latter are used only if
   // COVARIANCE_MATRIX is not set. The format is
@@ -393,7 +394,11 @@ MaxEntParameters::MaxEntParameters(const alps::params& p) :
   }
   //if we have a legendre kernel, transform G(tau)->Gl here, and determine lmax
     if(p["LEGENDRE"]|false){
-        legendre_transform(p);
+        //legendre_transform(p);
+        int maxl = p["MAXL"];
+        legendre_util l(T(),ndat_,maxl,y());
+        l.convertTauToGl(p);
+        l.reassignData(y_, ndat_,lmax,p["VERBOSE"]|false);
     }
   //build a kernel matrix
   kernel ker(p,omega_coord_,lmax);
