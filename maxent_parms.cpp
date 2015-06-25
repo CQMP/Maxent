@@ -321,6 +321,14 @@ void MaxEntParameters::check_high_frequency_limit(const vector_type& y,const ker
             << std::abs(limit) <<" Check norm?"<< std:: endl;
         }
     }
+    //time space=> tail_1 = -G(0)-G(beta) = 1
+    if(kt==time_fermionic_kernel){
+        double err = (sigma(0)+sigma(ndat()-1))/2;
+        double limit = -y(0)-y(ndat()-1);
+        if(std::abs(limit-1)>err)
+            std::cerr<<"The high frequency limit is not +1!: " << limit
+            <<" Check norm?"<< std:: endl;
+    }
 }
 
 void MaxEntParameters::legendre_transform(const alps::params &p){
