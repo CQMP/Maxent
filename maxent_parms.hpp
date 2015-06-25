@@ -132,6 +132,4 @@ private:
   void singular_value_decompose_kernel(bool verbose, vector_type& S);
   ///check G~-1/iw_{n} and default model back continues same limit
   void check_high_frequency_limit(const vector_type& y, const kernel_type kt);
-  ///convert from G(tau) to Gl
-  void legendre_transform(const alps::params &p);
 };
