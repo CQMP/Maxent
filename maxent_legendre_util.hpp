@@ -1,10 +1,10 @@
 #pragma once
 #include<alps/ngs/params.hpp>
 #include"maxent_blas.hpp"
-
+#include <boost/random/mersenne_twister.hpp>
 class Legendre_util{
 public:
-	Legendre_util(const double T,const int ndat, int maxl, const vector_type y);
+	Legendre_util(const double T,const int ndat, int maxl, const vector_type y, const vector_type sigma);
 	///convert G(tau) data into G(l)
 	void convertTauToGl(const alps::params &p);
 	///put Gl data into the appropriate external vector
@@ -14,7 +14,7 @@ public:
 	//struct return_type {doublex data; vector_type err;};
     typedef std::pair<double,double> return_type;
 	
-	return_type bootstrap(double (*f)(vector_type,void*),const vector_type data, const vector_type err,
+	return_type bootstrap(double (Legendre_util::*f)(vector_type,void*),const vector_type data, const vector_type err,
             				void *args, const int maxit);
 protected:
 	///set up vector that contains corresponding tau points to the G(tau) data points 
@@ -24,9 +24,10 @@ protected:
 	///vector of size ndat+1 that holds legendre coefficients
 	vector_type Gl;
 	///error of Gl based on bootstrap
-	vector_type err;
+	vector_type err_;
 	///legendre coefficient cutoff; also size of true Gl values
 	int lmax_=-1;
+	double generateGlBoot(vector_type gtau, void* arg);
 private:
 	///temperature = 1/beta
 	const double T_;
@@ -36,9 +37,12 @@ private:
 	int maxl_;
 	///vector of G(tau) points
 	const vector_type y_;
+	///vector of error of G(tau) points
+	const vector_type sigma_;
 	///corresponding tau points to the G(tau) data points 
 	vector_type tau_points;
 	/// generate normal noise about each data[i] with mean=err[i]
-	vector_type generateGaussNoise(vector_type data, vector_type err);
+	vector_type generateGaussNoise(vector_type data, vector_type err,boost::mt19937 &rng);
+
 
 };

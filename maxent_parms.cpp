@@ -346,7 +346,7 @@ MaxEntParameters::MaxEntParameters(const alps::params& p) :
     if(p["LEGENDRE"]|false){
         //legendre_transform(p);
         int maxl = p["MAXL"];
-        Legendre_util l(T(),ndat_,maxl,y());
+        Legendre_util l(T(),ndat_,maxl,y(),sigma_);
         l.convertTauToGl(p);
         l.reassignData(y_,sigma_, ndat_,lmax,p["VERBOSE"]|false);
     }
