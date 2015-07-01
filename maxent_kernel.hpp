@@ -31,7 +31,8 @@
 ///enum that enumerates if we're in time or in frequency
 enum dataspace_type{
   time_dataspace,
-  frequency_dataspace
+  frequency_dataspace,
+  legendre_dataspace
 };
 ///we have a range of different kernels that all need different input parameters. This enum enumerates them.
 enum kernel_type{
@@ -40,6 +41,8 @@ enum kernel_type{
   time_boris_kernel,
   time_fermionic_legendre_kernel,
   time_bosonic_legendre_kernel, //TODO determine boris->legendre
+  legendre_fermionic_kernel,
+  legendre_bosonic_kernel,
   frequency_fermionic_ph_kernel,
   frequency_bosonic_ph_kernel,
   frequency_anomalous_ph_kernel,

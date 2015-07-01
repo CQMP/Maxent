@@ -53,8 +53,10 @@ K_(ndat_,nfreq_)
   if(ph_symmetry) std::cout<<" with ph symmetry"; else std::cout<<" without ph symmetry"; std::cout<<std::endl;
 
   set_kernel_type(dataspace_name,kernel_name, ph_symmetry,legdr_transform);
-
-  if(ktype_==time_fermionic_kernel){
+    
+  if(ktype_==legendre_fermionic_kernel || ktype_==legendre_bosonic_kernel){
+      setup_legendre_kernel(p,freq,ndat_);
+  }else if(ktype_==time_fermionic_kernel){
       for (int i=0; i<ndat_; ++i) {
         double tau;
         if (p.defined("TAU_"+boost::lexical_cast<std::string>(i))) //TODO: why is tau here and not centralized
@@ -184,7 +186,10 @@ void kernel::set_kernel_type(const std::string &dataspace_name, const std::strin
     dtype_=time_dataspace;
   }else if(dataspace_name=="frequency"){
     dtype_=frequency_dataspace;
-  }else
+  }else if(dataspace_name=="legendre"){
+    dtype_=legendre_dataspace;
+  }
+  else
     throw std::invalid_argument("unknown dataspace name. it should be time or frequency");
 
   if(dtype_==time_dataspace){
@@ -201,7 +206,15 @@ void kernel::set_kernel_type(const std::string &dataspace_name, const std::strin
     else if(kernel_name=="boris")
       ktype_=time_boris_kernel;
     else throw std::invalid_argument("unknown kernel name. In the time domain it should be fermionic, bosonic, or boris.");
-  }else{
+  }else if(dtype_ == legendre_dataspace){
+      if(kernel_name=="fermionic")
+          ktype_=legendre_fermionic_kernel;
+      else if(kernel_name=="bosonic"){
+          ktype_=legendre_bosonic_kernel;
+      }
+      else throw std::invalid_argument("unknown kernel name. In the legendre domain it should be fermionic or bosonic");
+  }
+  else{
     if(ph_symmetry){
       if(kernel_name== "fermionic")
         ktype_=frequency_fermionic_ph_kernel;
