@@ -12,6 +12,8 @@ set (GTEST_SRC_DIR ${GTEST_ROOT}/src)
 include_directories(${CMAKE_SOURCE_DIR}/gtest/include)
 include_directories(${GTEST_INCLUDE_DIR})
 include_directories(${GTEST_ROOT})
+include_directories("/usr/local/Cellar/gsl/1.16/include")
+link_directories("/usr/local/Cellar/gsl/1.16/lib")
 
 project (MAXENT)
 
@@ -30,5 +32,5 @@ default_model.cpp
 ${GTEST_SRC_DIR}/gtest-all.cc
 )
 target_link_libraries(maxent
-${ALPS_LIBRARIES} )
+${ALPS_LIBRARIES} gsl)
 

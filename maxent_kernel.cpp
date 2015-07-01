@@ -30,7 +30,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/math/special_functions/legendre.hpp>    //for Legendre kernel
 #include <boost/math/special_functions/factorials.hpp>  //for Legendre kernel
-//#include <gsl/gsl_integration.h>                        //for Legendre Kernel
+#include <gsl/gsl_integration.h>                        //for Legendre Kernel
 
 namespace bmth = boost::math;
 
@@ -269,7 +269,7 @@ void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& fre
         for(int j=0;j<ndat_;j++)
             tau_points[j] = j / ((ndat_)* T_); //TODO: determine if this (from backcont) or ndat()-1 is more common
     int N = 20000/2;
-    //gsl_integration_workspace *w = gsl_integration_workspace_alloc (1000);
+    gsl_integration_workspace *w = gsl_integration_workspace_alloc (1000);
     
     for(int l=0;l<lmax;l++){
         for(int j=0;j<nfreq_;j++){
@@ -279,7 +279,7 @@ void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& fre
             double h = (1/T_-0)/(2*N);
             //int Pl(x(tau))*exp(-tau*omega)/(1\pm exp(-beta*omega))
             
-            //Riemann sum method
+           /* //Riemann sum method
             for(int t=0;t<ndat_-1;t++){
                 double tau = tau_points[t];
                 double dtau = tau_points[t+1]-tau;
@@ -288,7 +288,7 @@ void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& fre
             double tau = tau_points[ndat_-1];
             double dtau = tau-tau_points[ndat_-2];
             I1+= bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+sign*std::exp(-omega/T_))*dtau;
-            
+            */
             //Simpsons with
             //Simpson's method of integrations
             //eval endpoints
@@ -303,21 +303,23 @@ void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& fre
                 I1+=4*bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+sign*std::exp(-omega/T_));
             }
             I1*=h/3;//*/
-            /*
+            ///*
             double a = 0;
             double b = 1/T_;
-            double epsabs=1.49e-08;
+            double epsabs=1.49e-08; //python default resolution
             double epsrel=1.49e-08;
             double result,err;
-            size_t nval;
+            size_t nval,limit=500;
             
             gsl_function F;
             F.function = &legendre_kernel_integrand;
             //double p[4] = {l,omega,sign,T_};
             integrand_params p = {l,omega,sign,T_};
             F.params = &p;
-            gsl_integration_qng(&F,a,b,epsabs,epsrel,&result,&err,&nval);
-            I1=result;*/
+            //gsl_integration_qng(&F,a,b,epsabs,epsrel,&result,&err,&nval);
+            gsl_integration_qag(&F, a,b,epsabs,epsrel, limit, GSL_INTEG_GAUSS61, w, &result, &err);
+            
+            I1=result; //*/
             
             //commented out integrated Kernel, until convergence is explained
             //integrated form of Kernel:
@@ -328,7 +330,8 @@ void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& fre
                 (bmth::factorial<double>(v)*bmth::factorial<double>(l-v))*(std::pow(-1.0,l+v)-exp(-omega/T_));
             }
             I*=Ip;
-            double err2 = I1-I;
+            I1=I;
+            /*double err2 = I1-I;
             if(std::abs(err2)>0.1)
                 std::cout<<err2<<" " << l<<" " << j<<" " <<omega << std::endl;
             if(std::abs(omega)>1)
@@ -339,6 +342,6 @@ void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& fre
             
         }
     }
-    //gsl_integration_workspace_free (w);
+    gsl_integration_workspace_free (w);
 }
 
