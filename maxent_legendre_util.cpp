@@ -6,6 +6,7 @@
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/variate_generator.hpp>
 #include <boost/random.hpp>
+#include <boost/math/special_functions/factorials.hpp>
 
 namespace bmth = boost::math;
 Legendre_util::Legendre_util(const double T,const int ndat, int maxl, const vector_type y, const vector_type sigma):lmax_(-1),T_(T),ndat_(ndat),maxl_(maxl),y_(y),sigma_(sigma) {}
@@ -96,7 +97,61 @@ double Legendre_util::generateGlBoot(vector_type gtau, void* arg){
     int l =  *(intptr_t *) arg;
     return Legendre_util::generateGl(gtau,l);
 }
-
+double Legendre_util::tl(int l, int p){
+    //E8 of Boehnke, et al
+    //NOTE: p is tail (order) number, starting at 1
+    if((l+p)%2==0)
+        return 0;
+    else{
+        
+    //(l+p-1)!/(l-p-1)! => product(l+q for q in range(-p+2,p))
+        double qsum =1;
+        for(int q=-p+2;q<p;q++)
+            qsum*=l+q;
+        return std::pow(-1.0,p)*2*std::sqrt(2*l+1)*qsum/bmth::factorial<double>(p-1);
+    }
+}
+double Legendre_util::enforceTails(vector_type gl_in,int l, std::pair<double,double> tails){
+    //TODO: generalize pair->vector for higher order tails?
+    //(10) of Boehnke, et al
+    //Gl=>Gl+correction=(beta^n*c_n-sum(tl(n)*gl))*tl(n)/sum(tl(n)^2)
+    
+    double lmax = gl_in.size();
+    //tails = [c1,c2]
+    double c1 = tails.first;
+    double c2 = tails.second;
+    double correction=0;
+    
+    double proj1sum = 0.0; double proj2sum=0.0;
+    double tailsum1=0.0; double tailsum2=0.0;
+    for(int lp=0;lp<lmax;lp++){
+        proj1sum+=tl(lp,1)*gl_in(lp);
+        proj2sum+=tl(lp,2)*gl_in(lp);
+        
+        tailsum1+=tl(lp,1)*tl(lp,1);
+        tailsum2+=tl(lp,2)*tl(lp,2);
+    }
+    correction+=(c1/T_-proj1sum)*tl(l,1)/tailsum1;
+    correction+=(c2/T_/T_-proj2sum)*tl(l,2)/tailsum2;
+    return correction;
+}
+double Legendre_util::enforceTailsBoot(vector_type gl_in, void *arg){
+    struct argstruct{
+        int l; std::pair<double,double> tails;
+    };
+    argstruct a = *(argstruct *) arg;
+    return enforceTails(gl_in,a.l,a.tails);
+}
+double Legendre_util::checkTail(vector_type gl_in, int order){
+    //(8) of Boehnke, et al
+    // cp=1/beta^p * sum(tl(p)*gl)
+    double lmax=gl_in.size();
+    double tailsum=0.0;
+    for(int i=0;i<lmax;i++){
+        tailsum+=tl(i,order)*gl_in(i);
+    }
+    return tailsum/std::pow(1/T_,order);
+}
 void Legendre_util::convertTauToGl(const alps::params &p){
 
     Gl.resize(maxl_+1);
@@ -115,12 +170,30 @@ void Legendre_util::convertTauToGl(const alps::params &p){
         err_[lmax_]=Gl_tmp.second;
         //TODO: check to see if Gl is within error bars
     }
+    std::pair<double,double> tails;
+    tails.first=1;tails.second=0;
+    vector_type GlCorrections(lmax_),errCorrections(lmax_);
+    struct argstruct{
+        int l; std::pair<double,double> tails;
+    };
+    for(int l=0;l<lmax_;l++){
+        argstruct a; a.l=l;a.tails=tails;
+        return_type gl = bootstrap(&Legendre_util::enforceTailsBoot,Gl,err_,&a,500);
+        //GlCorrections[l]=enforceTails(Gl,l, tails);
+        GlCorrections[l]=gl.first;
+        errCorrections[l]=gl.second;
+    }
+    //it is imporant to add tail corrections all at once
+    //and not change Gl while calculatating tails
+    for(int l=0;l<lmax_;l++){
+        Gl[l]+=GlCorrections[l];
+        err_[l]=std::sqrt(errCorrections[l]*errCorrections[l]+err_[l]*err_[l]);
+        
+    }
     
-    lmax_--;
     std::cout<<"Using " << lmax_ << " Legendre points" << std::endl;
-    if(p["VERBOSE"]|false)
-        std::cout << "With an error of:" <<std::abs(1) << std::endl;
-    //return Gl;
+    std::cout<<checkTail(Gl,1)<< " "<<checkTail(Gl,2)<<std::endl;
+    
 }
 
 void Legendre_util::reassignData(vector_type &y,vector_type &sigma, int &ndat,int &lmax, bool verbose){
