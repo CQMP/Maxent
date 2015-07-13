@@ -8,7 +8,7 @@
 #include <boost/random.hpp>
 
 namespace bmth = boost::math;
-Legendre_util::Legendre_util(const double T,const int ndat, int maxl, const vector_type y, const vector_type sigma):T_(T),ndat_(ndat),maxl_(maxl),y_(y),sigma_(sigma) {}
+Legendre_util::Legendre_util(const double T,const int ndat, int maxl, const vector_type y, const vector_type sigma):lmax_(-1),T_(T),ndat_(ndat),maxl_(maxl),y_(y),sigma_(sigma) {}
 
 void Legendre_util::constructTauPoints(const alps::params &p){
     tau_points.resize(ndat_);

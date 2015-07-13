@@ -123,7 +123,7 @@ private:
   ///the number of singular values
   int ns_;
   ///computed l cut off of legendre transform
-  int lmax =-1;
+  int lmax;
   ///compute the minimal chi2 that is possible given the SVD of the kernel
   void compute_minimal_chi2() const;
   ///reduce the matrices to the number of non-zero singular values

@@ -311,7 +311,7 @@ void MaxEntParameters::check_high_frequency_limit(const vector_type& y,const ker
         //now backcontinue default model and check high frequency limit
         // G(iw_{n})=\sum_{m}K_{nm}A_{m}
         std::complex<double> G;
-        iwn.imag()= (2*2000+1)*M_PI*T();
+        iwn.imag() = (2*2000+1)*M_PI*T();
         for(int j=0;j<nfreq();j++){
             G+= 1.0/(iwn-omega_coord(j))*Default().D(omega_coord(j)) * delta_omega(j);
         }
@@ -335,7 +335,7 @@ MaxEntParameters::MaxEntParameters(const alps::params& p) :
     ContiParameters(p),
     Default_(make_default_model(p, "DEFAULT_MODEL")),
     U_(ndat(), ndat()), Vt_(ndat(), nfreq()), Sigma_(ndat(), ndat()),
-    omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0)
+    omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0),lmax(-1)
 {
 
   for (int i=0; i<nfreq(); ++i) {

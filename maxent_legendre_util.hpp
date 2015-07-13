@@ -26,8 +26,8 @@ protected:
 	///error of Gl based on bootstrap
 	vector_type err_;
 	///legendre coefficient cutoff; also size of true Gl values
-	int lmax_=-1;
-	double generateGlBoot(vector_type gtau, void* arg);
+	int lmax_;
+	
 private:
 	///temperature = 1/beta
 	const double T_;
