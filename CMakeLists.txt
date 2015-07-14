@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
-#SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 find_package(ALPSCore REQUIRED)
 #include(${ALPS_USE_FILE})
+#BLAS and LAPACK find doesn't work well in c++ on apple
+#hard coding -framework Accelerate until better solution found
+#find_package(BLAS QUIET)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(UseGtest)
@@ -10,8 +13,7 @@ include(UseGtest)
 set (GTEST_INCLUDE_DIR ${GTEST_ROOT}/include )
 set (GTEST_SRC_DIR ${GTEST_ROOT}/src)
 
-#hack to get mac compile working because clang doesn't notice
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -framework Accelerate") 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2") 
 
 include_directories(${CMAKE_SOURCE_DIR}/gtest/include)
 include_directories(${GTEST_INCLUDE_DIR})
@@ -36,5 +38,5 @@ default_model.cpp
 ${GTEST_SRC_DIR}/gtest-all.cc
 )
 target_link_libraries(maxent
-${ALPSCore_LIBRARIES} gsl )
+	${ALPSCore_LIBRARIES} gsl ${LAPACK_LIBRARIES} "-framework Accelerate")
 
