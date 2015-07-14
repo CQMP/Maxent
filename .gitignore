@@ -23,6 +23,8 @@
 !CMakeLists.txt
 !cmake/
 !doxygen/Doxyfile
+!ublas_vector.hpp
+!maxent_parms_default.hpp
 
 .DS_Store
 

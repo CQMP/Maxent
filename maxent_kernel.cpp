@@ -37,18 +37,18 @@ namespace bmth = boost::math;
 kernel::kernel(const alps::params &p, const vector_type& freq, const int lmax):
 ndat_(p["NDAT"]),
 nfreq_(p["NFREQ"]),
-T_(p["T"]|1./static_cast<double>(p["BETA"])),
+T_(1./static_cast<double>(p["BETA"])),
 K_(ndat_,nfreq_)
 {
   using namespace boost::numeric;
   K_.clear();
 
-  std::string dataspace_name = p["DATASPACE"]|"time";
-  std::string kernel_name = p["KERNEL"]|"fermionic";
+  std::string dataspace_name = p["DATASPACE"];
+  std::string kernel_name = p["KERNEL"];
   boost::to_lower(dataspace_name);
   boost::to_lower(kernel_name);
-  bool ph_symmetry=p["PARTICLE_HOLE_SYMMETRY"]|false;
-  bool legdr_transform=p["LEGENDRE"]|false;
+  bool ph_symmetry=p["PARTICLE_HOLE_SYMMETRY"];
+  bool legdr_transform=p["LEGENDRE"];
   std::cout<<"using kernel "<<kernel_name<<" in domain "<<dataspace_name;
   if(ph_symmetry) std::cout<<" with ph symmetry"; else std::cout<<" without ph symmetry"; std::cout<<std::endl;
 

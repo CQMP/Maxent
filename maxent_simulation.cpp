@@ -27,23 +27,24 @@
  *****************************************************************************/
 
 #include "maxent.hpp"
-#include <alps/config.h> // needed to set up correct bindings
+//#include <alps/config.h> // needed to set up correct bindings
 #include <boost/numeric/bindings/lapack/driver/gesv.hpp>
 #include <boost/numeric/ublas/matrix_proxy.hpp>
 #include <boost/numeric/bindings/ublas.hpp>
-#include <alps/hdf5/ublas/vector.hpp>
+//#include <alps/hdf5/ublas/vector.hpp>			//TODO: determine if this is needed
+#include "ublas_vector.hpp"
 #include <alps/hdf5/vector.hpp>
 #include <boost/math/special_functions/fpclassify.hpp> //needed for boost::math::isnan
 
 MaxEntSimulation::MaxEntSimulation(const alps::params &parms)
 : MaxEntHelper(parms)
 , alpha((int)parms["N_ALPHA"])              //This is the # of \alpha parameters that should be tried.
-, norm(parms["NORM"]|1.0)                                             //The integral is normalized to NORM (use e.g. for self-energies
-, max_it(parms["MAX_IT"]|1000)                                       //The number of iterations done in the root finding procedure
-, Kernel_type(parms["KERNEL"]|"")
-, verbose(parms["VERBOSE"]|false)
-, text_output(parms["TEXT_OUTPUT"]|false)
-, self(parms["SELF"]|false)
+, norm(parms["NORM"])                                             //The integral is normalized to NORM (use e.g. for self-energies
+, max_it(parms["MAX_IT"])                                       //The number of iterations done in the root finding procedure
+, Kernel_type(parms["KERNEL"].as<std::string>())
+, verbose(parms["VERBOSE"])
+, text_output(parms["TEXT_OUTPUT"])
+, self(parms["SELF"])
 {
   std::string bn=parms["BASENAME"]; name=bn+'.';
 

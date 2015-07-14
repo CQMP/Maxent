@@ -3,15 +3,17 @@
 #include "maxent.hpp"
 #include "gtest/gtest.h"
 #include <iostream>
+#include "maxent_parms_default.hpp"
 
 TEST(Parameters,ContiParams){
 	//set up parameters
 	alps::params p;
+	set_defaults(p);
 	p["N_ALPHA"] = 60;
-	p["ALPHA_MAX"] = .01;
-	p["ALPHA_MAX"] = 20;
+	p["ALPHA_MIN"] = .01;
+	p["ALPHA_MAX"] = 20.0;
 	p["NORM"] = 1.0;
-	p["OMEGA_MAX"] = 6;
+	p["OMEGA_MAX"] = 6.0;
 	p["KERNEL"] = "fermionic"; 
 	p["BETA"] = 2.0;
 	p["NFREQ"] = 2001;
@@ -46,11 +48,12 @@ TEST(Parameters,ContiParams){
 TEST(Parameters,MaxentParams){
     //set up parameters
 	alps::params p;
+	set_defaults(p);
 	p["N_ALPHA"] = 60;
-	p["ALPHA_MAX"] = .01;
-	p["ALPHA_MAX"] = 20;
+	p["ALPHA_MIN"] = .01;
+	p["ALPHA_MAX"] = 20.0;
 	p["NORM"] = 1.0;
-	p["OMEGA_MAX"] = 6;
+	p["OMEGA_MAX"] = 6.0;
 	p["KERNEL"] = "fermionic";
 	p["BETA"] = 2.0;
 	p["NFREQ"] = 2001;
@@ -88,11 +91,12 @@ TEST(Parameters,MaxentParams){
 }
 TEST(Paramaters,HighFrequencyCheck){
     alps::params p;
+    set_defaults(p);
 	p["N_ALPHA"] = 60;
-	p["ALPHA_MAX"] = .01;
-	p["ALPHA_MAX"] = 20;
+	p["ALPHA_MIN"] = .01;
+	p["ALPHA_MAX"] = 20.0;
 	p["NORM"] = 1.0;
-	p["OMEGA_MAX"] = 6;
+	p["OMEGA_MAX"] = 6.0;
 	p["KERNEL"] = "fermionic";
 	p["BETA"] = 2.0;
 	p["NFREQ"] = 2001;
@@ -115,10 +119,10 @@ TEST(Paramaters,HighFrequencyCheck){
     std::string models[numModels] = {"flat","Gaussian","lorentzian","double gaussian","double lorentzian"};
     
     //specific params for default models
-    p["SIGMA"]=1;
+    p["SIGMA"]=1.0;
     p["GAMMA"]=.1;
     p["LAMBDA"]=.5;
-    p["SHIFT"]=2;
+    p["SHIFT"]=2.0;
     
     std::complex<double> G;
     for(int i=0;i<numModels;i++){

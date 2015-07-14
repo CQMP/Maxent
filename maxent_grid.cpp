@@ -33,20 +33,19 @@ nfreq_(p["NFREQ"]),
 t_array_(nfreq_+1){
   std::string p_f_grid = p["FREQUENCY_GRID"];
   boost::to_lower(p_f_grid);
+   double cut = p["CUT"];
   if (p_f_grid =="lorentzian") {
-    double cut = p["CUT"]|0.01;
     initialize_lorentzian_grid(cut);
   }
   else if (p_f_grid=="half lorentzian") {
-    double cut = p["CUT"]|0.01;
     initialize_half_lorentzian_grid(cut);
   }
   else if (p_f_grid=="quadratic") {
-    double s = p["SPREAD"]|4;
+    double s = p["SPREAD"];
     initialize_quadratic_grid(s);
   }
   else if (p_f_grid=="log") {
-    double t_min = p["LOG_MIN"] | 1.0e-4;
+    double t_min = p["LOG_MIN"];
     initialize_logarithmic_grid(t_min);
   }
   else if (p_f_grid=="linear") {
