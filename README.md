@@ -17,6 +17,9 @@ If your boost package does not come with it, simply checkout from [here](https:/
 #### BLAS/LAPACK
 Thanks to Boost this version currently uses uBLAS, but requires LAPACK support. Modify the `CMakeLists.txt` file as needed
 
+#### ALPSCore
+Please make sure to install ALPSCore with the cmake flags `-DALPS_HAVE_BLAS=1 -DALPS_HAVE_LAPACK=1`. This will ensure the actual libraries are used. If they are not set, internal ublas will be used instead.
+
 ## Installation
 To install provide something like:
 ```

@@ -26,7 +26,7 @@
  *****************************************************************************/
 
 #include "maxent.hpp"
-//#include <alps/config.h> // needed to set up correct bindings
+#include <alps/config.hpp> // needed to set up correct bindings
 #include <boost/numeric/bindings/ublas.hpp>
 #include <boost/numeric/ublas/matrix_proxy.hpp>
 #include <boost/numeric/ublas/vector_expression.hpp>

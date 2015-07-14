@@ -27,11 +27,10 @@
  *****************************************************************************/
 
 #include "maxent.hpp"
-//#include <alps/config.h> // needed to set up correct bindings
+#include <alps/config.hpp> // needed to set up correct bindings
 #include <boost/numeric/bindings/lapack/driver/gesv.hpp>
 #include <boost/numeric/ublas/matrix_proxy.hpp>
 #include <boost/numeric/bindings/ublas.hpp>
-//#include <alps/hdf5/ublas/vector.hpp>			//TODO: determine if this is needed
 #include "ublas_vector.hpp"
 #include <alps/hdf5/vector.hpp>
 #include <boost/math/special_functions/fpclassify.hpp> //needed for boost::math::isnan
