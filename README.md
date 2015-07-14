@@ -2,7 +2,22 @@ MaxEnt
 ======
 
 MaxEnt Project
+
 This branch requires the [ALPSCore library](https://github.com/ALPSCore/ALPSCore). 
+
+Table of Contents
+=================
+  * [MaxEnt](#maxent)
+    * [Requirements](#requirements)
+      * [Libraries](#libraries)
+        * [Boost](#boost)
+        * [BLAS/LAPACK](#blaslapack)
+        * [ALPSCore](#alpscore)
+    * [Installation](#installation)
+      * [Tests](#tests)
+    * [Usage](#usage)
+        * [Default Models](#default-models)
+        * [Grids](#grids)
 
 ## Requirements
 
@@ -31,7 +46,7 @@ $ make -j 8
 ```
 Sometimes it is more convenient to have `CC=gcc CXX=g++` (or clang, etc) before the cmake command.
 
-## Tests
+### Tests
 Once compiled please run `./maxent --test`
 to ensure everything works.
 
