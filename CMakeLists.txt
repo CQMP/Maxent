@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 project (MAXENT)
 
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
