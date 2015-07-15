@@ -68,6 +68,8 @@ void MaxEntSimulation::run()
   if (text_output) {
     spectral_function_file.open((name+"spex.dat").c_str());
     fits_file.open((name+"fits.dat").c_str());
+  spectral_function_file << std::setprecision(14);
+  fits_file << std::setprecision(14);
   }
   //this loop is the 'core' of the maxent program: iterate over all alphas, compute the spectra, normalization, and probabilities
   //loop over all alpha values
@@ -101,6 +103,7 @@ void MaxEntSimulation::evaluate(){
   if (text_output) {
     std::ofstream chi_squared_file;
     chi_squared_file.open((name+"chi2.dat").c_str());
+    chi_squared_file  << std::setprecision(14);
     for (std::size_t a=0; a<chi_sq.size(); ++a){
       chi_squared_file << alpha[a] << " " << chi_sq[a] << std::endl;
     }
@@ -119,6 +122,7 @@ void MaxEntSimulation::evaluate(){
   if (text_output){
     std::ofstream chispec_file;
     chispec_file.open((name+"chispec.dat").c_str());
+    chispec_file  << std::setprecision(14);
     for (std::size_t i=0; i<spectra[0].size(); ++i){
       chispec_file << omega_coord(i) << " " << spectra[a_chi][i]*norm << " " << def[i]*norm << std::endl;
     }
@@ -139,6 +143,7 @@ void MaxEntSimulation::evaluate(){
   if (text_output){
     std::ofstream maxspec_file;
     maxspec_file.open((name+"maxspec.dat").c_str());
+    maxspec_file <<std::setprecision(14);
     for (std::size_t i=0; i<spectra[0].size(); ++i)
       maxspec_file << omega_coord(i) << " " << spectra[max_a][i]*norm << " " << def[i]*norm << std::endl;
   }
@@ -158,6 +163,7 @@ void MaxEntSimulation::evaluate(){
   if (text_output){
     std::ofstream prob_str;
     prob_str.open((name+"prob.dat").c_str());
+    prob_str << std::setprecision(14);
     for (std::size_t a=0; a<prob.size(); ++a) {
       prob_str << alpha[a] << "\t" << prob[a] << "\n";
     }
@@ -187,6 +193,7 @@ void MaxEntSimulation::evaluate(){
   if (text_output){
     std::ofstream avspec_file;
     avspec_file.open((name+"avspec.dat").c_str());
+    avspec_file << std::setprecision(14);
     for (std::size_t  i=0; i<avspec.size(); ++i)
       avspec_file << omega_coord(i) << " " << avspec[i] << " " << def[i]*norm << std::endl;
   }
@@ -217,6 +224,7 @@ void MaxEntSimulation::evaluate(){
     }
     if (text_output) {
       std::ofstream avspec_anom_str((name+"maxspec_bose.dat").c_str());
+      avspec_anom_str << std::setprecision(14);
       for (std::size_t  i=0; i<avspec.size(); ++i){
         //if(omega_coord(i)>=0.)
         avspec_anom_str << omega_coord(i) << " " << avspec[i]*omega_coord(i)*M_PI<<std::endl;
@@ -229,6 +237,7 @@ void MaxEntSimulation::evaluate(){
     }
     if (text_output) {
       std::ofstream maxspec_anom_str ((name+"avspec_bose.dat").c_str());
+      maxspec_anom_str << std::setprecision(14);
       for (std::size_t i=0; i<spectra[0].size(); ++i){
         maxspec_anom_str << omega_coord(i) << " " << spectra[max_a][i]*norm*omega_coord(i)*M_PI << std::endl;
       }
@@ -247,6 +256,8 @@ void MaxEntSimulation::evaluate(){
     // for the self energy: use Im Sigma(omega)=-A(omega)*pi
     std::ofstream maxspec_self_str((name+"maxspec_self.dat").c_str());
     std::ofstream avspec_self_str ((name+"avspec_self.dat").c_str());
+    maxspec_self_str << std::setprecision(14);
+    avspec_self_str << std::setprecision(14);
     for (std::size_t  i=0; i<avspec.size(); ++i){ 
       avspec_self_str << omega_coord(i) << " " << -avspec[i]*M_PI<<std::endl;
     }
