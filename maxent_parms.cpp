@@ -36,6 +36,9 @@
 #include <alps/hdf5/vector.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/math/special_functions/legendre.hpp> //needed for Legendre transform
+namespace bmth = boost::math;
+//#include "maxent_legendre_util.hpp"
 
   // We provide a file with data points and error bars, the latter are used only if
   // COVARIANCE_MATRIX is not set. The format is
@@ -308,7 +311,7 @@ void MaxEntParameters::check_high_frequency_limit(const vector_type& y,const ker
         //now backcontinue default model and check high frequency limit
         // G(iw_{n})=\sum_{m}K_{nm}A_{m}
         std::complex<double> G;
-        iwn.imag()= (2*2000+1)*M_PI*T();
+        iwn.imag() = (2*2000+1)*M_PI*T();
         for(int j=0;j<nfreq();j++){
             G+= 1.0/(iwn-omega_coord(j))*Default().D(omega_coord(j)) * delta_omega(j);
         }
@@ -318,22 +321,29 @@ void MaxEntParameters::check_high_frequency_limit(const vector_type& y,const ker
             << std::abs(limit) <<" Check norm?"<< std:: endl;
         }
     }
+    //time space=> tail_1 = -G(0)-G(beta) = 1
+    if(kt==time_fermionic_kernel){
+        double err = (sigma(0)+sigma(ndat()-1))/2;
+        double limit = -y(0)-y(ndat()-1);
+        if(std::abs(limit-1)>err)
+            std::cerr<<"The high frequency limit is not +1!: " << limit
+            <<" Check norm?"<< std:: endl;
+    }
 }
 
 MaxEntParameters::MaxEntParameters(const alps::params& p) :
     ContiParameters(p),
     Default_(make_default_model(p, "DEFAULT_MODEL")),
     U_(ndat(), ndat()), Vt_(ndat(), nfreq()), Sigma_(ndat(), ndat()),
-    omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0)
+    omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0),lmax(-1)
 {
 
   for (int i=0; i<nfreq(); ++i) {
     omega_coord_[i] = (Default().omega_of_t(grid_(i)) + Default().omega_of_t(grid_(i+1)))/2.;
     delta_omega_[i] = Default().omega_of_t(grid_(i+1)) - Default().omega_of_t(grid_(i));
   }
-
   //build a kernel matrix
-  kernel ker(p,omega_coord_);
+  kernel ker(p,omega_coord_,lmax);
   K_=ker();
 
   //scale lhs and rhs according to errors, etc.

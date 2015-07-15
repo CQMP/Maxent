@@ -33,7 +33,7 @@
 #include <boost/numeric/bindings/ublas.hpp>
 #include <alps/hdf5/ublas/vector.hpp>
 #include <alps/hdf5/vector.hpp>
-
+#include <boost/math/special_functions/fpclassify.hpp> //needed for boost::math::isnan
 
 MaxEntSimulation::MaxEntSimulation(const alps::params &parms)
 : MaxEntHelper(parms)
@@ -270,6 +270,8 @@ vector_type MaxEntSimulation::levenberg_marquardt(vector_type u, const double al
   int it2 = 0;
   for (; it<max_it; it++) {
     vector_type delta;
+    if(boost::math::isnan(Q1))
+        throw std::logic_error("Q=NaN, something went wrong");
     for (it2=0; it2<max_it; ++it2) {
       //compute change vector delta to u
       delta = iteration(u, alpha, mu);

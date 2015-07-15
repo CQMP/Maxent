@@ -18,9 +18,13 @@
 !default_model.hpp
 !default_model.cpp
 !default_modelTest.cpp
+!maxent_legendre_util.cpp
+!maxent_legendre_util.hpp
 !CMakeLists.txt
 !cmake/
 !doxygen/Doxyfile
+!legendre_convert/legendre_convert.cpp
+!legendre_convert/CMakeLists.txt
 
 .DS_Store
 
