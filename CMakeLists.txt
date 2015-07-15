@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
+project (MAXENT)
+
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 find_package(ALPSCore REQUIRED)
 #include(${ALPS_USE_FILE})
@@ -20,8 +22,6 @@ include_directories(${GTEST_INCLUDE_DIR})
 include_directories(${GTEST_ROOT})
 include_directories("/usr/local/Cellar/gsl/1.16/include")
 link_directories("/usr/local/Cellar/gsl/1.16/lib")
-
-project (MAXENT)
 
 add_executable(maxent 
 maxent.cpp
