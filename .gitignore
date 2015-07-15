@@ -23,6 +23,8 @@
 !CMakeLists.txt
 !cmake/
 !doxygen/Doxyfile
+!legendre_convert/legendre_convert.cpp
+!legendre_convert/CMakeLists.txt
 
 .DS_Store
 

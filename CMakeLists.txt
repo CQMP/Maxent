@@ -34,3 +34,5 @@ ${GTEST_SRC_DIR}/gtest-all.cc
 target_link_libraries(maxent
 ${ALPS_LIBRARIES} gsl)
 
+add_subdirectory(legendre_convert)
+
