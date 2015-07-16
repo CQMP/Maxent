@@ -62,10 +62,6 @@ public:
 private:
   ///temperature
   const double T_;
-  ///number of fitting data points / size of y
-  int ndat_;
-  ///number of real frequencies
-  const int nfreq_;
 
   void read_data_from_text_file(const alps::params& p);
   void read_data_from_hdf5_file(const alps::params& p);
@@ -80,6 +76,10 @@ protected:
   ///This function removes the last element from the kernel and replaces it with a condition that enforces a strict normalization
   void enforce_strict_normalization(double sigma_normalization, double norm, const int ntab);
 
+  ///number of fitting data points / size of y
+  int ndat_; //TODO: find a better way of changing this. If we use Gl, we change the size of y
+  ///number of real frequencies
+  const int nfreq_;
   ///vector of Matsubara data
   vector_type y_;
   ///vector of errors on y

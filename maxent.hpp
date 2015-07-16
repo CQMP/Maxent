@@ -93,6 +93,12 @@ public:
   void evaluate();
   vector_type levenberg_marquardt(vector_type u, const double alpha) const;
   vector_type iteration(vector_type u, const double alpha, const double mu) const;
+  ///averaged spectrum
+  vector_type avspec;
+  ///classic MaxEnt
+  vector_type maxspec;
+  ///grid of Omega points
+  vector_type omegaGrid;
 
 private:
 
