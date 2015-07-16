@@ -56,7 +56,7 @@ inline void set_defaults(alps::params& p){
 	//		Kernel
 	//---------------------------------
 	p.define<std::string>("DATASPACE","time","DATASPACE");
-	p.define<std::string>("KERNEL","ferminonic","KERNEL");	
+	p.define<std::string>("KERNEL","fermionic","KERNEL");	
 	p.define<int>("PARTICLE_HOLE_SYMMETRY",false,"PH SYM"); 
 	//*********************************
 
