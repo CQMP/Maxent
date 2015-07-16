@@ -94,6 +94,9 @@ void MaxEntSimulation::run()
     if (verbose) std::cerr << "0.5*chi2  : " << 0.5*chi_squared;
     std::cerr << std::endl;
     if (text_output) print_chi2(transform_into_real_space(u), fits_file);
+    omegaGrid.resize(A.size());
+    for(std::size_t i=0;i<A.size();i++)
+	omegaGrid(i)=omega_coord(i);
   }
 }
   //everything from here on down is evaluation.
@@ -143,9 +146,10 @@ void MaxEntSimulation::evaluate(){
       maxspec_file << omega_coord(i) << " " << spectra[max_a][i]*norm << " " << def[i]*norm << std::endl;
   }
   {
-    vector_type specmax = spectra[max_a]*norm,specchi = spectra[a_chi]*norm;
+    maxspec = spectra[max_a]*norm;
+    vector_type specchi = spectra[a_chi]*norm;
     ar << alps::make_pvp("/spectrum/chi",specchi);
-    ar << alps::make_pvp("/spectrum/maximum",specmax);
+    ar << alps::make_pvp("/spectrum/maximum",maxspec);
   }
   vector_type prob(lprob.size());
   for (std::size_t a=0; a<prob.size(); ++a) 
@@ -168,7 +172,7 @@ void MaxEntSimulation::evaluate(){
   std::cout << "posterior probability of the default model: " << postprobdef << std::endl;
 
   //compute 'average' spectral function (Brian's method)
-  vector_type avspec(spectra[0].size());
+  avspec.resize(spectra[0].size());
   for (std::size_t i=0; i<avspec.size(); ++i) {
     avspec[i] = 0.;
     for (std::size_t a=0; a<prob.size()-1; ++a) 
