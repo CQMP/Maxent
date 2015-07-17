@@ -8,6 +8,7 @@ find_package(ALPSCore REQUIRED)
 find_package(LAPACK REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(UseGtest)
+include(UseBindings)
 find_package(GSL REQUIRED)
 
 #set (GTEST_ROOT gtest )
@@ -20,6 +21,7 @@ include_directories(${CMAKE_SOURCE_DIR}/gtest/include)
 include_directories(${GTEST_INCLUDE_DIR})
 include_directories(${GTEST_ROOT})
 include_directories(${GSL_INCLUDE_DIR})
+include_directories(${BINDINGS_INCLUDE_DIR})
 
 add_executable(maxent 
 maxent.cpp

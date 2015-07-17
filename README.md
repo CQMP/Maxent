@@ -28,8 +28,7 @@ Table of Contents
 #### Boost
 When compiling both ALPSCore and MaxEnt, be careful to ensure boost was compiled with the same library and stdlib as ALPSCore and MaxEnt.   
 
-We also require `boost/numeric/bindings`. 
-If your boost package does not come with it, simply checkout from [here](https://svn.boost.org/svn/boost/sandbox/numeric_bindings/) and copy the `boost` folder wherever your installation directory is (`/usr/local/Cellar/` for homebrew or `/usr/local/include/`) 
+We also require `boost/numeric/bindings`. Cmake will automatically try to find it or fetch it using subversion.
 
 #### BLAS/LAPACK
 Thanks to Boost this version currently uses uBLAS, but requires LAPACK support. Modify the `CMakeLists.txt` file as needed
