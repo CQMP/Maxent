@@ -1,0 +1,7 @@
+#pragma once
+
+// Define if you have BLAS library
+#cmakedefine HAVE_BLAS
+//
+// // Define if you have LAPACK library
+#cmakedefine HAVE_LAPACK

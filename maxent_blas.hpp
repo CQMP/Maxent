@@ -28,6 +28,7 @@
 #pragma once
 
 #include <alps/config.hpp> // needed to set up correct bindings
+#include "maxent_config.hpp"
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/bindings/ublas.hpp>
 #include <boost/numeric/ublas/io.hpp>
@@ -43,7 +44,7 @@ typedef std::pair<vector_type, complex_vector_type> omega_complex_type;
 
 ///matrix-vector multiplication. TODO: this should be delegated to a matrix library
 inline vector_type maxent_prec_prod(const matrix_type &p, const vector_type &q) {
-#ifdef ALPS_HAVE_LAPACK
+#ifdef HAVE_LAPACK
   vector_type r(p.size1());
   double alpha=1.;
   double beta=0.;
@@ -55,7 +56,7 @@ inline vector_type maxent_prec_prod(const matrix_type &p, const vector_type &q) 
 }
 ///matrix-vector multiplication of transpose of matrix. TODO: this should be delegated to a matrix library
 inline vector_type maxent_prec_prod_trans(const matrix_type &p, const vector_type &q) {
-#ifdef ALPS_HAVE_LAPACK
+#ifdef HAVE_LAPACK
   vector_type r(p.size2());
   double alpha=1.;
   double beta=0.;
@@ -67,7 +68,7 @@ inline vector_type maxent_prec_prod_trans(const matrix_type &p, const vector_typ
 }
 ///matrix-matrix multiplication. TODO: this should be delegated to a matrix library
 inline matrix_type maxent_prec_prod(const matrix_type &p, const matrix_type &q) {
-#ifdef ALPS_HAVE_LAPACK
+#ifdef HAVE_LAPACK
   matrix_type r(p.size1(), q.size2());
   double alpha=1.;
   double beta=0.;
@@ -79,7 +80,7 @@ inline matrix_type maxent_prec_prod(const matrix_type &p, const matrix_type &q) 
 }
 ///matrix-matrix multiplication of transpose(p) with q. TODO: this should be delegated to a matrix library
 inline matrix_type maxent_prec_prod_trans(const matrix_type &p, const matrix_type &q) {
-#ifdef ALPS_HAVE_LAPACK
+#ifdef HAVE_LAPACK
   matrix_type r(p.size2(), q.size2());
   double alpha=1.;
   double beta=0.;

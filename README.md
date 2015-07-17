@@ -31,10 +31,10 @@ When compiling both ALPSCore and MaxEnt, be careful to ensure boost was compiled
 We also require `boost/numeric/bindings`. Cmake will automatically try to find it or fetch it using subversion.
 
 #### BLAS/LAPACK
-Thanks to Boost this version currently uses uBLAS, but requires LAPACK support. Modify the `CMakeLists.txt` file as needed
+Thanks to Boost this version currently uses uBLAS, but requires LAPACK support. 
 
 #### ALPSCore
-Please make sure to install ALPSCore with the cmake flags `-DALPS_HAVE_BLAS=1 -DALPS_HAVE_LAPACK=1`. This will ensure the actual libraries are used. If they are not set, internal ublas will be used instead.
+ALPSCore needs to be properly installed, see [ALPSCore library](https://github.com/ALPSCore/ALPSCore).
 
 ## Installation
 To install provide something like:

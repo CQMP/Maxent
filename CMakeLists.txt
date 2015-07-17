@@ -6,6 +6,19 @@ find_package(ALPSCore REQUIRED)
 
 #note: LAPACK also finds BLAS
 find_package(LAPACK REQUIRED)
+if(LAPACK_FOUND)
+    set(HAVE_BLAS 1)
+    set(HAVE_LAPACK 1)
+else()
+    set(HAVE_BLAS 0)
+    set(HAVE_LAPACK 0)
+endif()
+configure_file(
+	"${PROJECT_SOURCE_DIR}/cmake/maxent_config.hpp.in"
+	"${PROJECT_BINARY_DIR}/config/maxent_config.hpp"
+    )
+
+include_directories("${PROJECT_BINARY_DIR}/config")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(UseGtest)
 include(UseBindings)
