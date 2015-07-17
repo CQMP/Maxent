@@ -41,3 +41,5 @@ ${GTEST_SRC_DIR}/gtest-all.cc
 target_link_libraries(maxent
 	${ALPSCore_LIBRARIES} gsl ${LAPACK_LIBRARIES} "-framework Accelerate")
 
+add_subdirectory(legendre_convert)
+
