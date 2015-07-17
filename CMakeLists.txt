@@ -3,25 +3,23 @@ project (MAXENT)
 
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 find_package(ALPSCore REQUIRED)
-#include(${ALPS_USE_FILE})
-#BLAS and LAPACK find doesn't work well in c++ on apple
-#hard coding -framework Accelerate until better solution found
-#find_package(BLAS QUIET)
 
+#note: LAPACK also finds BLAS
+find_package(LAPACK REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(UseGtest)
+find_package(GSL REQUIRED)
 
 #set (GTEST_ROOT gtest )
 set (GTEST_INCLUDE_DIR ${GTEST_ROOT}/include )
 set (GTEST_SRC_DIR ${GTEST_ROOT}/src)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2") 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 
 include_directories(${CMAKE_SOURCE_DIR}/gtest/include)
 include_directories(${GTEST_INCLUDE_DIR})
 include_directories(${GTEST_ROOT})
-include_directories("/usr/local/Cellar/gsl/1.16/include")
-link_directories("/usr/local/Cellar/gsl/1.16/lib")
+include_directories(${GSL_INCLUDE_DIR})
 
 add_executable(maxent 
 maxent.cpp
@@ -39,7 +37,7 @@ default_model.cpp
 ${GTEST_SRC_DIR}/gtest-all.cc
 )
 target_link_libraries(maxent
-	${ALPSCore_LIBRARIES} gsl ${LAPACK_LIBRARIES} "-framework Accelerate")
+	${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} )
 
 add_subdirectory(legendre_convert)
 
