@@ -16,6 +16,8 @@ Table of Contents
     * [Installation](#installation)
       * [Tests](#tests)
     * [Usage](#usage)
+        * [Input](#input) 
+        * [Kernels](#kernels)
         * [Default Models](#default-models)
         * [Grids](#grids)
 
@@ -52,6 +54,33 @@ to ensure everything works.
 
 ## Usage
 See `./maxent --help` for a list of required and availble parameters. 
+
+#### Input
+##### Particle Hole Symmetric Data
+The Green's function for PH symmetric data is 0, therefore we only require the imaginary part.
+Input file:
+```
+n imag sigma
+//example:
+0 imag0 sigma0
+1 imag1 sigma1
+...
+```
+##### Non-Particle Hole Symmetric Data
+This assumes a non-zero real part of the Green's function. Input data should be:
+```
+n real sigma_real
+n imag sigma_imag
+//example:
+0 real0 sigma_real0
+0 imag0 sigma_imag0
+1 real1 sigma_real1
+1 imag1 sigma_imag1
+```
+#### Kernels
+![screen shot 2015-07-17 at 3 48 00 pm](https://cloud.githubusercontent.com/assets/7354063/8755755/47c93aba-2c9b-11e5-8743-359ab6271827.png)
+![screen shot 2015-07-17 at 3 48 04 pm](https://cloud.githubusercontent.com/assets/7354063/8755770/57c4ab3e-2c9b-11e5-98a3-1a073d67ee34.png)
+
 #### Default Models
 * Flat
 * Gaussian
