@@ -27,7 +27,6 @@ maxent_gridTest.cpp
 maxent_kernel.cpp
 maxent_legendre_util.cpp
 maxent_simulation.cpp
-maxent_simulationTest.cpp
 default_modelTest.cpp
 default_model.cpp
 ${GTEST_SRC_DIR}/gtest-all.cc
