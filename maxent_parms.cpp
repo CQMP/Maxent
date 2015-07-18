@@ -311,7 +311,7 @@ void MaxEntParameters::check_high_frequency_limit(const vector_type& y,const ker
         //now backcontinue default model and check high frequency limit
         // G(iw_{n})=\sum_{m}K_{nm}A_{m}
         std::complex<double> G;
-        iwn.imag() = (2*2000+1)*M_PI*T();
+        iwn = std::complex<double>(iwn.real(), (2*2000+1)*M_PI*T());
         for(int j=0;j<nfreq();j++){
             G+= 1.0/(iwn-omega_coord(j))*Default().D(omega_coord(j)) * delta_omega(j);
         }
