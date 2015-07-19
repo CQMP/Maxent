@@ -114,8 +114,15 @@ imag_domain_grid::imag_domain_grid(const PadeParams &p){
   N_freq_= p["imag.NDAT"];
   freq_.resize(N_freq_);
   T_=1./p["imag.BETA"].as<double>();
-  
-  for(int i=0;i<N_freq_;++i){
-    freq_[i]=(2*i+1)*M_PI*T_;
-  }
+  std::cout<<"statistics is: "<<p["imag.STATISTICS"]<<std::endl;
+  if(p["imag.STATISTICS"]==std::string("Fermi")){
+    for(int i=0;i<N_freq_;++i){
+      freq_[i]=(2*i+1)*M_PI*T_;
+    }
+  }else if(p["imag.STATISTICS"]==std::string("Bose")){
+    for(int i=0;i<N_freq_;++i){
+      freq_[i]=(2*i)*M_PI*T_;
+    }
+  }else
+   throw std::runtime_error("statistics (Fermi/Bose) not understood");
 }

@@ -38,12 +38,13 @@ imaginary_domain_data::imaginary_domain_data(const PadeParams &p):G_(p){
   std::ifstream datstream(fname.c_str());
   if (!datstream)
     boost::throw_exception(std::invalid_argument("could not open data file: "+fname));
-  std::cerr<<"reading column text data as #freq real imag"<<std::endl;
+  std::cout<<"reading column text data as #freq real imag"<<std::endl;
   double index, X_i_real,X_i_imag;
   for(int i=0;i<N_imag_;++i){
     datstream >> index >> X_i_real >> X_i_imag >> std::ws;
     std::cout<<" read: "<<index<<" "<<X_i_real<<" "<<X_i_imag<<std::endl;
     val_[i] = std::complex<double>(X_i_real, X_i_imag)/norm_;
+    if(std::abs(G_.freq(i)-index)>1.e-5) throw std::invalid_argument("Grid mismatch. make sure the first entry contains the grid points!!");
   }
 }
 
