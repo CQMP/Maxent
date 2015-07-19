@@ -107,6 +107,7 @@ private:
     define<double>("imag.BETA", "inverse temperature");
     define<std::string>("imag.STATISTICS", "Fermi or Bose statistics");
     define<std::string>("imag.DATA", "text input data file in the format \"freq real imag\"");
+    define<bool>("imag.NEGATIVE_DATA", false, "set to true if data for both pos and neg frequencies");
     
     define<int>("pade.PADE_NUMERATOR_DEGREE", "Degree of pade numerator");
     define<int>("pade.PADE_DENOMINATOR_DEGREE", "Degree of pade numerator");

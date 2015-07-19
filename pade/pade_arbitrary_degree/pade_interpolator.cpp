@@ -44,10 +44,12 @@ void pade_interpolator::pade_interpolate(const imaginary_domain_data &data, real
   
   //extract Matsubara frequencies, Matsubara data, and real frequencies
   pade_complex_vector_type real_frequencies(N_real);
+  //pade_complex_vector_type imag_frequencies(N_real);
   pade_complex_vector_type matsubara_frequencies(N_imag);
   pade_complex_vector_type matsubara_values(N_imag);
   for(int i=0;i<N_real;++i){
     real_frequencies[i]=pade_complex_type(real.freq()[i], 0.);
+    //imag_frequencies[i]=pade_complex_type(0., real.freq()[i]);
   }
   for(int i=0;i<N_imag;++i){
     matsubara_frequencies[i]=pade_complex_type(0.,data.freq()[i]);
@@ -77,7 +79,7 @@ void pade_interpolator::pade_interpolate(const imaginary_domain_data &data, real
   std::cerr<<"evaluating."<<std::endl;
 #pragma omp parallel for default(none) shared(real) firstprivate(q,matsubara_values,matsubara_frequencies,Vinv,real_frequencies,N_real)
   for(int k=0;k<N_real;++k){
-    pade_complex_type x0;
+    //real.val()[k]=to_simple_precision(evaluate_bary_poly(q, matsubara_values, matsubara_frequencies, Vinv,  pade_mu_,  pade_nu_, imag_frequencies[k]));
     real.val()[k]=to_simple_precision(evaluate_bary_poly(q, matsubara_values, matsubara_frequencies, Vinv,  pade_mu_,  pade_nu_, real_frequencies[k]));
   }
 

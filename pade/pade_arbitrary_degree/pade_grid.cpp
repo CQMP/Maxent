@@ -120,8 +120,16 @@ imag_domain_grid::imag_domain_grid(const PadeParams &p){
       freq_[i]=(2*i+1)*M_PI*T_;
     }
   }else if(p["imag.STATISTICS"]==std::string("Bose")){
-    for(int i=0;i<N_freq_;++i){
-      freq_[i]=(2*i)*M_PI*T_;
+    if(p["imag.NEGATIVE_DATA"]){
+      if(N_freq_%2 ==0) throw std::invalid_argument("make sure your grid has ODD entries when doing bosons with neg freq");
+      for(int i=0;i<N_freq_;++i){
+        freq_[i]=(2*(i-N_freq_/2))*M_PI*T_;
+        std::cout<<"freq: "<<freq_[i]<<std::endl;
+      }
+    }else{
+      for(int i=0;i<N_freq_;++i){
+        freq_[i]=(2*i)*M_PI*T_;
+      }
     }
   }else
    throw std::runtime_error("statistics (Fermi/Bose) not understood");
