@@ -28,10 +28,10 @@
 
 
 pade_interpolator::pade_interpolator(const PadeParams &p){
-  pade_mu_=p["PADE_NUMERATOR_DEGREE"];
-  pade_nu_=p["PADE_DENOMINATOR_DEGREE"];
-  if(pade_mu_+pade_nu_ +1 != p["NDAT"].as<int>()) throw std::runtime_error("Ill defined interpolation: please make sure that numerator degree + denominator degree + 1 = # of data points");
-  mpf_set_default_prec(p["FLOAT_PRECISION"]);
+  pade_mu_=p["pade.PADE_NUMERATOR_DEGREE"];
+  pade_nu_=p["pade.PADE_DENOMINATOR_DEGREE"];
+  if(pade_mu_+pade_nu_ +1 != p["imag.NDAT"].as<int>()) throw std::runtime_error("Ill defined interpolation: please make sure that numerator degree + denominator degree + 1 = # of data points");
+  mpf_set_default_prec(p["pade.FLOAT_PRECISION"]);
   find_epsilon();
 }
 

@@ -30,11 +30,11 @@
 imaginary_domain_data::imaginary_domain_data(const PadeParams &p):G_(p){
   //if(!p.defined("NORM")){ throw std::runtime_error("normalization parameter NORM missing!"); }
   norm_=1.;//p["NORM"]; PADE DOES NOT KNOW HOW TO DEAL WITH NORM!
-  N_imag_=p["NDAT"];
+  N_imag_=p["imag.NDAT"];
   val_.resize(N_imag_);
   
   //our data is defined in a data file.
-  std::string fname = p["DATA"];
+  std::string fname = p["imag.DATA"];
   std::ifstream datstream(fname.c_str());
   if (!datstream)
     boost::throw_exception(std::invalid_argument("could not open data file: "+fname));

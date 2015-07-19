@@ -40,6 +40,6 @@ int main(int argc, const char* argv[])
   pade_interpolator P(parms);
   P.pade_interpolate(f_iomega, f_omega);
   
-  f_omega.write(parms["OUTPUT"]);
+  f_omega.write(parms["real.OUTPUT"]);
   return 0;
 }

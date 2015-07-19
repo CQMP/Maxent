@@ -99,8 +99,8 @@ void grid::setup_grid(const PadeParams &p){
   else
     boost::throw_exception(std::invalid_argument("No valid frequency grid specified"));
   
-  omega_max_=p["OMEGA_MAX"];
-  omega_min_=p["OMEGA_MIN"];
+  omega_max_=p["real.OMEGA_MAX"];
+  omega_min_=p["real.OMEGA_MIN"];
   
   //store the frequencies and frequency differences (integration weights)
   for(int i=0;i<freq_.size();++i){
@@ -111,9 +111,9 @@ void grid::setup_grid(const PadeParams &p){
 
 
 imag_domain_grid::imag_domain_grid(const PadeParams &p){
-  N_freq_= p["NDAT"];
+  N_freq_= p["imag.NDAT"];
   freq_.resize(N_freq_);
-  T_=1./p["BETA"].as<double>();
+  T_=1./p["imag.BETA"].as<double>();
   
   for(int i=0;i<N_freq_;++i){
     freq_[i]=(2*i+1)*M_PI*T_;

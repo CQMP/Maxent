@@ -28,7 +28,7 @@
 
 
 real_domain_data::real_domain_data(const PadeParams &p):G_(p){
-  N_real_=p["NFREQ"];
+  N_real_=p["real.NFREQ"];
   val_.resize(N_real_);
 }
 void real_domain_data::write(const std::string &s) const{
