@@ -23,21 +23,53 @@
  *
  *****************************************************************************/
 
-#ifndef ALPS_TOOL_PADE_HPP
-#define ALPS_TOOL_PADE_HPP
-#include<alps/ngs.hpp>
-#include<alps/numeric/matrix.hpp>
-#include <gmpxx.h>
+#pragma once
+#include<complex>
+#include<vector>
+#include<gmpxx.h>
+#include<Eigen/Core>
+#include "alps/params.hpp"
+#include<tgmath.h>
+
 typedef std::vector<double> vector_type;
 typedef std::vector<std::complex<double> > complex_vector_type;
 
 //typedefs:
-//typedef double pade_real_type;
 typedef mpf_class pade_real_type;
 typedef std::complex<pade_real_type> pade_complex_type;
 typedef std::vector<pade_real_type> pade_vector_type;
 typedef std::vector<pade_complex_type> pade_complex_vector_type;
-typedef alps::numeric::matrix<pade_complex_type> pade_complex_matrix_type;
+
+//missing arithmetics
+inline bool isnan(pade_complex_type x){ return false;}
+inline bool isinf(pade_complex_type x){ return false;}
+inline pade_real_type copysign(const pade_real_type &a, const pade_real_type &b){
+  return sgn(a)==sgn(b)?a:-a;
+}
+inline pade_complex_type operator/(const pade_complex_type &p, const pade_complex_type &q){
+  pade_real_type a=p.real(), b=p.imag(), c=q.real(), d=q.imag();
+  return std::complex<pade_real_type>((a*c+b*d)/(c*c+d*d), (b*c-a*d)/(c*c+d*d));
+}
+namespace Eigen {
+template<> struct NumTraits<pade_complex_type>
+ : NumTraits<double> // permits to get the epsilon, dummy_precision, lowest, highest functions
+{
+  typedef pade_real_type Real;
+  typedef pade_complex_type NonInteger;
+  typedef pade_complex_type Nested;
+  enum {
+    IsComplex = 1,
+    IsInteger = 0,
+    IsSigned = 1,
+    RequireInitialization = 1,
+    ReadCost = 1,
+    AddCost = 3,
+    MulCost = 3
+  };
+};
+}
+
+typedef Eigen::Matrix<pade_complex_type, Eigen::Dynamic, Eigen::Dynamic> pade_complex_matrix_type;
 
 enum frequency_grid_type{
   lorentzian_grid,
@@ -51,11 +83,44 @@ enum imaginary_domain{
   omegan
 };
 
+class PadeParams:public alps::params {
+public:
+  PadeParams(){
+    define_parameters();
+  }
+  PadeParams(int argc, const char* argv[]):alps::params(argc, argv){
+    define_parameters();
+  }
+
+private:
+  void define_parameters(){
+    define<int>("real.NFREQ", "Number of real frequency points");
+    define<std::string>("real.FREQUENCY_GRID", "Type of real frequency grid: Lorentzian, half Lorentzian, quadratic, log, or linear");
+    define<double>("real.CUT", 0.01, "Lorentzian cutoff parameter");
+    define<double>("real.SPREAD", 4, "Quadratic grid spread parameter");
+    define<double>("real.LOG_MIN", 1.0e-4, "Log grid minimum point parameter");
+    define<double>("real.OMEGA_MIN", -25, "lowest frequency point");
+    define<double>("real.OMEGA_MAX", 25, "highest frequency point");
+    
+    define<int>("imag.NDAT", "number of input frequency points");
+    define<double>("imag.BETA", "inverse temperature");
+    define<std::string>("imag.DATA", "text input data file in the format \"freq real imag\"");
+    
+    define<int>("pade.PADE_NUMERATOR_DEGREE", "Degree of pade numerator");
+    define<int>("pade.PADE_DENOMINATOR_DEGREE", "Degree of pade numerator");
+    define<int>("pade.FLOAT_PRECISION", 256, "Precision of floating point arithmetics");
+   
+    if (help_requested(std::cout)) {
+      exit(0);
+    }
+  }
+};
+
 //this class contains the real frequency discretization. A typical case is a logarithmic grid with many points near zero and few at high frequencies
 class grid{
 public:
   //constructor
-  grid(const alps::params &p);
+  grid(const PadeParams &p);
   //grid frequency points
   const vector_type &freq() const{ return freq_; }
   //delta_freq contains the half the distance between points i-1 and i+1
@@ -66,7 +131,7 @@ public:
   double t_of_omega(const double omega) const { return (omega-omega_min_)/(omega_max_-omega_min_); }
 private:
   //construct a grid
-  void setup_grid(const alps::params &p);
+  void setup_grid(const PadeParams &p);
   //number of frequencies
   int N_freq_;
   //type of the grid
@@ -85,7 +150,7 @@ private:
 
 class imag_domain_grid{
 public:
-  imag_domain_grid(const alps::params &p);
+  imag_domain_grid(const PadeParams &p);
   const double &freq(int i) const{return freq_[i];}
   const vector_type &freq() const{return freq_;}
 private:
@@ -101,7 +166,7 @@ private:
 class imaginary_domain_data{
 public:
   //constructor
-  imaginary_domain_data(const alps::params &p);
+  imaginary_domain_data(const PadeParams &p);
   //get the data of frequency/time i
   const std::complex<double> &operator()(int i) const{ return val_[i];}
   //number of data points
@@ -130,7 +195,7 @@ private:
 class real_domain_data{
 public:
   //constructor
-  real_domain_data(const alps::params &p);
+  real_domain_data(const PadeParams &p);
   //number of real frequencies
   int N_real() const{return N_real_;}
   //function values of the continued function, immutable access
@@ -151,7 +216,7 @@ private:
 class pade_interpolator{
 public:
   //constructor
-  pade_interpolator(const alps::params &p);
+  pade_interpolator(const PadeParams &p);
   //interpolation routine
   void pade_interpolate(const imaginary_domain_data &data, real_domain_data &real) const;
   
@@ -187,5 +252,3 @@ public:
   void backsub_upper(const pade_complex_matrix_type &Linv, const pade_complex_vector_type &rhs, pade_complex_vector_type &res);
   void solve(const pade_complex_matrix_type &A, const pade_complex_vector_type &rhs, pade_complex_vector_type &res);
 };
-
-#endif

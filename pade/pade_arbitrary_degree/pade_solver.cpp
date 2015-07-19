@@ -28,7 +28,7 @@
 
 
 void pade_solver::backsub_lower(const pade_complex_matrix_type &Linv, const pade_complex_vector_type &rhs, pade_complex_vector_type &res){
-  int N=Linv.num_rows();
+  int N=Linv.rows();
   for(int i=0;i<N;++i){
     pade_complex_type tmp(0.,0.);
     for(int j=0;j<i;++j){
@@ -38,7 +38,7 @@ void pade_solver::backsub_lower(const pade_complex_matrix_type &Linv, const pade
   }
 }
 void pade_solver::backsub_upper(const pade_complex_matrix_type &Uinv, const pade_complex_vector_type &rhs, pade_complex_vector_type &res){
-  int N=Uinv.num_rows();
+  int N=Uinv.rows();
   for(int i=N-1;i>=0;--i){
     pade_complex_type tmp(0.,0.);
     for(int j=i+1;j<N;++j){
@@ -51,8 +51,9 @@ void pade_solver::backsub_upper(const pade_complex_matrix_type &Uinv, const pade
 //run an LU decomposition with pivoting, then back-substitute
 void pade_solver::solve(const pade_complex_matrix_type &A, const pade_complex_vector_type &rhs, pade_complex_vector_type &res){
   std::cerr<<"multiprecision solver."<<std::endl;
-  int N=A.num_rows();
-  pade_complex_matrix_type P(pade_complex_matrix_type::identity_matrix(N));
+  int N=A.rows();
+  pade_complex_matrix_type P=pade_complex_matrix_type::Identity(N,N);
+  //pade_complex_matrix_type P(pade_complex_matrix_type::identity_matrix(N));
   pade_complex_matrix_type L(P);
   pade_complex_matrix_type U(A);
   std::vector<int> pivot(N); for(int i=0;i<N;++i) pivot[i]=i;

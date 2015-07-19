@@ -27,7 +27,7 @@
 #include <fstream>
 
 
-real_domain_data::real_domain_data(const alps::params &p):G_(p){
+real_domain_data::real_domain_data(const PadeParams &p):G_(p){
   N_real_=p["NFREQ"];
   val_.resize(N_real_);
 }

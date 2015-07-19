@@ -27,11 +27,11 @@
 #include <fstream>
 
 
-pade_interpolator::pade_interpolator(const alps::params &p){
+pade_interpolator::pade_interpolator(const PadeParams &p){
   pade_mu_=p["PADE_NUMERATOR_DEGREE"];
   pade_nu_=p["PADE_DENOMINATOR_DEGREE"];
-  if(pade_mu_+pade_nu_ +1 != (int)(p["NDAT"])) throw std::runtime_error("Ill defined interpolation: please make sure that numerator degree + denominator degree + 1 = # of data points");
-  mpf_set_default_prec(p["FLOAT_PRECISION"]|256);
+  if(pade_mu_+pade_nu_ +1 != p["NDAT"].as<int>()) throw std::runtime_error("Ill defined interpolation: please make sure that numerator degree + denominator degree + 1 = # of data points");
+  mpf_set_default_prec(p["FLOAT_PRECISION"]);
   find_epsilon();
 }
 
@@ -136,7 +136,8 @@ void pade_interpolator::fill_Vinv_matrix(pade_complex_matrix_type &Vinv, const p
   }
 }
 void pade_interpolator::assemble_matrix_system(pade_complex_matrix_type &Lambda, pade_complex_vector_type &rhs, const pade_complex_matrix_type &Vinv, const pade_complex_vector_type &f, int m, int n) const{
-  pade_complex_matrix_type M(n+m,n+m+1, pade_complex_type(0., 0.));
+  pade_complex_matrix_type M(n+m,n+m+1);
+  //pade_complex_matrix_type M(n+m,n+m+1, pade_complex_type(0., 0.));
   //assemble upper half
   //std::cout<<"assembling upper half"<<std::endl;
   for(int k=0;k<m;++k){

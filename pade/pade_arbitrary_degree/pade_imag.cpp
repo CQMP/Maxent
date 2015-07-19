@@ -27,38 +27,23 @@
 #include <fstream>
 
 
-imaginary_domain_data::imaginary_domain_data(const alps::params &p):G_(p){
+imaginary_domain_data::imaginary_domain_data(const PadeParams &p):G_(p){
   //if(!p.defined("NORM")){ throw std::runtime_error("normalization parameter NORM missing!"); }
   norm_=1.;//p["NORM"]; PADE DOES NOT KNOW HOW TO DEAL WITH NORM!
   N_imag_=p["NDAT"];
   val_.resize(N_imag_);
-  //std::cerr<<"Data normalized to: "<<norm_<<std::endl;
+  
   //our data is defined in a data file.
-  if (p.defined("DATA")) {
-    std::string fname = p["DATA"];
-    //the data file is a hdf5 data file
-    if(p.defined("DATA_IN_HDF5") && p["DATA_IN_HDF5"]) {
-      throw std::runtime_error("check and validate hdf5 data reading!");
-    } else {
-      std::ifstream datstream(fname.c_str());
-      if (!datstream)
-        boost::throw_exception(std::invalid_argument("could not open data file: "+fname));
-      std::cerr<<"reading column text data as #freq real imag"<<std::endl;
-      double index, X_i_real,X_i_imag;
-      for(int i=0;i<N_imag_;++i){
-        //if(!datstream.good()) throw std::runtime_error("problem with reading input data, not enough data or wrong format?");
-        datstream >> index >> X_i_real >> X_i_imag >> std::ws;
-        std::cout<<" read: "<<index<<" "<<X_i_real<<" "<<X_i_imag<<std::endl;
-        val_[i] = std::complex<double>(X_i_real, X_i_imag)/norm_;
-      }
-    }
-  } else {
-    std::cerr<<"reading data from parameter file"<<std::endl;
-    for (int i=0; i<N_imag_; ++i){
-      if(!p.defined("X_Re_"+boost::lexical_cast<std::string>(i))){ throw std::runtime_error("parameter X_Re_i missing!"); }
-      if(!p.defined("X_Im_"+boost::lexical_cast<std::string>(i))){ throw std::runtime_error("parameter X_Im_i missing!"); }
-      val_[i] = std::complex<double>(p["X_Re_"+boost::lexical_cast<std::string>(i)],p["X_Im_"+boost::lexical_cast<std::string>(i)])/static_cast<double>(p["NORM"]);
-    }
+  std::string fname = p["DATA"];
+  std::ifstream datstream(fname.c_str());
+  if (!datstream)
+    boost::throw_exception(std::invalid_argument("could not open data file: "+fname));
+  std::cerr<<"reading column text data as #freq real imag"<<std::endl;
+  double index, X_i_real,X_i_imag;
+  for(int i=0;i<N_imag_;++i){
+    datstream >> index >> X_i_real >> X_i_imag >> std::ws;
+    std::cout<<" read: "<<index<<" "<<X_i_real<<" "<<X_i_imag<<std::endl;
+    val_[i] = std::complex<double>(X_i_real, X_i_imag)/norm_;
   }
 }
 

@@ -26,15 +26,15 @@
 #include "pade.hpp"
 #include <fstream>
 
-grid::grid(const alps::params &p){
-  N_freq_=p["NFREQ"];
+grid::grid(const PadeParams &p){
+  N_freq_=p["real.NFREQ"];
   std::cout<<"using a grid size of : "<<N_freq_<<" real frequency points."<<std::endl;
   t_array_.resize(N_freq_+1);
   freq_.resize(N_freq_);
   delta_freq_.resize(N_freq_);
   
   //set the grid type
-  std::string p_f_grid = p["FREQUENCY_GRID"];
+  std::string p_f_grid = p["real.FREQUENCY_GRID"];
   if(p_f_grid=="Lorentzian") grid_type_=lorentzian_grid;
   else if (p_f_grid=="half Lorentzian") grid_type_=half_lorentzian_grid;
   else if (p_f_grid=="quadratic") grid_type_=quadratic_grid;
@@ -43,10 +43,10 @@ grid::grid(const alps::params &p){
   else throw std::invalid_argument("grid type parameter FREQUENCY_GRID should be one of: Lorentzian, half Lorentzian, quadratic, log, linear");
   setup_grid(p);
 }
-void grid::setup_grid(const alps::params &p){
+void grid::setup_grid(const PadeParams &p){
   std::vector<double> temp_(N_freq_+1);
   if(grid_type_==lorentzian_grid){
-    double cut = p["CUT"]|0.01;
+    double cut = p["real.CUT"];
     std::cout<<"using Lorentzian grid with CUT parameter: "<<cut<<std::endl;
     for (int i=0; i<N_freq_+1; ++i)
       temp_[i] = tan(M_PI * (double(i)/(N_freq_)*(1.-2*cut)+cut - 0.5));
@@ -54,7 +54,7 @@ void grid::setup_grid(const alps::params &p){
       t_array_[i] = (temp_[i] - temp_[0])/(temp_[N_freq_] - temp_[0]);
   }
   else if (grid_type_==half_lorentzian_grid){
-    double cut = p["CUT"]|0.01;
+    double cut = p["real.CUT"];
     std::cout<<"using half Lorentzian grid with CUT parameter: "<<cut<<std::endl;
     for (int i=0; i<N_freq_; ++i)
       temp_[i] = tan(M_PI * (double(i+N_freq_)/(2*N_freq_-1)*(1.-2*cut)+cut - 0.5));
@@ -62,7 +62,7 @@ void grid::setup_grid(const alps::params &p){
       t_array_[i] = (temp_[i] - temp_[0])/(temp_[N_freq_] - temp_[0]);\
   }
   else if (grid_type_==quadratic_grid) {
-    double s = p["SPREAD"]|4;
+    double s = p["real.SPREAD"];
     if (s<1)
       boost::throw_exception(std::invalid_argument("the parameter SPREAD must be greater than 1"));
     std::cout<<"using quadratic grid with SPREAD parameter: "<<s<<std::endl;
@@ -80,8 +80,9 @@ void grid::setup_grid(const alps::params &p){
       t_array_[i]  = temp_[i-1]/temp_[N_freq_];
   }
   else if (grid_type_==log_grid) {
-    double t_min = p["LOG_MIN"]|1.0e-4,t_max=0.5;
-    std::cout<<"using log grid with LOG_MIN parameter: "<<(p["LOG_MIN"]|1.0e-4)<<std::endl;
+    double t_min = p["real.LOG_MIN"];
+    double t_max=0.5;
+    std::cout<<"using log grid with LOG_MIN parameter: "<<p["real.LOG_MIN"]<<std::endl;
     double scale=std::log(t_max/t_min)/((float) (N_freq_/2-1));
     t_array_[N_freq_/2] = 0.5;
     for (int i=0; i<N_freq_/2; ++i) {
@@ -99,7 +100,7 @@ void grid::setup_grid(const alps::params &p){
     boost::throw_exception(std::invalid_argument("No valid frequency grid specified"));
   
   omega_max_=p["OMEGA_MAX"];
-  omega_min_=static_cast<double>(p["OMEGA_MIN"]|(-omega_max_));
+  omega_min_=p["OMEGA_MIN"];
   
   //store the frequencies and frequency differences (integration weights)
   for(int i=0;i<freq_.size();++i){
@@ -109,10 +110,10 @@ void grid::setup_grid(const alps::params &p){
 }
 
 
-imag_domain_grid::imag_domain_grid(const alps::params &p){
+imag_domain_grid::imag_domain_grid(const PadeParams &p){
   N_freq_= p["NDAT"];
   freq_.resize(N_freq_);
-  T_=(p["T"]|1./static_cast<double>(p["BETA"]));
+  T_=1./p["BETA"].as<double>();
   
   for(int i=0;i<N_freq_;++i){
     freq_[i]=(2*i+1)*M_PI*T_;

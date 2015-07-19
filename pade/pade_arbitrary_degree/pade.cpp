@@ -25,12 +25,10 @@
 
 #include "pade.hpp"
 
-int main(int argc, char** argv)
+int main(int argc, const char* argv[])
 {
   //parse parameters etc
-  alps::mcoptions options(argc, argv);
-  alps::params parms(options.input_file);
-  std::string out_file(boost::lexical_cast<std::string>(parms["BASENAME"]|options.output_file)+std::string(".out.h5"));
+  PadeParams parms(argc, argv);
   
   //read in and set up real and imaginary domain
   imaginary_domain_data f_iomega(parms);
