@@ -20,6 +20,7 @@ configure_file(
 
 include_directories("${PROJECT_BINARY_DIR}/config")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+message(STATUS "Finding packages, please stand by...")
 include(UseGtest)
 include(UseBindings)
 find_package(GSL REQUIRED)
@@ -46,6 +47,7 @@ maxent_gridTest.cpp
 maxent_kernel.cpp
 maxent_legendre_util.cpp
 maxent_simulation.cpp
+maxent_simulationTest.cpp
 default_modelTest.cpp
 default_model.cpp
 ${GTEST_SRC_DIR}/gtest-all.cc
