@@ -29,7 +29,7 @@
 #include<gmpxx.h>
 #include<Eigen/Core>
 #include "alps/params.hpp"
-#include<tgmath.h>
+//#include<tgmath.h>
 
 typedef std::vector<double> vector_type;
 typedef std::vector<std::complex<double> > complex_vector_type;
@@ -43,6 +43,9 @@ typedef std::vector<pade_complex_type> pade_complex_vector_type;
 //missing arithmetics
 inline bool isnan(pade_complex_type x){ return false;}
 inline bool isinf(pade_complex_type x){ return false;}
+#ifdef copysign
+#undef copysign
+#endif
 inline pade_real_type copysign(const pade_real_type &a, const pade_real_type &b){
   return sgn(a)==sgn(b)?a:-a;
 }
