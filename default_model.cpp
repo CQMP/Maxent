@@ -34,10 +34,10 @@
 
 ///This class deals with tabulated model functions
 TabFunction::TabFunction(const alps::params& p, std::string const& name){
-  std::string p_name = p[name].cast<std::string>();
+  std::string p_name = p[name].as<std::string>();
   std::ifstream defstream(p_name.c_str());
   if (!defstream)
-    boost::throw_exception(std::invalid_argument("could not open default model file: "+p[name]));
+    boost::throw_exception(std::invalid_argument("could not open default model file: "+p[name].as<std::string>()));
   double om, D;
   std::string line;
   while (getline(defstream, line)) {
@@ -48,7 +48,7 @@ TabFunction::TabFunction(const alps::params& p, std::string const& name){
     Def_.push_back(D);
   }
   double omega_max = p["OMEGA_MAX"];
-  double omega_min(static_cast<double>(p["OMEGA_MIN"]|-omega_max)); //we had a 0 here in the bosonic case. That's not a good idea if you're continuing symmetric functions like chi(omega)/omega. Change omega_min to zero manually if you need it.
+  double omega_min = p.exists("OMEGA_MIN") ? p["OMEGA_MIN"] : -omega_max; //we had a 0 here in the bosonic case. That's not a good idea if you're continuing symmetric functions like chi(omega)/omega. Change omega_min to zero manually if you need it.
   if(Omega_[0]>omega_min || Omega_.back()<omega_max)
       boost::throw_exception(std::logic_error(std::logic_error("Input range outside of default model")));
     
@@ -139,7 +139,7 @@ double GeneralDefaultModel::norm() {
 }
 
 boost::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, std::string const& name){
-  std::string p_name = parms[name]|"flat";
+  std::string p_name = parms[name].as<std::string>();
   boost::to_lower(p_name);
   if (p_name == "flat") {
     std::cout << "Using flat default model" << std::endl;

@@ -1,5 +1,5 @@
 #pragma once
-#include<alps/ngs/params.hpp>
+#include<alps/params.hpp>
 #include"maxent_blas.hpp"
 #include <boost/random/mersenne_twister.hpp>
 class Legendre_util{

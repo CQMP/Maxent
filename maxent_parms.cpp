@@ -26,7 +26,7 @@
  *****************************************************************************/
 
 #include "maxent.hpp"
-#include <alps/config.h> // needed to set up correct bindings
+#include <alps/config.hpp> // needed to set up correct bindings
 #include <boost/numeric/bindings/ublas.hpp>
 #include <boost/numeric/ublas/matrix_proxy.hpp>
 #include <boost/numeric/ublas/vector_expression.hpp>
@@ -146,16 +146,16 @@ void ContiParameters::read_data_from_param_file(const alps::params& p) {
 }
 
 ContiParameters::ContiParameters(const alps::params& p) :
-T_(p["T"]|1./static_cast<double>(p["BETA"])),
-ndat_(p["NDAT"]), nfreq_(p["NFREQ"]),
+T_(1/p["BETA"].as<double>()),ndat_(p["NDAT"]), nfreq_(p["NFREQ"]),
 y_(ndat_),sigma_(ndat_),K_(),grid_(p)
 {
+  //note: T_=1/beta now taken care of elsewhere
   if (ndat_<4) 
     boost::throw_exception(std::invalid_argument("NDAT too small"));
 
 
-  if (p.defined("DATA")) {
-    if(p.defined("DATA_IN_HDF5") && (p["DATA_IN_HDF5"]|false)) {
+  if (p.defined("DATA") && p["DATA"].as<std::string>() != "") {
+    if(p.defined("DATA_IN_HDF5") && (p["DATA_IN_HDF5"])) {
       //attempt to read from h5 archive
       read_data_from_hdf5_file(p);
     } else {
@@ -212,7 +212,7 @@ void ContiParameters::decompose_covariance_matrix(const alps::params& p){
     matrix_type cov_trans = ublas::trans(cov_);
     matrix_type K_loc = ublas::prec_prod(cov_trans, K_);
     vector_type y_loc = ublas::prec_prod(cov_trans, y_);
-    if (p["VERBOSE"]|false)
+    if (p["VERBOSE"])
       std::cout << "# Eigenvalues of the covariance matrix:\n";
     // We drop eigenvalues of the covariance matrix which are smaller than 1e-10
     // as they represent bad data directions (usually there is a steep drop
@@ -236,7 +236,7 @@ void ContiParameters::decompose_covariance_matrix(const alps::params& p){
     }
     for (int i=0; i<ndat(); ++i) {
       sigma_[i] = std::abs(var(new_ndat_+i))/static_cast<double>(p["NORM"]);
-      if (p["VERBOSE"]|false)
+      if (p["VERBOSE"])
         std::cout << "# " << var(new_ndat_+i) << "\n";
     }
 }
@@ -337,7 +337,6 @@ MaxEntParameters::MaxEntParameters(const alps::params& p) :
     U_(ndat(), ndat()), Vt_(ndat(), nfreq()), Sigma_(ndat(), ndat()),
     omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0),lmax(-1)
 {
-
   for (int i=0; i<nfreq(); ++i) {
     omega_coord_[i] = (Default().omega_of_t(grid_(i)) + Default().omega_of_t(grid_(i+1)))/2.;
     delta_omega_[i] = Default().omega_of_t(grid_(i+1)) - Default().omega_of_t(grid_(i));
@@ -356,7 +355,7 @@ MaxEntParameters::MaxEntParameters(const alps::params& p) :
   scale_data_with_error(nfreq());
 
   //this enforces a strict normalization if needed. not sure that this is done properly. recheck!
-  if(p["ENFORCE_NORMALIZATION"]|false) {
+  if(p["ENFORCE_NORMALIZATION"]) {
     double sigma_normalization=p["SIGMA_NORMALIZATION"];
     double norm=p["NORM"];
     enforce_strict_normalization(sigma_normalization, norm, ndat());
@@ -364,7 +363,7 @@ MaxEntParameters::MaxEntParameters(const alps::params& p) :
   std::cerr << "Kernel is set up\n";
 
   vector_type S(ndat());
-  bool verbose=p["VERBOSE"]|false;
+  bool verbose=p["VERBOSE"];
   //perform the SVD decomposition K = U Sigma V^T
   singular_value_decompose_kernel(verbose, S);
 

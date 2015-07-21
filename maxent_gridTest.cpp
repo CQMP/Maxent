@@ -27,6 +27,7 @@
 
 
 #include "maxent_grid.hpp"
+#include "maxent_parms_default.hpp"
 #include"gtest/gtest.h"
 #include <fstream>
 
@@ -35,6 +36,7 @@
 
 TEST(Grid,LorentzianOdd){
     alps::params p;
+    set_defaults(p);
     const int NFREQ=2001;
     p["FREQUENCY_GRID"] = "Lorentzian";
     p["NFREQ"] = NFREQ;
@@ -45,6 +47,8 @@ TEST(Grid,LorentzianOdd){
 }
 TEST(Grid,HalfLorentzianOdd){
     alps::params p;
+    set_defaults(p);
+    
     const int NFREQ=2001;
     p["FREQUENCY_GRID"] = "half lorentzian";
     p["NFREQ"] = NFREQ;
@@ -55,6 +59,8 @@ TEST(Grid,HalfLorentzianOdd){
 }
 TEST(Grid,QuadraticOdd){
     alps::params p;
+    set_defaults(p); 
+
     const int NFREQ=2001;
     p["FREQUENCY_GRID"] = "Quadratic";
     p["NFREQ"] = NFREQ;
@@ -65,6 +71,8 @@ TEST(Grid,QuadraticOdd){
 }
 TEST(Grid,LogOdd){
     alps::params p;
+    set_defaults(p);
+
     const int NFREQ=2001;
     p["FREQUENCY_GRID"] = "log";
     p["NFREQ"] = NFREQ;
@@ -76,6 +84,8 @@ TEST(Grid,LogOdd){
 }
 TEST(Grid,LinearOdd){
     alps::params p;
+    set_defaults(p);
+
     const int NFREQ=2001;
     p["FREQUENCY_GRID"] = "linear";
     p["NFREQ"] = NFREQ;
@@ -89,6 +99,8 @@ TEST(Grid,LinearOdd){
 //as well as the middle of symmetric grids
 TEST(Grid,LorentzianEven){
     alps::params p;
+    set_defaults(p);
+
     const int NFREQ=2000;
     p["FREQUENCY_GRID"] = "Lorentzian";
     p["NFREQ"] = NFREQ;
@@ -101,6 +113,8 @@ TEST(Grid,LorentzianEven){
 TEST(Grid,HalfLorentzianEven){
     //this is not symmetric so there is no new test
     alps::params p;
+    set_defaults(p);
+
     const int NFREQ=2000;
     p["FREQUENCY_GRID"] = "half lorentzian";
     p["NFREQ"] = NFREQ;
@@ -111,6 +125,8 @@ TEST(Grid,HalfLorentzianEven){
 }
 TEST(Grid,QuadraticEven){
     alps::params p;
+    set_defaults(p);
+
     const int NFREQ=2000;
     p["FREQUENCY_GRID"] = "Quadratic";
     p["NFREQ"] = NFREQ;
@@ -122,6 +138,8 @@ TEST(Grid,QuadraticEven){
 }
 TEST(Grid,LogEven){
     alps::params p;
+    set_defaults(p);
+    
     const int NFREQ=2000;
     p["FREQUENCY_GRID"] = "log";
     p["NFREQ"] = NFREQ;
@@ -134,6 +152,7 @@ TEST(Grid,LogEven){
 }
 TEST(Grid,LinearEven){
     alps::params p;
+    set_defaults(p);
     const int NFREQ=2000;
     p["FREQUENCY_GRID"] = "linear";
     p["NFREQ"] = NFREQ;

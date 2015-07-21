@@ -26,6 +26,8 @@
 !doxygen/Doxyfile
 !legendre_convert/legendre_convert.cpp
 !legendre_convert/CMakeLists.txt
+!ublas_vector.hpp
+!maxent_parms_default.hpp
 
 .DS_Store
 
