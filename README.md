@@ -8,6 +8,7 @@ This branch requires the [ALPSCore library](https://github.com/ALPSCore/ALPSCore
 Table of Contents
 =================
   * [MaxEnt](#maxent)
+  * [Table of Contents](#table-of-contents)
     * [Requirements](#requirements)
       * [Libraries](#libraries)
         * [Boost](#boost)
@@ -16,10 +17,16 @@ Table of Contents
     * [Installation](#installation)
       * [Tests](#tests)
     * [Usage](#usage)
-        * [Input](#input) 
+        * [Input](#input)
+          * [Particle Hole Symmetric Data](#particle-hole-symmetric-data)
+          * [Non-Particle Hole Symmetric Data](#non-particle-hole-symmetric-data)
         * [Kernels](#kernels)
         * [Default Models](#default-models)
         * [Grids](#grids)
+  * [Utilities](#utilities)
+    * [Pade](#pade)
+    * [Kramers-Kronig](#kramers-kronig)
+    * [Legendre Convert](#legendre-convert)
 
 ## Requirements
 
@@ -98,3 +105,13 @@ Maxent creats a default model on a grid between [0,1]
 
 ![grids](https://cloud.githubusercontent.com/assets/7354063/8681331/cb2b0852-2a34-11e5-9485-08c8c6a68274.png)
   
+
+# Utilities
+## Pade
+Requires: [GMP](https://gmplib.org/),[Eigen3.1](http://eigen.tuxfamily.org/index.php?title=Main_Page)
+To point cmake to the correct eigen directory, use `-DEIGEN3_INCLUDE_DIR=/path/to/eigen`
+(This directory should be the root of the downloaded tar.bz2 file) 
+## Kramers-Kronig
+Requires: [GSL](http://www.gnu.org/software/gsl/), Boost
+## Legendre Convert
+Requires: Boost

@@ -55,5 +55,8 @@ ${GTEST_SRC_DIR}/gtest-all.cc
 target_link_libraries(maxent
 	${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} )
 
+#add companion utilities
 add_subdirectory(legendre_convert)
+add_subdirectory(kk) 
+add_subdirectory(pade/pade_arbitrary_degree)
 

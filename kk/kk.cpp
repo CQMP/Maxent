@@ -5,7 +5,7 @@
 #include<complex>
 #include<cmath>
 #include<cstdlib>
-#include<alps/parameter.h>
+//#include<alps/params.hpp>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_spline.h>
 #include <boost/program_options.hpp>
