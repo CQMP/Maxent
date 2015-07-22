@@ -28,6 +28,7 @@
 !legendre_convert/CMakeLists.txt
 !ublas_vector.hpp
 !maxent_parms_default.hpp
+!examples/
 
 .DS_Store
 

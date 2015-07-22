@@ -88,6 +88,7 @@ n imag sigma_imag
 ![screen shot 2015-07-17 at 3 48 04 pm](https://cloud.githubusercontent.com/assets/7354063/8755770/57c4ab3e-2c9b-11e5-98a3-1a073d67ee34.png)
 
 #### Default Models
+[View Examples Here](examples/default_models.pdf)
 * Flat
 * Gaussian
   * Shifted Gaussian
