@@ -199,3 +199,73 @@ TEST(Simulation,TauSimulation){
     EXPECT_NEAR(av_norm,1,1e-2);
     SUCCEED();
 }
+
+
+TEST(Simulation,LegendreSimulation){
+    alps::params p;
+    set_defaults(p);
+    p["BETA"]=8;
+    p["NDAT"]=13;
+    p["PARTICLE_HOLE_SYMMETRY"]=1;
+    p["DATASPACE"]="legendre";
+    p["KERNEL"]="fermionic";
+    p["TEXT_OUTPUT"]=0;
+
+
+
+		p["X_0"]=-1.2385922211475;
+		p["X_1"]=-7.0664305609387e-08;
+		p["X_2"]=-0.66408457100986;
+		p["X_3"]=-8.5145830727646e-08;
+		p["X_4"]=-0.26534486436104;
+		p["X_5"]=2.0234010147938e-07;
+		p["X_6"]=-0.091681224519598;
+		p["X_7"]=3.9397565117767e-07;
+		p["X_8"]=-0.027019280247812;
+		p["X_9"]=2.0785849309379e-07;
+		p["X_10"]=-0.0067707643917139;
+		p["X_11"]=-2.8643971926556e-07;
+		p["X_12"]=-0.0014885447940878;
+
+
+		p["SIGMA_0"]=2.5043167301794e-07;
+		p["SIGMA_1"]=2.6594271923164e-07;
+		p["SIGMA_2"]=3.0438230279004e-07;
+		p["SIGMA_3"]=2.5006246215834e-07;
+		p["SIGMA_4"]=2.815176991835e-07;
+		p["SIGMA_5"]=2.6399861311466e-07;
+		p["SIGMA_6"]=2.6165696141285e-07;
+		p["SIGMA_7"]=2.8880049016989e-07;
+		p["SIGMA_8"]=2.4924030790157e-07;
+		p["SIGMA_9"]=2.5205277343449e-07;
+		p["SIGMA_10"]=2.2929459388671e-07;
+		p["SIGMA_11"]=2.4635379139221e-07;
+		p["SIGMA_12"]=2.4614799010746e-07;
+
+  //do the real work
+    
+    MaxEntSimulation my_sim(p);
+    my_sim.run();
+    my_sim.evaluate();
+    int gridsize = my_sim.omegaGrid.size();
+    
+		//legendre has a harder time with high freq
+    const double minZero = 1e-3;
+    //check endpoints of grid
+    EXPECT_NEAR(my_sim.omegaGrid(0),-10,1);
+    EXPECT_NEAR(my_sim.omegaGrid(gridsize-1),10,1);
+    //endpoints of A(omega) should be <<1
+    EXPECT_EQ(my_sim.avspec[0]<minZero,true);
+    EXPECT_EQ(my_sim.avspec[gridsize-1]<minZero,true);
+
+    EXPECT_EQ(my_sim.maxspec[0]<minZero,true);
+    EXPECT_EQ(my_sim.maxspec[gridsize-1]<minZero,true);
+
+    //check norm
+    double max_norm = getNorm(my_sim.omegaGrid,my_sim.maxspec);
+    double av_norm = getNorm(my_sim.omegaGrid,my_sim.avspec);
+    EXPECT_NEAR(max_norm,1,1e-2);
+    EXPECT_NEAR(av_norm,1,1e-2);
+    SUCCEED();
+}
+
