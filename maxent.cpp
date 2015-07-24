@@ -97,15 +97,14 @@ int main(int argc,const char** argv)
         //RUN_0 = "Model1"
         //RUN_1 = "Model2"
         //..etc
-        if(parms.defined("MODEL_RUNS")){
+        if(parms.exists("MODEL_RUNS")){
             int nruns=parms["MODEL_RUNS"];
             std::cout<<"Performing " << nruns <<" runs" <<std::endl;
+	    //ALPSCore requires all params are defined
+ 	    for(int i=0;i<nruns;i++)
+		parms.define<std::string>("RUN_" + boost::lexical_cast<std::string>(i),"Run");
             for(int i=0;i<nruns;i++){
-                if(!parms.defined("RUN_" + boost::lexical_cast<std::string>(i))) {
-                    throw std::runtime_error("parameter RUN_i missing!");
-                }
-                std::string currModel = boost::lexical_cast<std::string>(
-                                             parms["RUN_" + boost::lexical_cast<std::string>(i)]);
+                std::string currModel = parms["RUN_" + boost::lexical_cast<std::string>(i)].as<std::string>();
                 parms["DEFAULT_MODEL"]= currModel;
                 
                 //run a simulation with the new default model.
