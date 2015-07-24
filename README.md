@@ -20,6 +20,7 @@ Table of Contents
         * [Input](#input)
           * [Particle Hole Symmetric Data](#particle-hole-symmetric-data)
           * [Non-Particle Hole Symmetric Data](#non-particle-hole-symmetric-data)
+          * [Time Data](#time-data)
         * [Kernels](#kernels)
         * [Default Models](#default-models)
         * [Grids](#grids)
@@ -76,13 +77,31 @@ n imag sigma
 This assumes a non-zero real part of the Green's function. Input data should be:
 ```
 n real sigma_real
-n imag sigma_imag
+n+1 imag sigma_imag
 //example:
 0 real0 sigma_real0
-0 imag0 sigma_imag0
-1 real1 sigma_real1
-1 imag1 sigma_imag1
+1 imag0 sigma_imag0
+2 real1 sigma_real1
+3 imag1 sigma_imag1
 ```
+NOTE: NDAT=#of points*2 when there is not Particle Hole Symmetric data
+##### Time Data
+For either symmetric or non-symmetric data, G(tau) is simply imput as:
+```
+n tau_n sigma_n
+n+1 tau_n+1 sigma_n+1
+```
+This assumes an equispaced grid of tau points constructed as the following:
+```
+ tau[i]= i*beta/ (ndat_-1)
+ ```
+This produces a grid between [0,beta] inclusive. If your tau points do not follow such a pattern, then in the parameter file they should be defined:
+ ```
+ TAU_0=xxx...
+ TAU_1=xxx
+ ...
+ TAU_NDAT-1=xxx
+ ```
 #### Kernels
 ![screen shot 2015-07-17 at 3 48 00 pm](https://cloud.githubusercontent.com/assets/7354063/8755755/47c93aba-2c9b-11e5-8743-359ab6271827.png)
 ![screen shot 2015-07-17 at 3 48 04 pm](https://cloud.githubusercontent.com/assets/7354063/8755770/57c4ab3e-2c9b-11e5-98a3-1a073d67ee34.png)
