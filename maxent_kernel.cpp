@@ -53,16 +53,29 @@ K_(ndat_,nfreq_)
   if(ph_symmetry) std::cout<<" with ph symmetry"; else std::cout<<" without ph symmetry"; std::cout<<std::endl;
 
   set_kernel_type(dataspace_name,kernel_name, ph_symmetry,legdr_transform);
+
+	//slight centralized tau points
+	//TODO: move to params with input?
+	if(dataspace_name=="time"){
+		//Test for tau
+		tau_points_.resize(ndat_);
+		if(p.exists("TAU_0")){
+			std::cout<<"Using input tau points"<<std::endl;
+			for(int i=0;i<ndat_;i++)
+				tau_points_[i]=p["TAU_"+boost::lexical_cast<std::string>(i)];
+		}
+		else{
+			std::cout<<"Generating tau points"<<std::endl;
+			for(int i=0;i<ndat_;i++)
+				 tau_points_[i] = i / ((ndat_-1)* T_);
+		}
+  }
     
   if(ktype_==legendre_fermionic_kernel || ktype_==legendre_bosonic_kernel){
       setup_legendre_kernel(p,freq,ndat_);
   }else if(ktype_==time_fermionic_kernel){
       for (int i=0; i<ndat_; ++i) {
-        double tau;
-        if (p.defined("TAU_"+boost::lexical_cast<std::string>(i))) //TODO: why is tau here and not centralized
-          tau = p["TAU_"+boost::lexical_cast<std::string>(i)];     //like the freq below
-        else
-          tau = i / ((ndat_-1)* T_);
+        double tau=tau_points_[i];
         for (int j=0; j<nfreq_; ++j) {
           double omega = freq[j]; //Default().omega_of_t(double(j)/(nfreq_-1));
           K_(i,j) =  -1. / (std::exp(omega*tau) + std::exp(-omega*(1./T_-tau)));
@@ -71,11 +84,7 @@ K_(ndat_,nfreq_)
     }
     else if (ktype_==time_bosonic_kernel) {
       for (int i=0; i<ndat_; ++i) {
-        double tau;
-        if (p.defined("TAU_"+boost::lexical_cast<std::string>(i)))
-          tau = p["TAU_"+boost::lexical_cast<std::string>(i)];
-        else
-          tau = i / ((ndat_-1) * T_);
+        double tau=tau_points_[i];
         K_(i,0) = T_;
         for (int j=1; j<nfreq_; ++j) {
           double omega = freq[j];
@@ -88,7 +97,7 @@ K_(ndat_,nfreq_)
     //for zero temperature, only positive frequency matters
     else if (ktype_ == time_boris_kernel) {
       for (int i=0; i<ndat_; ++i) {
-        double tau = p["TAU_"+boost::lexical_cast<std::string>(i)];
+        double tau=tau_points_[i];
         for (int j=0; j<nfreq_; ++j) {
           double omega = freq[j];
           K_(i,j) = -std::exp(-omega*tau);
@@ -97,17 +106,12 @@ K_(ndat_,nfreq_)
     }
     else if(ktype_==time_fermionic_kernel){
         for (int i=0; i<ndat_; ++i) {
-            double tau;
-            if (p.defined("TAU_"+boost::lexical_cast<std::string>(i)))
-                tau = p["TAU_"+boost::lexical_cast<std::string>(i)];
-            else
-                tau = i / ((ndat_-1)* T_);
+						double tau=tau_points_[i];
             for (int j=0; j<nfreq_; ++j) {
                 double omega = freq[j];
                 K_(i,j) =  -1.;
             }
         }
-
     }
     else if(ktype_==frequency_fermionic_ph_kernel) {
     for (int i=0; i<ndat_; ++i) {
@@ -184,6 +188,7 @@ void kernel::set_kernel_type(const std::string &dataspace_name, const std::strin
                              bool ph_symmetry, bool legdr_transform){
   if(dataspace_name=="time"){
     dtype_=time_dataspace;
+     
   }else if(dataspace_name=="frequency"){
     dtype_=frequency_dataspace;
   }else if(dataspace_name=="legendre"){
@@ -261,13 +266,6 @@ void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& fre
     //recall that ndat()=lmax, lmax=size of K
     //here ndat_ = # tau points
     K_.resize(lmax,nfreq_);
-    vector_type tau_points(ndat_); //TODO: make a seperate implimentation that imports this
-    if(p.defined("TAU_1")) //hack to see if we have imported tau points
-        for(int j=0;j<ndat_;j++)
-            tau_points[j]=p["TAU_"+boost::lexical_cast<std::string>(j)];
-    else
-        for(int j=0;j<ndat_;j++)
-            tau_points[j] = j / ((ndat_)* T_); //TODO: determine if this (from backcont) or ndat()-1 is more common
     int N = 20000/2;
     gsl_integration_workspace *w = gsl_integration_workspace_alloc (1000);
     
@@ -279,16 +277,6 @@ void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& fre
             double h = (1/T_-0)/(2*N);
             //int Pl(x(tau))*exp(-tau*omega)/(1\pm exp(-beta*omega))
             
-           /* //Riemann sum method
-            for(int t=0;t<ndat_-1;t++){
-                double tau = tau_points[t];
-                double dtau = tau_points[t+1]-tau;
-                I1+= bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+sign*std::exp(-omega/T_))*dtau;
-            }
-            double tau = tau_points[ndat_-1];
-            double dtau = tau-tau_points[ndat_-2];
-            I1+= bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+sign*std::exp(-omega/T_))*dtau;
-            */
             //Simpsons with
             //Simpson's method of integrations
             //eval endpoints
