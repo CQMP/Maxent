@@ -12,7 +12,7 @@ Table of Contents
     * [Requirements](#requirements)
       * [Libraries](#libraries)
         * [Boost](#boost)
-        * [BLAS/LAPACK](#blaslapack)
+        * [Eigen3](#Eigen3)
         * [ALPSCore](#alpscore)
     * [Installation](#installation)
       * [Tests](#tests)
@@ -36,10 +36,8 @@ Table of Contents
 #### Boost
 When compiling both ALPSCore and MaxEnt, be careful to ensure boost was compiled with the same library and stdlib as ALPSCore and MaxEnt.   
 
-We also require `boost/numeric/bindings`. Cmake will automatically try to find it or fetch it using subversion.
-
-#### BLAS/LAPACK
-Thanks to Boost this version currently uses uBLAS, but requires LAPACK support. 
+#### Eigen3
+For our linear algebra routines we use Eigen3 version >=3.1. If not in your path use `-DEIGEN3_INCLUDE_DIR=`
 
 #### ALPSCore
 ALPSCore needs to be properly installed, see [ALPSCore library](https://github.com/ALPSCore/ALPSCore).
