@@ -60,6 +60,8 @@ public:
   const kernel_type getKernelType() const{return ktype_;}
   ///getter function for dataspace type
   const dataspace_type getDataspaceType() const{return dtype_;}
+	///getter function for tau_points
+	const vector_type getTauPoints() const{return tau_points_;}
     
 private:
   ///figure out which kernel is to be used
@@ -79,6 +81,8 @@ private:
   dataspace_type dtype_;
   ///kernel matrix
   matrix_type K_;
+	///array of tau points
+	vector_type tau_points_;
 };
 
 
