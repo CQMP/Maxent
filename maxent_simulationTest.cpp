@@ -2,7 +2,7 @@
 #include "gtest/gtest.h"
 #include <iostream>
 #include "maxent_parms_default.hpp"
-double getNorm(vector_type &omega, vector_type &y){
+double getNorm(const vector_type &omega, const vector_type &y){
     int size = omega.size();
     double norm = 0.0;
     for(int i=0;i<size-1;i++){
@@ -61,22 +61,30 @@ TEST(Simulation,FrequencySimulation){
     MaxEntSimulation my_sim(p);
     my_sim.run();
     my_sim.evaluate();
-    int gridsize = my_sim.omegaGrid.size();
+    int gridsize = my_sim.getOmegaGrid().size();
     
-    const double minZero = 1e-4;
+		//legendre has a harder time with high freq
+    const double minZero = 1e-3;
     //check endpoints of grid
-    EXPECT_NEAR(my_sim.omegaGrid(0),-10,1);
-    EXPECT_NEAR(my_sim.omegaGrid(gridsize-1),10,1);
+    EXPECT_NEAR(my_sim.getOmegaGrid()(0),-10,1);
+    EXPECT_NEAR(my_sim.getOmegaGrid()(gridsize-1),10,1);
     //endpoints of A(omega) should be <<1
-    EXPECT_EQ(my_sim.avspec[0]<minZero,true);
-    EXPECT_EQ(my_sim.avspec[gridsize-1]<minZero,true);
+    EXPECT_EQ(my_sim.getAvspec()[0]<minZero,true);
+    EXPECT_EQ(my_sim.getAvspec()[gridsize-1]<minZero,true);
 
-    EXPECT_EQ(my_sim.maxspec[0]<minZero,true);
-    EXPECT_EQ(my_sim.maxspec[gridsize-1]<minZero,true);
+    EXPECT_EQ(my_sim.getMaxspec()[0]<minZero,true);
+    EXPECT_EQ(my_sim.getMaxspec()[gridsize-1]<minZero,true);
+
+		//flat default model is not very Lorentzian
+		EXPECT_EQ(my_sim.getPostProb()<minZero,true);
+
+		//expect a converged solution/good minimum found
+		vector_type q = my_sim.getQvec();
+		EXPECT_EQ(q[q.size()-1]<1,true);
 
     //check norm
-    double max_norm = getNorm(my_sim.omegaGrid,my_sim.maxspec);
-    double av_norm = getNorm(my_sim.omegaGrid,my_sim.avspec);
+    double max_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getMaxspec());
+    double av_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getAvspec());
     EXPECT_NEAR(max_norm,1,1e-2);
     EXPECT_NEAR(av_norm,1,1e-2);
     SUCCEED();
@@ -179,22 +187,30 @@ TEST(Simulation,TauSimulation){
     MaxEntSimulation my_sim(p);
     my_sim.run();
     my_sim.evaluate();
-    int gridsize = my_sim.omegaGrid.size();
+    int gridsize = my_sim.getOmegaGrid().size();
     
-    const double minZero = 1e-4;
+		//legendre has a harder time with high freq
+    const double minZero = 1e-3;
     //check endpoints of grid
-    EXPECT_NEAR(my_sim.omegaGrid(0),-10,1);
-    EXPECT_NEAR(my_sim.omegaGrid(gridsize-1),10,1);
+    EXPECT_NEAR(my_sim.getOmegaGrid()(0),-10,1);
+    EXPECT_NEAR(my_sim.getOmegaGrid()(gridsize-1),10,1);
     //endpoints of A(omega) should be <<1
-    EXPECT_EQ(my_sim.avspec[0]<minZero,true);
-    EXPECT_EQ(my_sim.avspec[gridsize-1]<minZero,true);
+    EXPECT_EQ(my_sim.getAvspec()[0]<minZero,true);
+    EXPECT_EQ(my_sim.getAvspec()[gridsize-1]<minZero,true);
 
-    EXPECT_EQ(my_sim.maxspec[0]<minZero,true);
-    EXPECT_EQ(my_sim.maxspec[gridsize-1]<minZero,true);
+    EXPECT_EQ(my_sim.getMaxspec()[0]<minZero,true);
+    EXPECT_EQ(my_sim.getMaxspec()[gridsize-1]<minZero,true);
+
+		//flat default model is not very Lorentzian
+		EXPECT_EQ(my_sim.getPostProb()<minZero,true);
+
+		//expect a converged solution/good minimum found
+		vector_type q = my_sim.getQvec();
+		EXPECT_EQ(q[q.size()-1]<1,true);
 
     //check norm
-    double max_norm = getNorm(my_sim.omegaGrid,my_sim.maxspec);
-    double av_norm = getNorm(my_sim.omegaGrid,my_sim.avspec);
+    double max_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getMaxspec());
+    double av_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getAvspec());
     EXPECT_NEAR(max_norm,1,1e-2);
     EXPECT_NEAR(av_norm,1,1e-2);
     SUCCEED();
@@ -242,28 +258,35 @@ TEST(Simulation,LegendreSimulation){
 		p["SIGMA_11"]=2.4635379139221e-07;
 		p["SIGMA_12"]=2.4614799010746e-07;
 
-  //do the real work
+    //do the real work
     
     MaxEntSimulation my_sim(p);
     my_sim.run();
     my_sim.evaluate();
-    int gridsize = my_sim.omegaGrid.size();
+    int gridsize = my_sim.getOmegaGrid().size();
     
 		//legendre has a harder time with high freq
     const double minZero = 1e-3;
     //check endpoints of grid
-    EXPECT_NEAR(my_sim.omegaGrid(0),-10,1);
-    EXPECT_NEAR(my_sim.omegaGrid(gridsize-1),10,1);
+    EXPECT_NEAR(my_sim.getOmegaGrid()(0),-10,1);
+    EXPECT_NEAR(my_sim.getOmegaGrid()(gridsize-1),10,1);
     //endpoints of A(omega) should be <<1
-    EXPECT_EQ(my_sim.avspec[0]<minZero,true);
-    EXPECT_EQ(my_sim.avspec[gridsize-1]<minZero,true);
+    EXPECT_EQ(my_sim.getAvspec()[0]<minZero,true);
+    EXPECT_EQ(my_sim.getAvspec()[gridsize-1]<minZero,true);
 
-    EXPECT_EQ(my_sim.maxspec[0]<minZero,true);
-    EXPECT_EQ(my_sim.maxspec[gridsize-1]<minZero,true);
+    EXPECT_EQ(my_sim.getMaxspec()[0]<minZero,true);
+    EXPECT_EQ(my_sim.getMaxspec()[gridsize-1]<minZero,true);
+
+		//flat default model is not very Lorentzian
+		EXPECT_EQ(my_sim.getPostProb()<minZero,true);
+
+		//expect a converged solution/good minimum found
+		vector_type q = my_sim.getQvec();
+		EXPECT_EQ(q[q.size()-1]<1,true);
 
     //check norm
-    double max_norm = getNorm(my_sim.omegaGrid,my_sim.maxspec);
-    double av_norm = getNorm(my_sim.omegaGrid,my_sim.avspec);
+    double max_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getMaxspec());
+    double av_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getAvspec());
     EXPECT_NEAR(max_norm,1,1e-2);
     EXPECT_NEAR(av_norm,1,1e-2);
     SUCCEED();
