@@ -111,6 +111,7 @@ void MaxEntSimulation::evaluate(){
     ofstream_ chi_squared_file;
     chi_squared_file.open((name+"chi2.dat").c_str());
     for (std::size_t a=0; a<chi_sq.size(); ++a){
+      chi_squared_file << alpha[a] << " " << chi_sq[a] << std::endl;
     }
   }
   int a_chi = 0;
