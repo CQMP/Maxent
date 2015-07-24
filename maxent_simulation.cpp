@@ -47,6 +47,8 @@ MaxEntSimulation::MaxEntSimulation(const alps::params &parms)
 , verbose(parms["VERBOSE"])
 , text_output(parms["TEXT_OUTPUT"])
 , self(parms["SELF"])
+, qvec((int)parms["N_ALPHA"])
+, nfreq(parms["NFREQ"].as<int>())
 {
   std::string bn=parms["BASENAME"]; name=bn+'.';
 
@@ -97,10 +99,11 @@ void MaxEntSimulation::run()
     if (verbose) std::cerr << "0.5*chi2  : " << 0.5*chi_squared;
     std::cerr << std::endl;
     if (text_output) print_chi2(transform_into_real_space(u), fits_file);
-    omegaGrid.resize(A.size());
-    for(std::size_t i=0;i<A.size();i++)
-	omegaGrid(i)=omega_coord(i);
+    qvec(a)=Q(u,alpha[a]); 
   }
+    omegaGrid.resize(nfreq);
+    for(std::size_t i=0;i<nfreq;i++)
+	    omegaGrid(i)=omega_coord(i);
 }
   //everything from here on down is evaluation.
 void MaxEntSimulation::evaluate(){
@@ -108,6 +111,7 @@ void MaxEntSimulation::evaluate(){
     ofstream_ chi_squared_file;
     chi_squared_file.open((name+"chi2.dat").c_str());
     for (std::size_t a=0; a<chi_sq.size(); ++a){
+      chi_squared_file << alpha[a] << " " << chi_sq[a] << std::endl;
     }
   }
   int a_chi = 0;
@@ -170,7 +174,7 @@ void MaxEntSimulation::evaluate(){
       prob_str << alpha[a] << "\t" << prob[a] << "\n";
     }
   }
-  double postprobdef = 0;
+  postprobdef = 0;
   for (std::size_t a=0; a<lprob.size()-1; ++a) 
     postprobdef += 0.5*(exp(lprob[a])+exp(lprob[a+1]))*(alpha[a]-alpha[a+1]);
   std::cout << "posterior probability of the default model: " << postprobdef << std::endl;
@@ -261,6 +265,9 @@ void MaxEntSimulation::evaluate(){
     for (std::size_t i=0; i<spectra[0].size(); ++i){
       maxspec_self_str << omega_coord(i) << " " << -spectra[max_a][i]*norm*M_PI << std::endl;
     }
+    //for public facing variables
+    avspec*=-M_PI;
+    maxspec*=-M_PI;
   }
 }
 

@@ -93,25 +93,46 @@ public:
   void evaluate();
   vector_type levenberg_marquardt(vector_type u, const double alpha) const;
   vector_type iteration(vector_type u, const double alpha, const double mu) const;
+
+private:
+
+  ///grid of alpha values
+  vector_type alpha;
+  const double norm;
+  const int max_it;
+  std::string name,Kernel_type;
+  bool verbose,text_output,self;
+  const int nfreq;
+
+  vector_type lprob;
+  vector_type chi_sq;
+  std::vector<vector_type> spectra;
+  vector_type u;
   ///averaged spectrum
   vector_type avspec;
   ///classic MaxEnt
   vector_type maxspec;
   ///grid of Omega points
   vector_type omegaGrid;
+  //posterior probability of the default model
+  double postprobdef;
+  ///vector of calculated Q values for each alpha iteration
+  //this is one method of checking if a minimum was found
+  vector_type qvec;
 
-private:
-
-  vector_type alpha;
-  const double norm;
-  const int max_it;
-  std::string name,Kernel_type;
-  bool verbose,text_output,self;
-
-  vector_type lprob;
-  vector_type chi_sq;
-  std::vector<vector_type> spectra;
-  vector_type u;
-
+public:
+  ///getter for avspec, the averaged spectrum
+  const vector_type getAvspec() const{return avspec;}
+  ///getter for maxspec, the most probable spectrum
+  const vector_type getMaxspec() const{return maxspec;}
+  ///getter for the grid of omega points used in determining 
+  ///the spectral function A(omega)
+  const vector_type getOmegaGrid() const{return omegaGrid;}
+  ///getter for the posterior probability of the default model
+  const double getPostProb() const{return postprobdef;}
+  ///getter for alpha values
+  const vector_type getAlphaGrid() const{return alpha;} 
+  ///getter for vector of Q value per alpha iteration
+  const vector_type getQvec() const{return qvec;}
 }; 
 
