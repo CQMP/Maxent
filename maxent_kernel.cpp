@@ -41,8 +41,8 @@ T_(1./static_cast<double>(p["BETA"])),
 K_(ndat_,nfreq_)
 {
   using namespace boost::numeric;
-  K_.clear();
-
+  //K_.clear();
+  K_=matrix_type::Zero(ndat_,nfreq_);
   std::string dataspace_name = p["DATASPACE"];
   std::string kernel_name = p["KERNEL"];
   boost::to_lower(dataspace_name);
@@ -137,7 +137,7 @@ K_(ndat_,nfreq_)
     }
   }
   else{
-    ublas::matrix<std::complex<double>, ublas::column_major> Kc(ndat_/2, nfreq_);
+    complex_matrix_type Kc(ndat_/2, nfreq_);
     if (ktype_==frequency_fermionic_kernel) {
       ///ndat/2 is defined as such below because ndat=number of points inputed
       ///if ph symmetry, then ndat=number of imag points

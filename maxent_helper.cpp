@@ -28,13 +28,10 @@
 
 #include "maxent.hpp"
 #include <alps/config.hpp> // needed to set up correct bindings
-#include <boost/numeric/bindings/lapack/driver/posv.hpp>
-#include <boost/numeric/bindings/lapack/computational/potrf.hpp>
-#include <boost/numeric/bindings/lapack/driver/syev.hpp>
-#include <boost/numeric/bindings/ublas.hpp>
-#include <boost/numeric/bindings/upper.hpp>
-#include <boost/numeric/bindings/lower.hpp>
 #include <boost/math/special_functions/fpclassify.hpp> //needed for boost::math::isnan
+#include <Eigen/Eigenvalues>
+#include <Eigen/Cholesky>
+//NOTE: size1= rows; size2=columns
 
 MaxEntHelper::MaxEntHelper(const alps::params& p) :
 MaxEntParameters(p) , def_(nfreq())
@@ -42,7 +39,8 @@ MaxEntParameters(p) , def_(nfreq())
     for (int i=0; i<nfreq(); ++i)
         def_[i] = MaxEntParameters::Default().D(omega_coord(i)) * delta_omega(i);
     //normalizing the default model
-    def_ /= sum(def_);
+    //def_ /= sum(def_);
+    def_ /= def_.sum();
 }
 
 
@@ -64,7 +62,7 @@ vector_type MaxEntHelper::transform_into_singular_space(vector_type A) const
 //returns exp(V^T*u)*Default(i). This quantity is then usually called 'A'
 vector_type MaxEntHelper::transform_into_real_space(vector_type u) const
 {
-  u = maxent_prec_prod(trans(Vt()), u);
+  u = maxent_prec_prod(Vt().transpose(), u);
   for (unsigned int i=0; i<u.size(); ++i) {
     u[i] = exp(u[i]);
     u[i] *= Default(i);
@@ -87,9 +85,9 @@ vector_type MaxEntHelper::get_spectrum(const vector_type& u) const
 matrix_type MaxEntHelper::left_side(const vector_type& u) const
 {
   vector_type A = transform_into_real_space(u);
-  matrix_type M = trans(Vt());
-  for (unsigned int i=0; i<M.size1(); ++i) 
-    for (unsigned int j=0; j<M.size2(); ++j) 
+  matrix_type M = Vt().transpose();
+  for (unsigned int i=0; i<M.rows(); ++i) 
+    for (unsigned int j=0; j<M.cols(); ++j) 
       M(i,j) *= A[i];
   M = maxent_prec_prod(Vt(), M);
   M = maxent_prec_prod(Sigma() ,M);
@@ -105,7 +103,7 @@ matrix_type MaxEntHelper::left_side(const vector_type& u) const
 vector_type MaxEntHelper::right_side(const vector_type& u) const
 {
   vector_type b = 2./ndat()*(maxent_prec_prod(K(), transform_into_real_space(u)) - y());
-  b = maxent_prec_prod(trans(U()), b);
+  b = maxent_prec_prod(U().transpose(), b);
   b = maxent_prec_prod(Sigma(), b);
   return b;
 }
@@ -114,43 +112,48 @@ vector_type MaxEntHelper::right_side(const vector_type& u) const
 double MaxEntHelper::step_length(const vector_type& delta, const vector_type& u) const 
 {
   vector_type A = transform_into_real_space(u);
-  matrix_type L = trans(Vt());
-  for (unsigned int i=0; i<L.size1(); ++i) 
-    for (unsigned int j=0; j<L.size2(); ++j) 
+  matrix_type L = Vt().transpose();
+  for (unsigned int i=0; i<L.rows(); ++i) 
+    for (unsigned int j=0; j<L.cols(); ++j) 
       L(i,j) *= A[i];
   L = maxent_prec_prod(Vt(), L);
-  return inner_prod(delta, maxent_prec_prod(L, delta));
+  return delta.dot(maxent_prec_prod(L, delta));
 }
 
 double MaxEntHelper::convergence(const vector_type& u, const double alpha) const 
 {
-  using namespace boost::numeric::ublas;
+  //using namespace boost::numeric::ublas;
   vector_type A = transform_into_real_space(u);
-  matrix_type L = trans(Vt());
-  for (unsigned int i=0; i<L.size1(); ++i) 
-    for (unsigned int j=0; j<L.size2(); ++j) 
+  matrix_type L = Vt().transpose();
+  for (unsigned int i=0; i<L.rows(); ++i) 
+    for (unsigned int j=0; j<L.cols(); ++j) 
       L(i,j) *= A[i];
   L = maxent_prec_prod(Vt(), L);
   vector_type alpha_dSdu = -alpha*maxent_prec_prod(L, u);
   vector_type dLdu = maxent_prec_prod(L, right_side(u));
   vector_type diff = alpha_dSdu - dLdu;
-  double denom = norm_2(alpha_dSdu) + norm_2(dLdu);
+  double denom = alpha_dSdu.norm() + dLdu.norm();
   denom = denom*denom;
-  return 2*inner_prod(diff, diff)/denom;
+  return 2*diff.dot(diff)/denom;
 }
 
 double MaxEntHelper::log_prob(const vector_type& u, const double alpha) const
 {
   matrix_type L = maxent_prec_prod_trans(K(), K());
   const vector_type A = transform_into_real_space(u);
-  for (unsigned int i=0; i<L.size1(); ++i)
-    for (unsigned int j=0; j<L.size2(); ++j)
+  for (unsigned int i=0; i<L.rows(); ++i)
+    for (unsigned int j=0; j<L.cols(); ++j)
       L(i,j) *= sqrt(A[i])*sqrt(A[j]);
-  for (unsigned int i=0; i<L.size1(); ++i)
+  for (unsigned int i=0; i<L.rows(); ++i)
     L(i,i) += alpha;
-  boost::numeric::bindings::lapack::potrf(boost::numeric::bindings::lower(L));
+  //boost::numeric::bindings::lapack::potrf(boost::numeric::bindings::lower(L));
+  
+  //LAPACK does potrf in place, while Eigen does not
+  Eigen::LLT<matrix_type,Eigen::Lower> lltofL(L);
+  L=lltofL.matrixL();
+
   double log_det = 0.;
-  for (unsigned int i=0; i<L.size1(); ++i) 
+  for (unsigned int i=0; i<L.rows(); ++i) 
     log_det  += log(L(i,i)*L(i,i));
   return 0.5*( (nfreq())*log(alpha) - log_det ) - Q(u, alpha);
 }
@@ -161,11 +164,14 @@ double MaxEntHelper::chi_scale_factor(vector_type A, const double chi_sq, const 
     A[i] *= delta_omega(i);
   using namespace boost::numeric;
   matrix_type L = maxent_prec_prod_trans(K(), K());
-  for (unsigned int i=0; i<L.size1(); ++i)
-    for (unsigned int j=0; j<L.size2(); ++j)
+  for (unsigned int i=0; i<L.rows(); ++i)
+    for (unsigned int j=0; j<L.cols(); ++j)
       L(i,j) *= sqrt(A[i])*sqrt(A[j]);
-  vector_type lambda(L.size1());
-  bindings::lapack::syev('N', bindings::upper(L) , lambda, bindings::lapack::optimal_workspace());
+  vector_type lambda(L.rows());
+  //bindings::lapack::syev('N', bindings::upper(L) , lambda, bindings::lapack::optimal_workspace());
+Eigen::SelfAdjointEigenSolver<matrix_type> es;
+es.compute(L);
+lambda = es.eigenvalues();
   double Ng = 0.;
   for (unsigned int i=0; i<lambda.size(); ++i) {
     if (lambda[i]>=0) 

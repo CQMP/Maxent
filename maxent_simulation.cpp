@@ -28,12 +28,9 @@
 
 #include "maxent.hpp"
 #include <alps/config.hpp> // needed to set up correct bindings
-#include <boost/numeric/bindings/lapack/driver/gesv.hpp>
-#include <boost/numeric/ublas/matrix_proxy.hpp>
-#include <boost/numeric/bindings/ublas.hpp>
-#include "ublas_vector.hpp"
 #include <alps/hdf5/vector.hpp>
 #include <boost/math/special_functions/fpclassify.hpp> //needed for boost::math::isnan
+#include <Eigen/LU>
 
 struct ofstream_ : std::ofstream{
     explicit ofstream_(std::streamsize precision=10){
@@ -84,7 +81,7 @@ void MaxEntSimulation::run()
     //computation of spectral function out of 'u'
     vector_type A = get_spectrum(u);
     //computation of normalization
-    std::cerr << "norm: " << boost::numeric::ublas::sum(transform_into_real_space(u)) << "\t";
+    std::cerr << "norm: " << transform_into_real_space(u).sum() << "\t";
     if (text_output) {
       spectral_function_file<<"# alpha: "<<alpha[a]<<std::endl;
       for (std::size_t i=0; i<A.size(); ++i)
@@ -131,17 +128,19 @@ void MaxEntSimulation::evaluate(){
       chispec_file << omega_coord(i) << " " << spectra[a_chi][i]*norm << " " << def[i]*norm << std::endl;
     }
   }
-  boost::numeric::ublas::vector<double>::const_iterator max_lprob = std::max_element(lprob.begin(), lprob.end());  
-  const int max_a = max_lprob-lprob.begin();
+  //boost::numeric::ublas::vector<double>::const_iterator max_lprob = std::max_element(lprob.begin(), lprob.end());  
+  //const int max_a = max_lprob-lprob.begin();
+  int max_a,nothing; double max_lprob;
+  max_lprob=lprob.maxCoeff(&max_a,&nothing);
   const double factor = chi_scale_factor(spectra[max_a], chi_sq[max_a], alpha[max_a]);
   if (verbose) std::cerr << "chi scale factor: " << factor << std::endl;
 
   alps::hdf5::archive ar(name+"out.h5", alps::hdf5::archive::WRITE);
-  ar << alps::make_pvp("/alpha/values",alpha);
+  //ar << alps::make_pvp("/alpha/values",alpha);
 
   vector_type om(spectra[0].size());
   for (int i=0;i<om.size();i++) om[i] = omega_coord(i);        
-  ar<<alps::make_pvp("/spectrum/omega",om);
+  //ar<<alps::make_pvp("/spectrum/omega",om);
 
   //output 'maximum' spectral function (classical maxent metod)
   if (text_output){
@@ -153,17 +152,17 @@ void MaxEntSimulation::evaluate(){
   {
     maxspec = spectra[max_a]*norm;
     vector_type specchi = spectra[a_chi]*norm;
-    ar << alps::make_pvp("/spectrum/chi",specchi);
-    ar << alps::make_pvp("/spectrum/maximum",maxspec);
+    //ar << alps::make_pvp("/spectrum/chi",specchi);
+    //ar << alps::make_pvp("/spectrum/maximum",maxspec);
   }
   vector_type prob(lprob.size());
   for (std::size_t a=0; a<prob.size(); ++a) 
-    prob[a] = exp(lprob[a]-*max_lprob);
+    prob[a] = exp(lprob[a]-max_lprob);
   double probnorm = 0;
   for (std::size_t a=0; a<prob.size()-1; ++a) 
     probnorm += 0.5*(prob[a]+prob[a+1])*(alpha[a]-alpha[a+1]);
   prob /= probnorm;
-  ar << alps::make_pvp("/alpha/probability",prob);
+  //ar << alps::make_pvp("/alpha/probability",prob);
   if (text_output){
     ofstream_ prob_str;
     prob_str.open((name+"prob.dat").c_str());
@@ -199,8 +198,8 @@ void MaxEntSimulation::evaluate(){
     for (std::size_t  i=0; i<avspec.size(); ++i)
       avspec_file << omega_coord(i) << " " << avspec[i] << " " << def[i]*norm << std::endl;
   }
-  ar << alps::make_pvp("/spectrum/average",avspec);
-  ar << alps::make_pvp("/spectrum/variance",varspec);
+  //ar << alps::make_pvp("/spectrum/average",avspec);
+  //ar << alps::make_pvp("/spectrum/variance",varspec);
 
   if(Kernel_type=="anomalous"){ //for the anomalous function: use A(omega)=Im Sigma(omega)/(pi omega).
     ofstream_ maxspec_anom_str;maxspec_anom_str.open((name+"maxspec_anom.dat").c_str());
@@ -211,13 +210,13 @@ void MaxEntSimulation::evaluate(){
       spec[i] = avspec[i]*omega_coord(i)*M_PI;
       avspec_anom_str << omega_coord(i) << " " << avspec[i]*omega_coord(i)*M_PI<<std::endl;
     }
-    ar << alps::make_pvp("/spectrum/anomalous/average",spec);
+    //ar << alps::make_pvp("/spectrum/anomalous/average",spec);
     for (std::size_t i=0; i<spectra[0].size(); ++i){
       //if(omega_coord(i)>=0.)
       spec[i] = spectra[max_a][i]*norm*omega_coord(i)*M_PI;
       maxspec_anom_str << omega_coord(i) << " " << spectra[max_a][i]*norm*omega_coord(i)*M_PI << std::endl;
     }
-    ar << alps::make_pvp("/spectrum/anomalous/maximum",spec);
+    //ar << alps::make_pvp("/spectrum/anomalous/maximum",spec);
   }
   if(Kernel_type=="bosonic"){ //for the anomalous function: use A(Omega_)=Im chi(Omega_)/(pi Omega_) (as for anomalous)
     vector_type spec(avspec.size());
@@ -231,7 +230,7 @@ void MaxEntSimulation::evaluate(){
         avspec_anom_str << omega_coord(i) << " " << avspec[i]*omega_coord(i)*M_PI<<std::endl;
       }
     }
-    ar << alps::make_pvp("/spectrum/bosonic/average",spec);
+    //ar << alps::make_pvp("/spectrum/bosonic/average",spec);
     for (std::size_t i=0; i<spectra[0].size(); ++i){
       //if(omega_coord(i)>=0.)
       spec[i] = spectra[max_a][i]*norm*omega_coord(i)*M_PI;
@@ -242,7 +241,7 @@ void MaxEntSimulation::evaluate(){
         maxspec_anom_str << omega_coord(i) << " " << spectra[max_a][i]*norm*omega_coord(i)*M_PI << std::endl;
       }
     }
-    ar << alps::make_pvp("/spectrum/bosonic/maximum",spec);
+    //ar << alps::make_pvp("/spectrum/bosonic/maximum",spec);
   }
 
   //don't understand why this was commented out...
@@ -316,15 +315,16 @@ vector_type MaxEntSimulation::levenberg_marquardt(vector_type u, const double al
 //to be used in the Levenberg Marquardt fitting procedure
 vector_type MaxEntSimulation::iteration(vector_type u, const double alpha, const double mu) const
 {
-  using namespace boost::numeric;
   matrix_type M = left_side(u);
-  for (std::size_t i=0; i<M.size1(); ++i) 
+  for (std::size_t i=0; i<M.rows(); ++i) 
     M(i,i) += alpha + mu;
   vector_type b = right_side(u) + alpha*u;
   matrix_type B(b.size(),1);
-  for (std::size_t i=0; i<M.size1(); ++i) 
+  for (std::size_t i=0; i<M.rows(); ++i) 
     B(i,0) = -b[i];
-  ublas::vector<fortran_int_t> ipiv(b.size());
-  bindings::lapack::gesv(M, ipiv, B);
-  return ublas::matrix_column<matrix_type>(B, 0);
+   //bindings::lapack::gesv(M, ipiv, B);
+  //NOTE: gesv uses LU decomp, but we can switch to a safe QR routine as well
+  matrix_type Bp = M.lu().solve(B);
+  //may need a transposeInPlace();
+  return Bp;
 }

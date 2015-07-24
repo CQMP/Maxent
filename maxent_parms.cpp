@@ -27,18 +27,13 @@
 
 #include "maxent.hpp"
 #include <alps/config.hpp> // needed to set up correct bindings
-#include <boost/numeric/bindings/ublas.hpp>
-#include <boost/numeric/ublas/matrix_proxy.hpp>
-#include <boost/numeric/ublas/vector_expression.hpp>
-#include <boost/numeric/bindings/lapack/driver/syev.hpp>
-#include <boost/numeric/bindings/lapack/driver/gesvd.hpp>
-#include <boost/numeric/bindings/upper.hpp>
+#include <Eigen/SVD>
+#include <Eigen/Eigenvalues>
 #include <alps/hdf5/vector.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/math/special_functions/legendre.hpp> //needed for Legendre transform
 namespace bmth = boost::math;
-//#include "maxent_legendre_util.hpp"
 
   // We provide a file with data points and error bars, the latter are used only if
   // COVARIANCE_MATRIX is not set. The format is
@@ -208,10 +203,14 @@ void ContiParameters::read_covariance_matrix_from_text_file(
 void ContiParameters::decompose_covariance_matrix(const alps::params& p){
   using namespace boost::numeric;
     vector_type var(ndat());
-    bindings::lapack::syev('V', bindings::upper(cov_) , var, bindings::lapack::optimal_workspace());
-    matrix_type cov_trans = ublas::trans(cov_);
-    matrix_type K_loc = ublas::prec_prod(cov_trans, K_);
-    vector_type y_loc = ublas::prec_prod(cov_trans, y_);
+    //bindings::lapack::syev('V', bindings::upper(cov_) , var, bindings::lapack::optimal_workspace()); 
+    //TODO: check if this truly implements lapack's expected overwrite of cov_
+    Eigen::SelfAdjointEigenSolver<matrix_type> es(cov_);
+    var=es.eigenvalues();
+    cov_=es.eigenvectors();
+    matrix_type cov_trans = cov_.transpose();
+    matrix_type K_loc = maxent_prec_prod(cov_trans, K_);
+    vector_type y_loc = maxent_prec_prod(cov_trans, y_);
     if (p["VERBOSE"])
       std::cout << "# Eigenvalues of the covariance matrix:\n";
     // We drop eigenvalues of the covariance matrix which are smaller than 1e-10
@@ -243,10 +242,10 @@ void ContiParameters::decompose_covariance_matrix(const alps::params& p){
 
 void MaxEntParameters::compute_minimal_chi2()const {
   using namespace boost::numeric;
-  matrix_type Ut = ublas::trans(U_); //U^T has dimension ns_*ndat()
-  vector_type t = ublas::prec_prod(Ut, y_); //t has dimension ns_
-  vector_type y2 = ublas::prec_prod(U_, t); //y2 has dimension ndat(), which is dimension of y
-  double chi = ublas::norm_2(y_ - y2); //this measures the loss of precision when transforming to singular space and back.
+  matrix_type Ut = U_.transpose(); //U^T has dimension ns_*ndat()
+  vector_type t = maxent_prec_prod(Ut, y_); //t has dimension ns_
+  vector_type y2 = maxent_prec_prod(U_, t); //y2 has dimension ndat(), which is dimension of y
+  double chi = (y_ - y2).norm(); //this measures the loss of precision when transforming to singular space and back.
   std::cout << "minimal chi2: " << chi * chi / y_.size() << std::endl;
 }
 
@@ -255,10 +254,9 @@ void MaxEntParameters::truncate_to_singular_space(const vector_type& S) {
   //(truncated) Sigma has dimension ns_*ns_ (number of singular eigenvalues)
   //(truncated) V^T has dimensions ns_* nfreq(); nfreq() is number of output (real) frequencies
   //ns_ is the dimension of the singular space.
-  U_.resize(ndat(), ns_, true);
-  Vt_.resize(ns_, nfreq(), true);
-  Sigma_.resize(ns_, ns_);
-  Sigma_.clear();
+  U_.conservativeResize(ndat(), ns_);
+  Vt_.conservativeResize(ns_, nfreq());
+  Sigma_= Eigen::MatrixXd::Zero(ns_,ns_);
   for (int s = 0; s < ns_; ++s) {
     std::cout << "# " << s << "\t" << S[s] << "\n";
     Sigma_(s, s) = S[s];
@@ -267,8 +265,16 @@ void MaxEntParameters::truncate_to_singular_space(const vector_type& S) {
 
 void MaxEntParameters::singular_value_decompose_kernel(bool verbose,
     vector_type& S) {
-  matrix_type Kt = K_; // gesvd destroys K!
-  boost::numeric::bindings::lapack::gesvd('S', 'S', Kt, S, U_, Vt_);
+  //matrix_type Kt = K_; // gesvd destroys K!
+  /*boost::numeric::bindings::lapack::gesvd('S', 'S', Kt, S, U_, Vt_);
+  */
+  const double threshold = std::sqrt(std::numeric_limits<double>::epsilon())
+      * nfreq();
+  Eigen::JacobiSVD<matrix_type> svd(K_,Eigen::ComputeThinU | Eigen::ComputeThinV);
+  svd.setThreshold(threshold);
+  S=svd.singularValues();
+  U_=svd.matrixU();
+  Vt_=svd.matrixV().transpose(); 
   if (verbose)
     std::cout << "# Singular values of the Kernel:\n";
 
@@ -287,6 +293,7 @@ void MaxEntParameters::singular_value_decompose_kernel(bool verbose,
   if (ns() == 0)
     boost::throw_exception(
         std::logic_error("all singular values smaller than the precision"));
+  
 }
 void MaxEntParameters::check_high_frequency_limit(const vector_type& y,const kernel_type kt){
     //TODO: expand check into time/bosonic domain
