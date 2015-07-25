@@ -103,6 +103,8 @@ private:
   std::string name,Kernel_type;
   bool verbose,text_output,self;
   const int nfreq;
+	///true then makes out.h5 file
+	const int output_hdf5;
 
   vector_type lprob;
   vector_type chi_sq;
