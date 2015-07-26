@@ -9,7 +9,6 @@ inline void set_defaults(alps::params& p){
 	//		General
 	//---------------------------------
 	p.define<int>("DATA_IN_HDF5",false,"1 if data is in HDF5 format");
-	p.define<int>("OUTPUT_HDF5",false,"Create hdf5 out file will all data");
 	p.define<int>("TEXT_OUTPUT",true,"1 if results should be output to text files");
     	p.define<int>("ENFORCE_NORMALIZATION",false,"1 to renormalize last data point");
 	p.define<int>("VERBOSE",false,"1 to print verbose output");

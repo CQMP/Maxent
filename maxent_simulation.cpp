@@ -31,16 +31,13 @@
 #include <alps/hdf5/vector.hpp>
 #include <boost/math/special_functions/fpclassify.hpp> //needed for boost::math::isnan
 #include <Eigen/LU>
+#include "eigen_hdf5.hpp"
 
 struct ofstream_ : std::ofstream{
     explicit ofstream_(std::streamsize precision=10){
 	    this->precision(precision);
     }
 };
-void copyEigtoVec(std::vector<double> &v, const vector_type &in){
-		for(std::size_t i=0;i<in.size();i++)
-					v[i]=in[i];
-}
 
 MaxEntSimulation::MaxEntSimulation(const alps::params &parms)
 : MaxEntHelper(parms)
@@ -53,7 +50,6 @@ MaxEntSimulation::MaxEntSimulation(const alps::params &parms)
 , self(parms["SELF"])
 , qvec((int)parms["N_ALPHA"])
 , nfreq(parms["NFREQ"].as<int>())
-, output_hdf5(parms["OUTPUT_HDF5"].as<int>())
 {
   std::string bn=parms["BASENAME"]; name=bn+'.';
 
@@ -144,9 +140,12 @@ void MaxEntSimulation::evaluate(){
   const double factor = chi_scale_factor(spectra[max_a], chi_sq[max_a], alpha[max_a]);
   if (verbose) std::cerr << "chi scale factor: " << factor << std::endl;
 
+	alps::hdf5::archive ar(name+"out.h5", alps::hdf5::archive::WRITE);
+	ar << alps::make_pvp("/alpha/values",alpha);
+
   vector_type om(spectra[0].size());
   for (int i=0;i<om.size();i++) om[i] = omega_coord(i);        
-  //ar<<alps::make_pvp("/spectrum/omega",om);
+  ar<<alps::make_pvp("/spectrum/omega",om);
 
   //output 'maximum' spectral function (classical maxent metod)
   if (text_output){
@@ -158,8 +157,8 @@ void MaxEntSimulation::evaluate(){
 	
   maxspec = spectra[max_a]*norm;
   vector_type specchi = spectra[a_chi]*norm;
-	//ar << alps::make_pvp("/spectrum/chi",specchi);
-  //ar << alps::make_pvp("/spectrum/maximum",maxspec);
+	ar << alps::make_pvp("/spectrum/chi",specchi);
+  ar << alps::make_pvp("/spectrum/maximum",maxspec);
   
 	vector_type prob(lprob.size());
   for (std::size_t a=0; a<prob.size(); ++a) 
@@ -168,7 +167,7 @@ void MaxEntSimulation::evaluate(){
   for (std::size_t a=0; a<prob.size()-1; ++a) 
     probnorm += 0.5*(prob[a]+prob[a+1])*(alpha[a]-alpha[a+1]);
   prob /= probnorm;
-  //ar << alps::make_pvp("/alpha/probability",prob);
+  ar << alps::make_pvp("/alpha/probability",prob);
   if (text_output){
     ofstream_ prob_str;
     prob_str.open((name+"prob.dat").c_str());
@@ -204,8 +203,8 @@ void MaxEntSimulation::evaluate(){
     for (std::size_t  i=0; i<avspec.size(); ++i)
       avspec_file << omega_coord(i) << " " << avspec[i] << " " << def[i]*norm << std::endl;
   }
-  //ar << alps::make_pvp("/spectrum/average",avspec);
-  //ar << alps::make_pvp("/spectrum/variance",varspec);
+  ar << alps::make_pvp("/spectrum/average",avspec);
+  ar << alps::make_pvp("/spectrum/variance",varspec);
 
   if(Kernel_type=="anomalous"){ //for the anomalous function: use A(omega)=Im Sigma(omega)/(pi omega).
     ofstream_ maxspec_anom_str;maxspec_anom_str.open((name+"maxspec_anom.dat").c_str());
@@ -216,13 +215,13 @@ void MaxEntSimulation::evaluate(){
       spec[i] = avspec[i]*omega_coord(i)*M_PI;
       avspec_anom_str << omega_coord(i) << " " << avspec[i]*omega_coord(i)*M_PI<<std::endl;
     }
-    //ar << alps::make_pvp("/spectrum/anomalous/average",spec);
+    ar << alps::make_pvp("/spectrum/anomalous/average",spec);
     for (std::size_t i=0; i<spectra[0].size(); ++i){
       //if(omega_coord(i)>=0.)
       spec[i] = spectra[max_a][i]*norm*omega_coord(i)*M_PI;
       maxspec_anom_str << omega_coord(i) << " " << spectra[max_a][i]*norm*omega_coord(i)*M_PI << std::endl;
     }
-    //ar << alps::make_pvp("/spectrum/anomalous/maximum",spec);
+    ar << alps::make_pvp("/spectrum/anomalous/maximum",spec);
   }
   if(Kernel_type=="bosonic"){ //for the anomalous function: use A(Omega_)=Im chi(Omega_)/(pi Omega_) (as for anomalous)
     vector_type spec(avspec.size());
@@ -236,7 +235,7 @@ void MaxEntSimulation::evaluate(){
         avspec_anom_str << omega_coord(i) << " " << avspec[i]*omega_coord(i)*M_PI<<std::endl;
       }
     }
-    //ar << alps::make_pvp("/spectrum/bosonic/average",spec);
+    ar << alps::make_pvp("/spectrum/bosonic/average",spec);
     for (std::size_t i=0; i<spectra[0].size(); ++i){
       //if(omega_coord(i)>=0.)
       spec[i] = spectra[max_a][i]*norm*omega_coord(i)*M_PI;
@@ -247,7 +246,7 @@ void MaxEntSimulation::evaluate(){
         maxspec_anom_str << omega_coord(i) << " " << spectra[max_a][i]*norm*omega_coord(i)*M_PI << std::endl;
       }
     }
-    //ar << alps::make_pvp("/spectrum/bosonic/maximum",spec);
+    ar << alps::make_pvp("/spectrum/bosonic/maximum",spec);
   }
 
   //don't understand why this was commented out...
@@ -271,38 +270,6 @@ void MaxEntSimulation::evaluate(){
     avspec*=-M_PI;
     maxspec*=-M_PI;
   }
-
-	//write to hdf5
-	//TODO: make this less hacky
-	//
-	if(output_hdf5){
-		alps::hdf5::archive ar(name+"out.h5", alps::hdf5::archive::WRITE);
-		std::vector<double> alpha_v(alpha.size());
-		copyEigtoVec(alpha_v,alpha);		
-		ar << alps::make_pvp("/alpha/values",alpha_v);
-		//----
-		std::vector<double> om_v(om.size());
-		copyEigtoVec(om_v,om);
-		ar<<alps::make_pvp("/spectrum/omega",om_v);
-		//----
-		std::vector<double> specchi_v(specchi.size());
-		std::vector<double> maxspec_v(maxspec.size());
-		copyEigtoVec(specchi_v,specchi);
-		copyEigtoVec(maxspec_v,maxspec);
-    ar << alps::make_pvp("/spectrum/chi",specchi_v);
-    ar << alps::make_pvp("/spectrum/maximum",maxspec_v);
-		//-----
-		std::vector<double> prob_v(prob.size());
-		copyEigtoVec(prob_v,prob);
-		ar << alps::make_pvp("/alpha/probability",prob_v);
-		//-----
-		std::vector<double> avspec_v(avspec.size());
-		std::vector<double> varspec_v(varspec.size());
-		copyEigtoVec(avspec_v,avspec);
-		copyEigtoVec(varspec_v,varspec);
-		ar << alps::make_pvp("/spectrum/average",avspec_v);
-		ar << alps::make_pvp("/spectrum/variance",varspec_v);
-	}
 }
 
 

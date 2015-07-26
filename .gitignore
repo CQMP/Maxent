@@ -26,7 +26,7 @@
 !doxygen/Doxyfile
 !legendre_convert/legendre_convert.cpp
 !legendre_convert/CMakeLists.txt
-!ublas_vector.hpp
+!eigen_hdf5.hpp
 !maxent_parms_default.hpp
 !examples/
 
