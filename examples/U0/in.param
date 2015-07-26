@@ -1,0 +1,7 @@
+BETA=8			#inverse temperature
+NDAT=1024		#num of data points
+NFREQ=500               #num of output frequencies
+DATASPACE=frequency	#!$G(i\omega)$!
+KERNEL=fermionic         #fermionic|bosonic values	
+PARTICLE_HOLE_SYMMETRY=1 #0|1 
+DATA="Gomegain"		 #location of data file
