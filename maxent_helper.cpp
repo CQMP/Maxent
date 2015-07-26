@@ -33,7 +33,7 @@
 #include <Eigen/Cholesky>
 //NOTE: size1= rows; size2=columns
 
-MaxEntHelper::MaxEntHelper(const alps::params& p) :
+MaxEntHelper::MaxEntHelper(alps::params& p) :
 MaxEntParameters(p) , def_(nfreq())
 {
     for (int i=0; i<nfreq(); ++i)

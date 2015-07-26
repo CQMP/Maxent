@@ -140,7 +140,7 @@ void ContiParameters::read_data_from_param_file(const alps::params& p) {
   }
 }
 
-ContiParameters::ContiParameters(const alps::params& p) :
+ContiParameters::ContiParameters(alps::params& p) :
 T_(1/p["BETA"].as<double>()),ndat_(p["NDAT"]), nfreq_(p["NFREQ"]),
 y_(ndat_),sigma_(ndat_),K_(),grid_(p)
 {
@@ -338,7 +338,7 @@ void MaxEntParameters::check_high_frequency_limit(const vector_type& y,const ker
     }
 }
 
-MaxEntParameters::MaxEntParameters(const alps::params& p) :
+MaxEntParameters::MaxEntParameters(alps::params& p) :
     ContiParameters(p),
     Default_(make_default_model(p, "DEFAULT_MODEL")),
     U_(ndat(), ndat()), Vt_(ndat(), nfreq()), Sigma_(ndat(), ndat()),

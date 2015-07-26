@@ -39,7 +39,7 @@ struct ofstream_ : std::ofstream{
     }
 };
 
-MaxEntSimulation::MaxEntSimulation(const alps::params &parms)
+MaxEntSimulation::MaxEntSimulation(alps::params &parms)
 : MaxEntHelper(parms)
 , alpha((int)parms["N_ALPHA"])              //This is the # of \alpha parameters that should be tried.
 , norm(parms["NORM"])                                             //The integral is normalized to NORM (use e.g. for self-energies
