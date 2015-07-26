@@ -40,7 +40,7 @@ class MaxEntHelper : private MaxEntParameters
 {
 public : 
 
-  MaxEntHelper(const alps::params& p);
+  MaxEntHelper(alps::params& p);
 
   double omega_coord(const int i) const { return MaxEntParameters::omega_coord(i); }
 
@@ -86,7 +86,7 @@ class MaxEntSimulation : private MaxEntHelper
 public:
 
   ///setup of parameters
-  MaxEntSimulation(const alps::params& parms);
+  MaxEntSimulation(alps::params& parms);
   ///the maxent calculation
   void run();
   ///the evaluation and writing of files

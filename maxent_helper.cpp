@@ -36,7 +36,7 @@
 #include <boost/numeric/bindings/lower.hpp>
 #include <boost/math/special_functions/fpclassify.hpp> //needed for boost::math::isnan
 
-MaxEntHelper::MaxEntHelper(const alps::params& p) :
+MaxEntHelper::MaxEntHelper(alps::params& p) :
 MaxEntParameters(p) , def_(nfreq())
 {
     for (int i=0; i<nfreq(); ++i)

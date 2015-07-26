@@ -34,7 +34,7 @@
 
 namespace bmth = boost::math;
 
-kernel::kernel(const alps::params &p, const vector_type& freq, const int lmax):
+kernel::kernel(alps::params &p, const vector_type& freq, const int lmax):
 ndat_(p["NDAT"]),
 nfreq_(p["NFREQ"]),
 T_(1./static_cast<double>(p["BETA"])),
@@ -58,17 +58,29 @@ K_(ndat_,nfreq_)
 	//TODO: move to params with input?
 	if(dataspace_name=="time"){
 		//Test for tau
-		tau_points_.resize(ndat_);
-		if(p.exists("TAU_0")){
-			std::cout<<"Using input tau points"<<std::endl;
-			for(int i=0;i<ndat_;i++)
-				tau_points_[i]=p["TAU_"+boost::lexical_cast<std::string>(i)];
-		}
-		else{
-			std::cout<<"Generating tau points"<<std::endl;
-			for(int i=0;i<ndat_;i++)
-				 tau_points_[i] = i / ((ndat_-1)* T_);
-		}
+    tau_points_.resize(ndat_);
+    if(p.defined("TAU_1")){
+        std::cout<<"Using input tau points"<<std::endl;
+        for(int i=0;i<ndat_;i++){
+          tau_points_[i]=p["TAU_"+boost::lexical_cast<std::string>(i)];
+        }
+    }
+    else if(p.exists("TAU_0")){
+      std::cout<<"Using input tau points"<<std::endl;
+      tau_points_[0]=p["TAU_0"];
+      for(int i=1;i<ndat_;i++)
+        p.define<double>("TAU_"+boost::lexical_cast<std::string>(i),"");
+      for(int i=1;i<ndat_;i++){
+        //par.define<double>("TAU_"+boost::lexical_cast<std::string>(i),"");
+        tau_points_[i]=p["TAU_"+boost::lexical_cast<std::string>(i)];
+      }
+    }
+
+    else{
+      std::cout<<"Generating tau points"<<std::endl;
+      for(int i=0;i<ndat_;i++)
+         tau_points_[i] = i / ((ndat_-1)* T_);
+    }
   }
     
   if(ktype_==legendre_fermionic_kernel || ktype_==legendre_bosonic_kernel){
