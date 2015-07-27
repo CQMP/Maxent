@@ -5,8 +5,8 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 find_package(ALPSCore REQUIRED)
 
 #note: LAPACK also finds BLAS
-find_package(LAPACK REQUIRED)
-if(LAPACK_FOUND)
+find_package(LAPACK)
+if(LAPACK_FOUND AND USE_LAPACK)
     set(HAVE_BLAS 1)
     set(HAVE_LAPACK 1)
 else()

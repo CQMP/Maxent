@@ -12,8 +12,9 @@ Table of Contents
     * [Requirements](#requirements)
       * [Libraries](#libraries)
         * [Boost](#boost)
-        * [Eigen3](#Eigen3)
         * [ALPSCore](#alpscore)
+        * [Eigen3](#eigen3)
+        * [LAPACK (Optional)](#lapack-optional)
     * [Installation](#installation)
       * [Tests](#tests)
     * [Usage](#usage)
@@ -36,11 +37,17 @@ Table of Contents
 #### Boost
 When compiling both ALPSCore and MaxEnt, be careful to ensure boost was compiled with the same library and stdlib as ALPSCore and MaxEnt.   
 
+#### ALPSCore
+ALPSCore needs to be properly installed, see [ALPSCore library](https://github.com/ALPSCore/ALPSCore).
+
 #### Eigen3
 For our linear algebra routines we use Eigen3 version >=3.1. If not in your path use `-DEIGEN3_INCLUDE_DIR=`
 
-#### ALPSCore
-ALPSCore needs to be properly installed, see [ALPSCore library](https://github.com/ALPSCore/ALPSCore).
+#### LAPACK (Optional)
+Eigen3 has a good SVD routine, but can be very slow for a large kernel.
+Some systems, like OS X or those with Intel MKL, have precompiled BLAS/LAPACK routines that can be faster and as accurate as Eigen3.
+To turn on LAPACK support for the SVD, please use the flag `-DUSE_LAPACK=1`. 
+
 
 ## Installation
 To install provide something like:
@@ -84,7 +91,7 @@ n+1 imag sigma_imag
 ```
 NOTE: NDAT=#of points*2 when there is not Particle Hole Symmetric data
 ##### Time Data
-For either symmetric or non-symmetric data, G(tau) is simply imput as:
+For either symmetric or non-symmetric data, G(tau) is simply input as:
 ```
 n tau_n sigma_n
 n+1 tau_n+1 sigma_n+1
@@ -127,8 +134,7 @@ Maxent creats a default model on a grid between [0,1]
 # Utilities
 ## Pade
 Requires: [GMP](https://gmplib.org/),[Eigen3.1](http://eigen.tuxfamily.org/index.php?title=Main_Page)
-To point cmake to the correct eigen directory, use `-DEIGEN3_INCLUDE_DIR=/path/to/eigen`
-(This directory should be the root of the downloaded tar.bz2 file) 
+To point cmake to the correct eigen directory, use `-DEIGEN3_INCLUDE_DIR=/path/to/eigen` 
 ## Kramers-Kronig
 Requires: [GSL](http://www.gnu.org/software/gsl/), Boost
 ## Legendre Convert
