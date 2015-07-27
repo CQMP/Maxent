@@ -47,7 +47,7 @@ inline bool isinf(pade_complex_type x){ return false;}
 #undef copysign
 #endif
 inline pade_real_type copysign(const pade_real_type &a, const pade_real_type &b){
-  return sgn(a)==sgn(b)?a:-a;
+  return sgn(a)==sgn(b)?a:-1*a;
 }
 inline pade_complex_type operator/(const pade_complex_type &p, const pade_complex_type &q){
   pade_real_type a=p.real(), b=p.imag(), c=q.real(), d=q.imag();
