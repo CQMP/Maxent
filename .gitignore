@@ -27,6 +27,7 @@
 !legendre_convert/legendre_convert.cpp
 !legendre_convert/CMakeLists.txt
 !eigen_hdf5.hpp
+!eigen_lapack.hpp
 !maxent_parms_default.hpp
 !examples/
 
