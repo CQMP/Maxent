@@ -278,7 +278,7 @@ void MaxEntParameters::singular_value_decompose_kernel(bool verbose,
   const double threshold = std::sqrt(std::numeric_limits<double>::epsilon())
       * nfreq();
   Eigen::JacobiSVD<matrix_type> svd(K_,Eigen::ComputeThinU | Eigen::ComputeThinV);
-  svd.setThreshold(threshold);
+  //svd.setThreshold(threshold);
   S=svd.singularValues();
   U_=svd.matrixU();
   Vt_=svd.matrixV().transpose(); 
