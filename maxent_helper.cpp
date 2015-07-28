@@ -41,8 +41,19 @@ MaxEntParameters(p) , def_(nfreq())
     //normalizing the default model
     //def_ /= sum(def_);
     def_ /= def_.sum();
+    checkDefaultModel(def_);
 }
 
+/// check that the default model is non-zero
+/// this is needed for transform_into_singular_space
+/// to work safely
+void MaxEntHelper::checkDefaultModel(const vector_type &D) const{
+    for(int i=0;i<D.size();i++){
+        double Di=D(i);
+        if(Di==0 || boost::math::isnan(Di))
+          throw std::logic_error("dude, your D is zero");
+    }
+}
 
 //the opposite of 'transform_into_real_space'; takes a vector 'A' and makes a vector 'u' out of it:
 // u = V^T* log(A/Default)
@@ -51,8 +62,6 @@ vector_type MaxEntHelper::transform_into_singular_space(vector_type A) const
   double D;
   for (unsigned int i=0; i<A.size(); ++i) {
     D=Default(i);
-      if(D==0 || boost::math::isnan(D))
-        throw std::logic_error("dude, your D is zero");
     A[i] /= D;
     A[i] = A[i]==0. ? 0. : log(A[i]);
   }
