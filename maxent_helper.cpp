@@ -219,6 +219,7 @@ void MaxEntHelper::print_chi2(const vector_type& A, std::ostream &os) const
 }
 
 //This function computes the entropy as in Eq. D.7 in Sebastian's thesis
+//Really eq 3.17 from Jarrell and Gubernatis
 double MaxEntHelper::entropy(const vector_type& A) const 
 {
   double S = 0;

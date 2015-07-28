@@ -58,23 +58,31 @@ public :
   ///number of points for the Matsubara data
   int ndat() const { return MaxEntParameters::ndat(); }
 
+  ///A->u
   vector_type transform_into_singular_space(vector_type A) const;
+  ///u-A
   vector_type transform_into_real_space(vector_type u) const;
+  ///A=A_i/\sigma_i; this removes \sigma_i
   vector_type get_spectrum(const vector_type& u) const;
   vector_type PrincipalValue(const vector_type &w,const vector_type &a) const;
+  /// \Sigma*(V^T*RealSpace(u)*V)*\Sigma
   matrix_type left_side(const vector_type& u) const;
+  /// \Sigma*U^T*(K*RealSpace(u)-y)
   vector_type right_side(const vector_type& u) const;
+  ///  \delta \dot (V^T*RealSpace(u)*V)
   double step_length(const vector_type& delta, const vector_type& u) const;
   double convergence(const vector_type& u, const double alpha) const;
   double log_prob(const vector_type& u, const double alpha) const;
   double chi_scale_factor(vector_type A, const double chi_sq, const double alpha) const;
   double chi2(const vector_type& u) const;
   void print_chi2(const vector_type& u, std::ostream &os) const;
+  /// compute S=\int d\omega(A(\omega)-D(\omega)-A(\omega)\ln[A(\omega)/D(\omega))
   double entropy(const vector_type& u) const;
 
 private:
   ///discretized and normalized version of the default model.
   vector_type def_;
+  ///check that the default model is non-zero
   void checkDefaultModel(const vector_type &D) const;
 };
 
