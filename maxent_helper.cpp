@@ -178,9 +178,8 @@ double MaxEntHelper::chi_scale_factor(vector_type A, const double chi_sq, const 
       L(i,j) *= sqrt(A[i])*sqrt(A[j]);
   vector_type lambda(L.rows());
   //bindings::lapack::syev('N', bindings::upper(L) , lambda, bindings::lapack::optimal_workspace());
-Eigen::SelfAdjointEigenSolver<matrix_type> es;
-es.compute(L);
-lambda = es.eigenvalues();
+  Eigen::SelfAdjointEigenSolver<matrix_type> es(L);
+  lambda = es.eigenvalues();
   double Ng = 0.;
   for (unsigned int i=0; i<lambda.size(); ++i) {
     if (lambda[i]>=0) 
