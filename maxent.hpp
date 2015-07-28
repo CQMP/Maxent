@@ -75,6 +75,7 @@ public :
 private:
   ///discretized and normalized version of the default model.
   vector_type def_;
+  void checkDefaultModel(const vector_type &D) const;
 };
 
 
