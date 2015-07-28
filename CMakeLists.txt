@@ -22,11 +22,9 @@ include_directories("${PROJECT_BINARY_DIR}/config")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 message(STATUS "Finding packages, please stand by...")
 include(UseGtest)
-#include(UseBindings)
 find_package(GSL REQUIRED)
 find_package (Eigen3 3.1 REQUIRED)
 
-#set (GTEST_ROOT gtest )
 set (GTEST_INCLUDE_DIR ${GTEST_ROOT}/include )
 set (GTEST_SRC_DIR ${GTEST_ROOT}/src)
 
@@ -41,7 +39,6 @@ include_directories(${CMAKE_SOURCE_DIR}/gtest/include)
 include_directories(${GTEST_INCLUDE_DIR})
 include_directories(${GTEST_ROOT})
 include_directories(${GSL_INCLUDE_DIR})
-#include_directories(${BINDINGS_INCLUDE_DIR})
 include_directories(${EIGEN3_INCLUDE_DIR})
 
 add_executable(maxent 
