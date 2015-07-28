@@ -30,7 +30,7 @@
 #include "default_model.hpp"
 #include "maxent_grid.hpp"
 #include "maxent_kernel.hpp"
-#include "maxent_blas.hpp"
+#include "maxent_matrix_def.hpp"
 
 ///This class has all the information about general analytic continuation things. It does not know about specifics of maxent.
 class ContiParameters {

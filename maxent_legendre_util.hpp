@@ -1,6 +1,6 @@
 #pragma once
 #include<alps/params.hpp>
-#include"maxent_blas.hpp"
+#include"maxent_matrix_def.hpp"
 #include <boost/random/mersenne_twister.hpp>
 class Legendre_util{
 public:

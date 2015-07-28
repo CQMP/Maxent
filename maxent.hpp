@@ -31,7 +31,7 @@
 #pragma once
 
 #include <fstream>
-#include "maxent_blas.hpp"
+#include "maxent_matrix_def.hpp"
 #include "maxent_parms.hpp"
 
 #include"gtest/gtest.h"

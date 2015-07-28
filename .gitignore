@@ -13,7 +13,7 @@
 !maxent_parms.h
 !maxent_simulation.cpp
 !maxent_simulationTest.cpp
-!maxent_blas.hpp
+!maxent_matrix_def.hpp
 !maxent.cpp
 !maxent.h
 !default_model.hpp
