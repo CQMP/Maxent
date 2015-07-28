@@ -120,6 +120,11 @@ int main(int argc,const char** argv)
           my_sim.run();
           my_sim.evaluate();
       }
+
+      for(int i=0;i<argc;i++){
+        free(argv_[i]);
+      }
+      free(argv_);
   }
     catch(const std::exception &e){
         std::cerr << "Caught Exception " << boost::diagnostic_information(e);
