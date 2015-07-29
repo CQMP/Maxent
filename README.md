@@ -86,7 +86,7 @@ n+1 imag sigma_imag
 ```
 NOTE: NDAT=#of points*2 when there is not Particle Hole Symmetric data
 ##### Time Data
-For either symmetric or non-symmetric data, G(tau) is simply imput as:
+For either symmetric or non-symmetric data, G(tau) is simply input as:
 ```
 n tau_n sigma_n
 n+1 tau_n+1 sigma_n+1
@@ -128,7 +128,7 @@ Maxent creats a default model on a grid between [0,1]
 
 # Utilities
 ## Pade
-Requires: [GMP](https://gmplib.org/),[Eigen3.1](http://eigen.tuxfamily.org/index.php?title=Main_Page)
+Requires: [GMP](https://gmplib.org/), [Eigen3.1](http://eigen.tuxfamily.org/index.php?title=Main_Page)
 To point cmake to the correct eigen directory, use `-DEIGEN3_INCLUDE_DIR=/path/to/eigen`
 (This directory should be the root of the downloaded tar.bz2 file) 
 ## Kramers-Kronig
