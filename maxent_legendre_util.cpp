@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 1998-2015 ALPS Collaboration. See COPYRIGHT.TXT
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
+ * For use in publications, see ACKNOWLEDGE.TXT
+ */
 
 #include "maxent_legendre_util.hpp"
 #include <boost/math/special_functions/legendre.hpp> //needed for Legendre transform

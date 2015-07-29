@@ -29,8 +29,15 @@
 !ublas_vector.hpp
 !maxent_parms_default.hpp
 !examples/
+!LICENSE.TXT
+!ACKNOWLEDGE.TXT
+!COPYRIGHT.TXT
+!HEADER.TXT
+!scripts/
 
 .DS_Store
+*.pyc
+*.swp
 
 #C++ Files
 # Compiled Object files
