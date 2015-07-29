@@ -29,7 +29,7 @@ find_package(GSL REQUIRED)
 set (GTEST_INCLUDE_DIR ${GTEST_ROOT}/include )
 set (GTEST_SRC_DIR ${GTEST_ROOT}/src)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -Wno-return-type-c-linkage")
 
 include_directories(${CMAKE_SOURCE_DIR}/gtest/include)
 include_directories(${GTEST_INCLUDE_DIR})
