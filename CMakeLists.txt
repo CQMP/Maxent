@@ -28,7 +28,7 @@ find_package (Eigen3 3.1 REQUIRED)
 set (GTEST_INCLUDE_DIR ${GTEST_ROOT}/include )
 set (GTEST_SRC_DIR ${GTEST_ROOT}/src)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -DNDEBUG")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -DNDEBUG -Wno-return-type-c-linkage")
 
 #let gcc take advantage of Eigen3 vectorization
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
