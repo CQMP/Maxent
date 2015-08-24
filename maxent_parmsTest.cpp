@@ -7,12 +7,11 @@
 #include "maxent.hpp"
 #include "gtest/gtest.h"
 #include <iostream>
-#include "maxent_parms_default.hpp"
 
 TEST(Parameters,ContiParams){
 	//set up parameters
 	alps::params p;
-	set_defaults(p);
+	MaxEntSimulation::define_parameters(p);
 	p["N_ALPHA"] = 60;
 	p["ALPHA_MIN"] = .01;
 	p["ALPHA_MAX"] = 20.0;
@@ -52,7 +51,7 @@ TEST(Parameters,ContiParams){
 TEST(Parameters,MaxentParams){
     //set up parameters
 	alps::params p;
-	set_defaults(p);
+	MaxEntSimulation::define_parameters(p);
 	p["N_ALPHA"] = 60;
 	p["ALPHA_MIN"] = .01;
 	p["ALPHA_MAX"] = 20.0;
@@ -95,7 +94,7 @@ TEST(Parameters,MaxentParams){
 }
 TEST(Paramaters,HighFrequencyCheck){
     alps::params p;
-    set_defaults(p);
+    MaxEntSimulation::define_parameters(p);
 	p["N_ALPHA"] = 60;
 	p["ALPHA_MIN"] = .01;
 	p["ALPHA_MAX"] = 20.0;

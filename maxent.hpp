@@ -78,6 +78,8 @@ public:
   void evaluate();
   vector_type levenberg_marquardt(vector_type u, const double alpha) const;
   vector_type iteration(vector_type u, const double alpha, const double mu) const;
+  ///define parameter defaults
+  static void define_parameters(alps::params &p);
 
 private:
 

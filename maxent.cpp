@@ -9,8 +9,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/exception/diagnostic_information.hpp> 
-#include "maxent_parms_default.hpp"
-
 
 int main(int argc,char** argv)
 {
@@ -19,9 +17,9 @@ int main(int argc,char** argv)
     ::testing::InitGoogleTest(&argc, argv);
     exit(RUN_ALL_TESTS());
   }
-  set_defaults(parms);
 
   alps::params parms(argc,const_cast<const char**>(argv)); 
+  MaxEntSimulation::define_parameters(parms);
   if(!parms.exists("BETA")){
     std::cout<<"Please supply BETA"<<std::endl;
     parms["help"] = true;

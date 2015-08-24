@@ -6,7 +6,6 @@
 #include "maxent.hpp"
 #include "gtest/gtest.h"
 #include <iostream>
-#include "maxent_parms_default.hpp"
 double getNorm(const vector_type &omega, const vector_type &y){
     int size = omega.size();
     double norm = 0.0;
@@ -18,7 +17,7 @@ double getNorm(const vector_type &omega, const vector_type &y){
 }
 TEST(Simulation,FrequencySimulation){
     alps::params p;
-    set_defaults(p);
+    MaxEntSimulation::define_parameters(p);
     p["BETA"]=8;
     p["NDAT"]=15;
     p["PARTICLE_HOLE_SYMMETRY"]=1;
@@ -96,7 +95,7 @@ TEST(Simulation,FrequencySimulation){
 }
 TEST(Simulation,TauSimulation){
     alps::params p;
-    set_defaults(p);
+    MaxEntSimulation::define_parameters(p);
     p["BETA"]=8;
     p["NDAT"]=26;
     p["PARTICLE_HOLE_SYMMETRY"]=1;
@@ -224,7 +223,7 @@ TEST(Simulation,TauSimulation){
 
 TEST(Simulation,LegendreSimulation){
     alps::params p;
-    set_defaults(p);
+    MaxEntSimulation::define_parameters(p);
     p["BETA"]=8;
     p["NDAT"]=13;
     p["PARTICLE_HOLE_SYMMETRY"]=1;
