@@ -22,32 +22,13 @@ inline void checkInput(alps::params &p){
     }
 }
 
-int main(int argc,const char** argv)
+int main(int argc,char** argv)
 {
   //gtest requires char** while alps params requires const char**
-    char ** argv_;
-    size_t strlen_sum = 0;
-    for (int i = 0; i < argc; i++) strlen_sum += strlen(argv[i]) + 1;
-    argv_=(char **) malloc(sizeof(char *) * (argc + 1) + strlen_sum);
-    for(int i=0;i<argc;i++){
-        int width = strlen(argv[i]) + 1;
-        argv_[i] = (char *)malloc(width*sizeof(char));
-        memcpy(argv_[i], argv[i], width);
-    }
-  
   if(argc==2 && std::string(argv[1])==std::string("--test")){
-    ::testing::InitGoogleTest(&argc, argv_);
+    ::testing::InitGoogleTest(&argc, argv);
     exit(RUN_ALL_TESTS());
   }
-  //alps::mcoptions options(argc, argv);
-  /*boost::filesystem::path input_path();
-  alps::params parms;
-  if(input_path.extension() == ".h5")
-    parms =alps::params(alps::hdf5::archive(options.input_file));
-  else
-    parms =alps::params(options.input_file);
-  */
-  alps::params parms(argc,argv); 
   set_defaults(parms);
   checkInput(parms);
     if (parms.help_requested(std::cout)) {
@@ -64,6 +45,7 @@ int main(int argc,const char** argv)
     else
          parms["BASENAME" ]= input_file.substr(0,input_file.find_last_of('.'))+ ".out";
     basename=parms["BASENAME"].as<std::string>();
+  alps::params parms(argc,const_cast<const char**>(argv)); 
   }
   else
     basename=boost::lexical_cast<std::string>(parms["BASENAME"]);
@@ -98,12 +80,7 @@ int main(int argc,const char** argv)
           MaxEntSimulation my_sim(parms);
           my_sim.run();
           my_sim.evaluate();
-      }
-
-      for(int i=0;i<argc;i++){
-        free(argv_[i]);
-      }
-      free(argv_);
+        }
   }
     catch(const std::exception &e){
         std::cerr << "Caught Exception " << boost::diagnostic_information(e);
