@@ -6,6 +6,7 @@
 
 #include "maxent.hpp"
 //#include <alps/mc/mcoptions.hpp>
+#include <alps/utilities/remove_extensions.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/exception/diagnostic_information.hpp> 
@@ -34,23 +35,12 @@ int main(int argc,char** argv)
     if (parms.help_requested(std::cout)) {
         return 0;
     }
-  std::string basename;
-  //if basename="" then make a better one
-  if(parms.defaulted("BASENAME")){
-    std::string input_file = argv[1];
-    if (input_file.find(".in.h5") != std::string::npos)
-	parms["BASENAME"] = input_file.substr(0,input_file.find_last_of(".in.h5")-5)+ ".out.h5";
-    else if (input_file.find(".out.h5") != std::string::npos)
-	 parms["BASENAME"] = input_file;
-    else
-         parms["BASENAME" ]= input_file.substr(0,input_file.find_last_of('.'))+ ".out";
-    basename=parms["BASENAME"].as<std::string>();
+
   alps::params parms(argc,const_cast<const char**>(argv)); 
   }
-  else
-    basename=boost::lexical_cast<std::string>(parms["BASENAME"]);
-      // If requested, we print the help message, which is constructed from the
-    // information we gave when defining the parameters.
+  std::string basename = alps::remove_extensions(parms.get_origin_name()) + ".out";
+  parms["BASENAME"] = basename;
+  
   try{
         //allow for multiple default model runs
         //set MODEL_RUNS = #runs
