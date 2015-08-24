@@ -4,8 +4,6 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-/* $Id: factory.h 1101 2004-08-18 18:11:43Z troyer $ */
-
 #pragma once
 
 #include <fstream>

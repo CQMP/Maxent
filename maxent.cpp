@@ -5,23 +5,12 @@
  */
 
 #include "maxent.hpp"
-//#include <alps/mc/mcoptions.hpp>
 #include <alps/utilities/remove_extensions.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/exception/diagnostic_information.hpp> 
 #include "maxent_parms_default.hpp"
 
-inline void checkInput(alps::params &p){
-    if(!p.exists("BETA")){
-	std::cout<<"Please supply BETA"<<std::endl;
-	p["help"] = true;
-    }
-    if(!p.exists("NDAT")){
-	std::cout<<"Please supply NDAT"<<std::endl;
-	p["help"] = true;
-    }
-}
 
 int main(int argc,char** argv)
 {
@@ -31,13 +20,20 @@ int main(int argc,char** argv)
     exit(RUN_ALL_TESTS());
   }
   set_defaults(parms);
-  checkInput(parms);
-    if (parms.help_requested(std::cout)) {
-        return 0;
-    }
 
   alps::params parms(argc,const_cast<const char**>(argv)); 
+  if(!parms.exists("BETA")){
+    std::cout<<"Please supply BETA"<<std::endl;
+    parms["help"] = true;
   }
+  if(!parms.exists("NDAT")){
+    std::cout<<"Please supply NDAT"<<std::endl;
+    parms["help"] = true;
+  }
+  if (parms.help_requested(std::cout)) {
+    return 0;
+  }
+
   std::string basename = alps::remove_extensions(parms.get_origin_name()) + ".out";
   parms["BASENAME"] = basename;
   
@@ -51,11 +47,11 @@ int main(int argc,char** argv)
         if(parms.exists("MODEL_RUNS")){
             int nruns=parms["MODEL_RUNS"];
             std::cout<<"Performing " << nruns <<" runs" <<std::endl;
-	    //ALPSCore requires all params are defined
- 	    for(int i=0;i<nruns;i++)
-		parms.define<std::string>("RUN_" + boost::lexical_cast<std::string>(i),"Run");
+	          //ALPSCore requires all params are defined
+ 	          for(int i=0;i<nruns;i++)
+		          parms.define<std::string>("RUN_" + boost::lexical_cast<std::string>(i),"Run");
             for(int i=0;i<nruns;i++){
-                std::string currModel = parms["RUN_" + boost::lexical_cast<std::string>(i)].as<std::string>();
+                std::string currModel = parms["RUN_" + boost::lexical_cast<std::string>(i)];
                 parms["DEFAULT_MODEL"]= currModel;
                 
                 //run a simulation with the new default model.
@@ -66,7 +62,7 @@ int main(int argc,char** argv)
                 my_sim.evaluate();
             }
         }
-      else{
+        else{
           MaxEntSimulation my_sim(parms);
           my_sim.run();
           my_sim.evaluate();
