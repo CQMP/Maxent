@@ -1,0 +1,77 @@
+Using flat default model
+using kernel fermionic in domain frequency with ph symmetry
+The high frequency limit is not 1!: 2.30495 Check norm?
+Kernel is set up
+# 0	4108.32
+# 1	1668.62
+# 2	513.561
+# 3	126.175
+# 4	25.6169
+# 5	4.3795
+# 6	0.635099
+# 7	0.0784661
+minimal chi2: 0.098459
+WARNING: Redefinition of parameter NORM: Input (and output) data are assumed to be normalized to NORM.
+alpha it: 0	Q = 0.5chi^2-\alpha*entropy: 527.241	norm: 1.16962	
+alpha it: 1	Q = 0.5chi^2-\alpha*entropy: 481.411	norm: 1.17798	
+alpha it: 2	Q = 0.5chi^2-\alpha*entropy: 443.307	norm: 1.18585	
+alpha it: 3	Q = 0.5chi^2-\alpha*entropy: 409.139	norm: 1.19303	
+alpha it: 4	Q = 0.5chi^2-\alpha*entropy: 378.828	norm: 1.19943	
+alpha it: 5	Q = 0.5chi^2-\alpha*entropy: 352.116	norm: 1.20499	
+alpha it: 6	Q = 0.5chi^2-\alpha*entropy: 328.667	norm: 1.2097	
+alpha it: 7	Q = 0.5chi^2-\alpha*entropy: 308.1	norm: 1.21353	
+alpha it: 8	Q = 0.5chi^2-\alpha*entropy: 290.018	norm: 1.21649	
+alpha it: 9	Q = 0.5chi^2-\alpha*entropy: 274.026	norm: 1.21858	
+alpha it: 10	Q = 0.5chi^2-\alpha*entropy: 259.754	norm: 1.21982	
+alpha it: 11	Q = 0.5chi^2-\alpha*entropy: 246.864	norm: 1.22024	
+alpha it: 12	Q = 0.5chi^2-\alpha*entropy: 235.057	norm: 1.21985	
+alpha it: 13	Q = 0.5chi^2-\alpha*entropy: 224.078	norm: 1.21869	
+alpha it: 14	Q = 0.5chi^2-\alpha*entropy: 213.717	norm: 1.21679	
+alpha it: 15	Q = 0.5chi^2-\alpha*entropy: 203.807	norm: 1.21418	
+alpha it: 16	Q = 0.5chi^2-\alpha*entropy: 194.22	norm: 1.2109	
+alpha it: 17	Q = 0.5chi^2-\alpha*entropy: 184.869	norm: 1.20697	
+alpha it: 18	Q = 0.5chi^2-\alpha*entropy: 175.7	norm: 1.20245	
+alpha it: 19	Q = 0.5chi^2-\alpha*entropy: 166.688	norm: 1.19737	
+alpha it: 20	Q = 0.5chi^2-\alpha*entropy: 157.834	norm: 1.19178	
+alpha it: 21	Q = 0.5chi^2-\alpha*entropy: 149.256	norm: 1.18533	
+alpha it: 22	Q = 0.5chi^2-\alpha*entropy: 140.793	norm: 1.17884	
+alpha it: 23	Q = 0.5chi^2-\alpha*entropy: 132.591	norm: 1.17201	
+alpha it: 24	Q = 0.5chi^2-\alpha*entropy: 124.7	norm: 1.1649	
+alpha it: 25	Q = 0.5chi^2-\alpha*entropy: 117.171	norm: 1.15758	
+alpha it: 26	Q = 0.5chi^2-\alpha*entropy: 110.049	norm: 1.15012	
+alpha it: 27	Q = 0.5chi^2-\alpha*entropy: 103.374	norm: 1.14258	
+alpha it: 28	Q = 0.5chi^2-\alpha*entropy: 97.1752	norm: 1.13502	
+alpha it: 29	Q = 0.5chi^2-\alpha*entropy: 91.4723	norm: 1.1275	
+alpha it: 30	Q = 0.5chi^2-\alpha*entropy: 86.2731	norm: 1.12008	
+alpha it: 31	Q = 0.5chi^2-\alpha*entropy: 81.5754	norm: 1.11281	
+alpha it: 32	Q = 0.5chi^2-\alpha*entropy: 77.3674	norm: 1.10573	
+alpha it: 33	Q = 0.5chi^2-\alpha*entropy: 73.6294	norm: 1.09887	
+alpha it: 34	Q = 0.5chi^2-\alpha*entropy: 70.3353	norm: 1.09227	
+alpha it: 35	Q = 0.5chi^2-\alpha*entropy: 67.4542	norm: 1.08595	
+alpha it: 36	Q = 0.5chi^2-\alpha*entropy: 64.9523	norm: 1.07993	
+alpha it: 37	Q = 0.5chi^2-\alpha*entropy: 62.7942	norm: 1.07421	
+alpha it: 38	Q = 0.5chi^2-\alpha*entropy: 60.944	norm: 1.0688	
+alpha it: 39	Q = 0.5chi^2-\alpha*entropy: 59.3668	norm: 1.0637	
+alpha it: 40	Q = 0.5chi^2-\alpha*entropy: 58.029	norm: 1.05891	
+alpha it: 41	Q = 0.5chi^2-\alpha*entropy: 56.8992	norm: 1.05441	
+alpha it: 42	Q = 0.5chi^2-\alpha*entropy: 55.9485	norm: 1.05021	
+alpha it: 43	Q = 0.5chi^2-\alpha*entropy: 55.1507	norm: 1.04629	
+alpha it: 44	Q = 0.5chi^2-\alpha*entropy: 54.4826	norm: 1.04263	
+alpha it: 45	Q = 0.5chi^2-\alpha*entropy: 53.9235	norm: 1.03923	
+alpha it: 46	Q = 0.5chi^2-\alpha*entropy: 53.4556	norm: 1.03606	
+alpha it: 47	Q = 0.5chi^2-\alpha*entropy: 53.0636	norm: 1.0331	
+alpha it: 48	Q = 0.5chi^2-\alpha*entropy: 52.7344	norm: 1.03035	
+alpha it: 49	Q = 0.5chi^2-\alpha*entropy: 52.457	norm: 1.02779	
+alpha it: 50	Q = 0.5chi^2-\alpha*entropy: 52.2225	norm: 1.02541	
+alpha it: 51	Q = 0.5chi^2-\alpha*entropy: 52.0232	norm: 1.02319	
+alpha it: 52	Q = 0.5chi^2-\alpha*entropy: 51.8531	norm: 1.02112	
+alpha it: 53	Q = 0.5chi^2-\alpha*entropy: 51.7072	norm: 1.01919	
+alpha it: 54	Q = 0.5chi^2-\alpha*entropy: 51.5814	norm: 1.01739	
+alpha it: 55	Q = 0.5chi^2-\alpha*entropy: 51.4727	norm: 1.01571	
+alpha it: 56	Q = 0.5chi^2-\alpha*entropy: 51.3782	norm: 1.01415	
+alpha it: 57	Q = 0.5chi^2-\alpha*entropy: 51.2961	norm: 1.01269	
+alpha it: 58	Q = 0.5chi^2-\alpha*entropy: 51.2245	norm: 1.01133	
+alpha it: 59	Q = 0.5chi^2-\alpha*entropy: 51.162	norm: 1.01006	
+Ng: 5.10747
+chi2 max: 105.411
+posterior probability of the default model: 1.33065e-33
