@@ -31,9 +31,13 @@ int main(int argc,char** argv)
   if (parms.help_requested(std::cout)) {
     return 0;
   }
-
-  std::string basename = alps::remove_extensions(parms.get_origin_name()) + ".out";
-  parms["BASENAME"] = basename;
+  std::string basename;
+  if(parms.defaulted("BASENAME")){
+    basename = alps::remove_extensions(parms.get_origin_name()) + ".out";
+    parms["BASENAME"] = basename;
+  }
+  else
+    basename=parms["BASENAME"].as<std::string>();
   
   try{
         //allow for multiple default model runs
