@@ -43,7 +43,7 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
   std::ifstream datstream(fname.c_str());
   if (!datstream){
     boost::throw_exception(
-        std::invalid_argument("could not open data text file: " + fname+"data should be specified in parameter DATA"));
+        std::invalid_argument("could not open data text file: " + fname+". data should be specified in parameter DATA"));
   }
   while (datstream) {
     int i;
