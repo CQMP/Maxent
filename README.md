@@ -72,11 +72,21 @@ See `./maxent --help` for a list of required and availble parameters.
 The Green's function for PH symmetric data is 0, therefore we only require the imaginary part.
 Input file:
 ```
-n imag sigma
+omega_n imag sigma
 //example:
-0 imag0 sigma0
-1 imag1 sigma1
+omega_0  imag0 sigma0
+omega_1 imag1 sigma1
 ...
+```
+Data can also be stored in the parameter file using:
+```
+X_0= xxxx
+SIGMA_0=xxx
+X_1=xxxx
+SIGMA_1=xxx
+...
+X_ndat-1=xxxx
+SIGMA_ndat-1=xxx
 ```
 ##### Non-Particle Hole Symmetric Data
 This assumes a non-zero real part of the Green's function. Input data should be:
@@ -84,23 +94,27 @@ This assumes a non-zero real part of the Green's function. Input data should be:
 n real sigma_real
 n+1 imag sigma_imag
 //example:
-0 real0 sigma_real0
-1 imag0 sigma_imag0
-2 real1 sigma_real1
-3 imag1 sigma_imag1
+omega_0 real0 sigma_real0 imag0 sigma_imag0
+omega_1 real1 sigma_real1 imag1 sigma_imag1
 ```
-NOTE: NDAT=#of points*2 when there is not Particle Hole Symmetric data
+**_NOTE:_** NDAT=#of points*2 when there is not Particle Hole Symmetric data  
+
+Data can also be stored in the parameter file using:
+```
+X_0= xxxx
+SIGMA_0=xxx
+X_1=xxxx
+SIGMA_1=xxx
+...
+```
+where `X_0` is the real part and `X_1` is the imaginary part, etc.
 ##### Time Data
 For either symmetric or non-symmetric data, G(tau) is simply input as:
 ```
-n tau_n sigma_n
-n+1 tau_n+1 sigma_n+1
+tau_n Gtau_n sigma_n
+tau_n+1 Gtau_n+1 sigma_n+1
 ```
-This assumes an equispaced grid of tau points constructed as the following:
-```
- tau[i]= i*beta/ (ndat_-1)
- ```
-This produces a grid between [0,beta] inclusive. If your tau points do not follow such a pattern, then in the parameter file they should be defined:
+You can also include tau points in the parameter file, defined like:
  ```
  TAU_0=xxx...
  TAU_1=xxx

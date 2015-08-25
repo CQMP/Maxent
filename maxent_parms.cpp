@@ -19,12 +19,12 @@ namespace bmth = boost::math;
   // COVARIANCE_MATRIX is not set. The format is
   //
   // index data error
+  // OR
+  // index data error data error
   //
-  // index is ignored, but MUST be an integer
-  // If we wish to continue imaginary frequency data, the structure must be:
-  // index_re data_re error_re index_im data_im error_im
-  //
-  // again, index_re and index_im MUST be integers and are ignored
+  // index is stored. If tau points are not specified in another location
+  // they must be used as the index.
+  // Note: for the second option ndat = 2*number of points
   //
   // In case we provide data in a HDF5 file (DATA_IN_HDF5 = 1) we use
   // the following convention:
@@ -45,13 +45,33 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
     boost::throw_exception(
         std::invalid_argument("could not open data text file: " + fname+". data should be specified in parameter DATA"));
   }
-  while (datstream) {
-    int i;
-    double X_i, dX_i;
-    datstream >> i >> X_i >> dX_i;
-    if (i < ndat()) {
-      y_(i) = X_i / static_cast<double>(p["NORM"]);
-      sigma_(i) = dX_i / static_cast<double>(p["NORM"]);
+  int datIn =0; //counts up to ndat
+  std::string dataspace = p["DATASPACE"].as<std::string>();
+  boost::to_lower(dataspace);
+  if(dataspace == "time" || p["PARTICLE_HOLE_SYMMETRY"]==1){
+    while (datstream) {
+      double index, X_i, dX_i;
+      datstream >> index >> X_i >> dX_i;
+      if (datIn < ndat()) {
+        inputGrid_(datIn) = index;
+        y_(datIn) = X_i / static_cast<double>(p["NORM"]);
+        sigma_(datIn) = dX_i / static_cast<double>(p["NORM"]);
+        datIn++;
+      }
+    }
+  }
+  else{
+    while (datstream) {
+      double index, X_i_re, dX_i_re, X_i_im, dX_i_im;
+      datstream >> index >> X_i_re >> dX_i_re >> X_i_im >> dX_i_im;
+      if (datIn < ndat()) {
+        inputGrid_(datIn) = index;
+        y_(datIn) = X_i_re / static_cast<double>(p["NORM"]);
+        y_(datIn+1) = X_i_im / static_cast<double>(p["NORM"]);
+        sigma_(datIn) = dX_i_re / static_cast<double>(p["NORM"]);
+        sigma_(datIn+1) = dX_i_im / static_cast<double>(p["NORM"]);
+        datIn+=2;
+      }
     }
   }
   if(p.defined("COVARIANCE_MATRIX")) {
@@ -122,7 +142,7 @@ void ContiParameters::read_data_from_param_file(const alps::params& p) {
 
 ContiParameters::ContiParameters(alps::params& p) :
 T_(1/p["BETA"].as<double>()),ndat_(p["NDAT"]), nfreq_(p["NFREQ"]),
-y_(ndat_),sigma_(ndat_),K_(),grid_(p)
+y_(ndat_),sigma_(ndat_),K_(),grid_(p),inputGrid_(ndat_)
 {
   //note: T_=1/beta now taken care of elsewhere
   if (ndat_<4) 
@@ -336,7 +356,7 @@ MaxEntParameters::MaxEntParameters(alps::params& p) :
     delta_omega_[i] = Default().omega_of_t(grid_(i+1)) - Default().omega_of_t(grid_(i));
   }
   //build a kernel matrix
-  kernel ker(p,omega_coord_,lmax);
+  kernel ker(p,omega_coord_,inputGrid_,lmax);
   K_=ker();
 
   //scale lhs and rhs according to errors, etc.

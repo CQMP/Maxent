@@ -69,6 +69,8 @@ protected:
   matrix_type cov_;
   ///real frequency grid
   grid grid_;
+  ///vector containing input matsubara or tau data
+  vector_type inputGrid_;
 };
 
 

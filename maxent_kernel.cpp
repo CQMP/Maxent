@@ -13,7 +13,7 @@
 
 namespace bmth = boost::math;
 
-kernel::kernel(alps::params &p, const vector_type& freq, const int lmax):
+kernel::kernel(alps::params &p, const vector_type& freq, const vector_type &inputGrid, const int lmax):
 ndat_(p["NDAT"]),
 nfreq_(p["NFREQ"]),
 T_(1./static_cast<double>(p["BETA"])),
@@ -33,32 +33,30 @@ K_(ndat_,nfreq_)
 
   set_kernel_type(dataspace_name,kernel_name, ph_symmetry,legdr_transform);
 
-	//slight centralized tau points
-	//TODO: move to params with input?
+  //determine tau points; allow passing from various sources
 	if(dataspace_name=="time"){
 		//Test for tau
     tau_points_.resize(ndat_);
+    //programatically added tau points (see kernelTest)
     if(p.defined("TAU_1")){
-        std::cout<<"Using input tau points"<<std::endl;
+        std::cout<<"Using param direct input tau points"<<std::endl;
         for(int i=0;i<ndat_;i++){
           tau_points_[i]=p["TAU_"+boost::lexical_cast<std::string>(i)];
         }
     }
+    //legacy tau points in param file
     else if(p.exists("TAU_0")){
-      std::cout<<"Using input tau points"<<std::endl;
+      std::cout<<"Using param input tau points"<<std::endl;
       tau_points_[0]=p["TAU_0"];
       for(int i=1;i<ndat_;i++)
         p.define<double>("TAU_"+boost::lexical_cast<std::string>(i),"");
       for(int i=1;i<ndat_;i++){
-        //par.define<double>("TAU_"+boost::lexical_cast<std::string>(i),"");
         tau_points_[i]=p["TAU_"+boost::lexical_cast<std::string>(i)];
       }
     }
-
     else{
-      std::cout<<"Generating tau points"<<std::endl;
-      for(int i=0;i<ndat_;i++)
-         tau_points_[i] = i / ((ndat_-1)* T_);
+      std::cout<<"Using data file tau points"<<std::endl;
+      tau_points_= inputGrid;  
     }
   }
     
