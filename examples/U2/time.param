@@ -1,0 +1,7 @@
+BETA=2			#inverse temperature
+NDAT=1024		#num of data points
+NFREQ=500               #num of output frequencies
+DATASPACE=time	#!$G(i\tau)$!
+KERNEL=fermionic         #fermionic|bosonic values	
+PARTICLE_HOLE_SYMMETRY=0 #0|1 
+DATA="G_tau"		 #location of data file
