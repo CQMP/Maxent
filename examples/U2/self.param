@@ -1,0 +1,10 @@
+BETA=2			#inverse temperature
+NDAT=2048		#num of data points
+NFREQ=500               #num of output frequencies
+DATASPACE=frequency	#!$\Sigma(i\omega)$!
+KERNEL=fermionic         #fermionic|bosonic values	
+PARTICLE_HOLE_SYMMETRY=0 #0|1 
+DATA="Selfenergyin"		 #location of data file
+SELF=1              #this makes a selfenergy output along with the 'spectra'
+NORM=.7367          #In this case norm=density 
+OMEGA_MAX=20        #converges better with more frequencies
