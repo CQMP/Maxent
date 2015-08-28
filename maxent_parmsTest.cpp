@@ -6,6 +6,7 @@
 
 #include "maxent.hpp"
 #include "gtest/gtest.h"
+#include <alps/utilities/temporary_filename.hpp>
 #include <iostream>
 
 TEST(Parameters,ContiParams){
@@ -143,4 +144,57 @@ TEST(Paramaters,HighFrequencyCheck){
 
         EXPECT_TRUE(std::abs(1+limit)<.1);
     }
+}
+
+TEST(Parameters,HDF5ContiParams){
+  //here we make a temporary HDF5 param file
+  //and make sure Maxent does all the necessary reading
+
+  alps::params p1; 
+  std::string tf=alps::temporary_filename("hdf5_input.h5");
+  alps::hdf5::archive oar(tf, "w");
+  MaxEntSimulation::define_parameters(p1);
+  p1["N_ALPHA"] = 60;
+	p1["ALPHA_MIN"] = .01;
+	p1["ALPHA_MAX"] = 20.0;
+	p1["NORM"] = 1.0;
+	p1["OMEGA_MAX"] = 6.0;
+	p1["KERNEL"] = "fermionic"; 
+	p1["BETA"] = 2.0;
+	p1["NFREQ"] = 2001;
+	p1["NDAT"] = 5;
+	p1["FREQUENCY_GRID"] = "Lorentzian";
+	p1["DATASPACE"] = "frequency";
+	p1["MAX_IT"] = 200;
+	p1["DEFAULT_MODEL"] = "flat";
+	p1["PARTICLE_HOLE_SYMMETRY"] = 1;
+	p1["TEXT_OUTPUT"] = 0;
+  p1["DATA_IN_HDF5"] = 1;
+  p1["DATA"]=tf;
+  p1.save(oar);
+  std::vector<double> x,sigma;
+  for(int i=1;i<6;i++){
+    x.push_back(i/10.0);
+    sigma.push_back(0.5);
+  }
+  oar["/Data"] << x;
+  oar["/Error"] << sigma; 
+  oar.close();
+  //now read in same file
+  alps::hdf5::archive iar(tf, "r");
+  alps::params p; 
+  p.load(iar);
+  iar.close();
+  
+  ContiParameters c(p);
+
+	EXPECT_EQ(c.ndat(),5);
+	EXPECT_EQ(c.T(),0.5);
+	
+	//check input values
+  for(int i=0;i<c.ndat();i++){
+    EXPECT_NEAR(c.y(i),(i+1)*0.1,1e-10);
+    EXPECT_EQ(c.sigma(i),0.5);
+  }
+  boost::filesystem::remove(tf);
 }
