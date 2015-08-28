@@ -15,8 +15,8 @@ This is an example that is not Particle-Hole symmetric. These files illustrate t
 **_G_tau_** = G(tau)
   - Column Format `tau_n G(tau)_n error_n`  
 
-**_Selfenergy_** = Sigma(iw_n)  
-  - Column Format `iwn_n Re[Sigma] error__rn Im[Sigma] error_i_n
+**_Selfenergy_** = Sigma, also input format for `Maxent`
+  - Column Format `iwn_n Re[Sigma] error_r_n Im[Sigma] error_i_n`
 
 **_frequency.param_** = parameter file for Matsubara frequency data  
 **_time.param_** = parameter file for time data  
