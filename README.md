@@ -122,8 +122,8 @@ You can also include tau points in the parameter file, defined like:
  TAU_NDAT-1=xxx
  ```
 #### Kernels
-![screen shot 2015-07-17 at 3 48 00 pm](https://cloud.githubusercontent.com/assets/7354063/8755755/47c93aba-2c9b-11e5-8743-359ab6271827.png)
-![screen shot 2015-07-17 at 3 48 04 pm](https://cloud.githubusercontent.com/assets/7354063/8755770/57c4ab3e-2c9b-11e5-98a3-1a073d67ee34.png)
+![Fermionic Kernels](https://cloud.githubusercontent.com/assets/7354063/9636753/26aec800-516b-11e5-9309-02ffaaef9446.png)
+![Time Kernels](https://cloud.githubusercontent.com/assets/7354063/8755770/57c4ab3e-2c9b-11e5-98a3-1a073d67ee34.png)
 
 #### Default Models
 [View Examples Here](examples/default_models.pdf)
