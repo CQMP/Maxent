@@ -93,6 +93,76 @@ TEST(Simulation,FrequencySimulation){
     EXPECT_NEAR(av_norm,1,1e-2);
     SUCCEED();
 }
+TEST(Simulation,FrequencyBosonicSimulation){
+    alps::params p;
+    MaxEntSimulation::define_parameters(p);
+    p["BETA"]=2;
+    p["NDAT"]=10;
+    p["OMEGA_MAX"]=15.0;
+    p["PARTICLE_HOLE_SYMMETRY"]=0;
+    p["DATASPACE"]="frequency";
+    p["KERNEL"]="bosonic";
+    p["TEXT_OUTPUT"]=0;
+
+
+    //data from backcontinuation of Gaussian
+    p["X_0"]=-0.999999999999;
+    p["X_1"]=0;
+    p["X_2"]=-0.70152821380558;
+    p["X_3"]=-0.4474203984475;
+    p["X_4"]=-0.38304188624212;
+    p["X_5"]=-0.47620096397886;
+    p["X_6"]=-0.22061301433115;
+    p["X_7"]=-0.40641589593297;
+    p["X_8"]=-0.13884046251264;
+    p["X_9"]=-0.33897622833775;
+
+    p["SIGMA_0"]=1e-4;
+    p["SIGMA_1"]=1e-4;
+    p["SIGMA_2"]=1e-4;
+    p["SIGMA_3"]=1e-4;
+    p["SIGMA_4"]=1e-4;
+    p["SIGMA_5"]=1e-4;
+    p["SIGMA_6"]=1e-4;
+    p["SIGMA_7"]=1e-4;
+    p["SIGMA_8"]=1e-4;
+    p["SIGMA_9"]=1e-4;
+    //do the real work
+    
+    MaxEntSimulation my_sim(p);
+    my_sim.run();
+    my_sim.evaluate();
+    int gridsize = my_sim.getOmegaGrid().size();
+    
+    const double minZero = 1e-5;
+    const double minPeak = 0.2;
+    //check endpoints of grid
+    EXPECT_NEAR(my_sim.getOmegaGrid()(0),-15,1);
+    EXPECT_NEAR(my_sim.getOmegaGrid()(gridsize-1),15,1);
+    //endpoints of A(omega) should be <<1
+    EXPECT_EQ(my_sim.getAvspec()[0]<minZero,true);
+    EXPECT_EQ(my_sim.getAvspec()[gridsize-1]<minZero,true);
+
+    EXPECT_EQ(my_sim.getMaxspec()[0]<minZero,true);
+    EXPECT_EQ(my_sim.getMaxspec()[gridsize-1]<minZero,true);
+
+    //attempt to confirm peak around omega=5
+    EXPECT_EQ(my_sim.getAvspec()[979]>minPeak,true);
+    EXPECT_EQ(my_sim.getMaxspec()[979]>minPeak,true);
+
+		EXPECT_EQ(my_sim.getPostProb()<minZero,true);
+
+		//expect a converged solution/good minimum found
+		vector_type q = my_sim.getQvec();
+		EXPECT_EQ(q[q.size()-1]<1,true);
+
+    //check norm
+    double max_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getMaxspec());
+    double av_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getAvspec());
+    EXPECT_NEAR(max_norm,1,1e-1);
+    EXPECT_NEAR(av_norm,1,1e-1);
+    SUCCEED();
+}
 TEST(Simulation,TauSimulation){
     alps::params p;
     MaxEntSimulation::define_parameters(p);
