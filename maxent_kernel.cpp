@@ -75,7 +75,7 @@ K_(ndat_,nfreq_)
       for (int i=0; i<ndat_; ++i) {
         double tau=tau_points_[i];
         K_(i,0) = T_;
-        for (int j=1; j<nfreq_; ++j) {
+        for (int j=0; j<nfreq_; ++j) {
           double omega = freq[j];
           K_(i,j) = 0.5*omega * (std::exp(-omega*tau) + std::exp(-omega*(1./T_-tau))) / (1 - std::exp(-omega/T_));
         }
@@ -146,7 +146,7 @@ K_(ndat_,nfreq_)
     else if (ktype_==frequency_bosonic_kernel){
       for (int i=0; i<ndat_/2; ++i) {
         std::complex<double> iomegan(0, 2*i*M_PI*T_);
-        for (int j=1; j<nfreq_; ++j) {
+        for (int j=0; j<nfreq_; ++j) {
           double omega = freq[j];
           Kc(i,j) =  omega / (iomegan - omega);
         }
@@ -155,7 +155,7 @@ K_(ndat_,nfreq_)
     else if (ktype_==frequency_anomalous_kernel){
       for (int i=0; i<ndat_/2; ++i) {
         std::complex<double> iomegan(0, (2*i+1)*M_PI*T_);
-        for (int j=1; j<nfreq_; ++j) {
+        for (int j=0; j<nfreq_; ++j) {
           double omega = freq[j];
           Kc(i,j) =  -omega / (iomegan - omega);
         }
