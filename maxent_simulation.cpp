@@ -269,24 +269,24 @@ void MaxEntSimulation::evaluate(){
   if(Kernel_type=="bosonic"){ //for the anomalous function: use A(Omega_)=Im chi(Omega_)/(pi Omega_) (as for anomalous)
     vector_type spec(avspec.size());
     for (std::size_t  i=0; i<avspec.size(); ++i){
-      spec[i] = avspec[i]*omega_coord(i)*M_PI;
+      spec[i] = avspec[i]*omega_coord(i);
     }
     if (text_output) {
       ofstream_ avspec_anom_str;avspec_anom_str.open((name+"maxspec_bose.dat").c_str());
       for (std::size_t  i=0; i<avspec.size(); ++i){
         //if(omega_coord(i)>=0.)
-        avspec_anom_str << omega_coord(i) << " " << avspec[i]*omega_coord(i)*M_PI<<std::endl;
+        avspec_anom_str << omega_coord(i) << " " << spec[i]<<std::endl;
       }
     }
     ar << alps::make_pvp("/spectrum/bosonic/average",spec);
     for (std::size_t i=0; i<spectra[0].size(); ++i){
       //if(omega_coord(i)>=0.)
-      spec[i] = spectra[max_a][i]*norm*omega_coord(i)*M_PI;
+      spec[i] = spectra[max_a][i]*norm*omega_coord(i);
     }
     if (text_output) {
       ofstream_ maxspec_anom_str;maxspec_anom_str.open((name+"avspec_bose.dat").c_str());
       for (std::size_t i=0; i<spectra[0].size(); ++i){
-        maxspec_anom_str << omega_coord(i) << " " << spectra[max_a][i]*norm*omega_coord(i)*M_PI << std::endl;
+        maxspec_anom_str << omega_coord(i) << " " << spectra[max_a][i]*norm*omega_coord(i) << std::endl;
       }
     }
     ar << alps::make_pvp("/spectrum/bosonic/maximum",spec);
