@@ -68,6 +68,9 @@ to ensure everything works.
 ## Convention
 The Maxent project uses the following conventions:
 
+-> Insert the definition of G(tau) and say it is negative between 0 and beta
+-> Define the back transform from omega to tau
+-> fix the minus sign
 
 ![convention](https://cloud.githubusercontent.com/assets/7354063/10056759/abc6d2f8-620a-11e5-9e13-2d867e7cb58d.png)
 
