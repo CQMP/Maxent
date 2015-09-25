@@ -304,10 +304,10 @@ void MaxEntSimulation::evaluate(){
     ofstream_ maxspec_self_str;maxspec_self_str.open((name+"maxspec_self.dat").c_str());
     ofstream_ avspec_self_str; avspec_self_str.open((name+"avspec_self.dat").c_str());
     for (std::size_t  i=0; i<avspec.size(); ++i){ 
-      avspec_self_str << omega_coord(i) << " " << -avspec[i]*M_PI<<std::endl;
+      avspec_self_str << omega_coord(i) << " " << -avspec[i]*M_PI<< " " << -def[i]*norm*M_PI<<std::endl;
     }
     for (std::size_t i=0; i<spectra[0].size(); ++i){
-      maxspec_self_str << omega_coord(i) << " " << -spectra[max_a][i]*norm*M_PI << std::endl;
+      maxspec_self_str << omega_coord(i) << " " << -spectra[max_a][i]*norm*M_PI<< " " << -def[i]*norm*M_PI << std::endl;
     }
     //for public facing variables
     avspec*=-M_PI;
