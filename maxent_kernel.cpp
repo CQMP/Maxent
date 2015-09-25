@@ -117,7 +117,7 @@ K_(ndat_,nfreq_)
       for (int j=0; j<nfreq_; ++j) {
         double Omega = freq[j];
         if(Omega ==0) throw std::runtime_error("Bosonic kernel is singular at frequency zero. Please use grid w/o evaluation at zero.");
-        K_(i,j) =  -Omega*Omega / (Omegan*Omegan + Omega*Omega);
+        K_(i,j) =  Omega*Omega / (Omegan*Omegan + Omega*Omega);
       }
     }
   }else if (ktype_==frequency_anomalous_ph_kernel) {
@@ -148,7 +148,7 @@ K_(ndat_,nfreq_)
         std::complex<double> iomegan(0, 2*i*M_PI*T_);
         for (int j=0; j<nfreq_; ++j) {
           double omega = freq[j];
-          Kc(i,j) =  omega / (iomegan - omega);
+          Kc(i,j) =  omega / (iomegan + omega);
         }
       }
     }

@@ -106,16 +106,16 @@ TEST(Simulation,FrequencyBosonicSimulation){
 
 
     //data from backcontinuation of Gaussian
-    p["X_0"]=-0.999999999999;
+    p["X_0"]=0.999999999999;
     p["X_1"]=0;
-    p["X_2"]=-0.70152821380558;
-    p["X_3"]=-0.4474203984475;
-    p["X_4"]=-0.38304188624212;
-    p["X_5"]=-0.47620096397886;
-    p["X_6"]=-0.22061301433115;
-    p["X_7"]=-0.40641589593297;
-    p["X_8"]=-0.13884046251264;
-    p["X_9"]=-0.33897622833775;
+    p["X_2"]=0.70152821380558;
+    p["X_3"]=0.4474203984475;
+    p["X_4"]=0.38304188624212;
+    p["X_5"]=0.47620096397886;
+    p["X_6"]=0.22061301433115;
+    p["X_7"]=0.40641589593297;
+    p["X_8"]=0.13884046251264;
+    p["X_9"]=0.33897622833775;
 
     p["SIGMA_0"]=1e-4;
     p["SIGMA_1"]=1e-4;
@@ -145,10 +145,11 @@ TEST(Simulation,FrequencyBosonicSimulation){
 
     EXPECT_EQ(my_sim.getMaxspec()[0]<minZero,true);
     EXPECT_EQ(my_sim.getMaxspec()[gridsize-1]<minZero,true);
-
+  
+    //TODO: write better peak finder
     //attempt to confirm peak around omega=5
-    EXPECT_EQ(my_sim.getAvspec()[979]>minPeak,true);
-    EXPECT_EQ(my_sim.getMaxspec()[979]>minPeak,true);
+    EXPECT_EQ(my_sim.getAvspec()[21]>minPeak,true);
+    EXPECT_EQ(my_sim.getMaxspec()[21]>minPeak,true);
 
 		EXPECT_EQ(my_sim.getPostProb()<minZero,true);
 
