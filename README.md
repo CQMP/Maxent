@@ -17,6 +17,7 @@ Table of Contents
         * [LAPACK (Optional)](#lapack-optional)
     * [Installation](#installation)
       * [Tests](#tests)
+    * [Convention](#convention)
     * [Usage](#usage)
         * [Input](#input)
           * [Particle Hole Symmetric Data](#particle-hole-symmetric-data)
@@ -62,7 +63,18 @@ Sometimes it is more convenient to have `CC=gcc CXX=g++` (or clang, etc) before 
 
 ### Tests
 Once compiled please run `./maxent --test`
-to ensure everything works.
+to ensure everything works.  
+
+## Convention
+The Maxent project uses the following conventions:
+
+![convention](https://cloud.githubusercontent.com/assets/7354063/10086355/ef8c8362-62db-11e5-938a-1c24139c72df.png)
+
+![convention_gtau](https://cloud.githubusercontent.com/assets/7354063/10086425/570a68ce-62dc-11e5-8cd3-1e871f89c695.png) 
+
+![convention_gtau_less_zero](https://cloud.githubusercontent.com/assets/7354063/10086426/57158a92-62dc-11e5-9e6e-5766fdccf8a2.png) 
+
+![convention_A_omega](https://cloud.githubusercontent.com/assets/7354063/10056184/0ce6afd4-6208-11e5-9bdd-556ae958857c.png)
 
 ## Usage
 See `./maxent --help` for a list of required and availble parameters. 
