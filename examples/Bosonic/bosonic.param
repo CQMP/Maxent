@@ -1,0 +1,9 @@
+NORM = 1.20109669923          #the particular normalization for this data
+OMEGA_MAX = 40                #Spectral function is larger than default bounds
+KERNEL = bosonic              #Using bosonic data
+BETA = 2.0                    #inverse temperature
+NFREQ = 1000                  #number of output frequencies
+NDAT = 22                     #number of input data points*2 due to non-PH symmetry
+DATASPACE = frequency         #frequency data
+PARTICLE_HOLE_SYMMETRY = 0    #non PH symmetric data
+DATA=dat_in                   #name of data file
