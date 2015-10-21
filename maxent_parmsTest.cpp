@@ -26,8 +26,8 @@ TEST(Parameters,ContiParams){
 	p["DATASPACE"] = "frequency";
 	p["MAX_IT"] = 200;
 	p["DEFAULT_MODEL"] = "flat";
-	p["PARTICLE_HOLE_SYMMETRY"] = 1;
-	p["TEXT_OUTPUT"] = 0;
+	p["PARTICLE_HOLE_SYMMETRY"] = true;
+	p["TEXT_OUTPUT"] = false;
 	p["X_0"]=.1;
 	p["X_1"]=.2;
 	p["X_2"]=.3;
@@ -66,8 +66,8 @@ TEST(Parameters,MaxentParams){
 	p["DATASPACE"] = "frequency";
 	p["MAX_IT"] = 200;
 	p["DEFAULT_MODEL"] = "flat";
-	p["PARTICLE_HOLE_SYMMETRY"] = 1;
-	p["TEXT_OUTPUT"] = 0;
+	p["PARTICLE_HOLE_SYMMETRY"] = true;
+	p["TEXT_OUTPUT"] = false;
 	p["X_0"]=.1;
 	p["X_1"]=.2;
 	p["X_2"]=.3;
@@ -107,8 +107,8 @@ TEST(Paramaters,HighFrequencyCheck){
 	p["NDAT"] = 5;
 	p["FREQUENCY_GRID"] = "Lorentzian";
 	p["DATASPACE"] = "frequency";
-	p["PARTICLE_HOLE_SYMMETRY"] = 1;
-	p["TEXT_OUTPUT"] = 0;
+	p["PARTICLE_HOLE_SYMMETRY"] = true;
+	p["TEXT_OUTPUT"] = false;
 	p["X_0"]=.1;
 	p["X_1"]=.2;
 	p["X_2"]=.3;
@@ -167,9 +167,9 @@ TEST(Parameters,HDF5ContiParams){
 	p1["DATASPACE"] = "frequency";
 	p1["MAX_IT"] = 200;
 	p1["DEFAULT_MODEL"] = "flat";
-	p1["PARTICLE_HOLE_SYMMETRY"] = 1;
-	p1["TEXT_OUTPUT"] = 0;
-  p1["DATA_IN_HDF5"] = 1;
+	p1["PARTICLE_HOLE_SYMMETRY"] = true;
+	p1["TEXT_OUTPUT"] = false;
+  p1["DATA_IN_HDF5"] = true;
   p1["DATA"]=tf;
   p1.save(oar);
   std::vector<double> x,sigma;

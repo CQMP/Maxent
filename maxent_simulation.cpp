@@ -43,11 +43,11 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   //---------------------------------
   //    General
   //---------------------------------
-  p.define<int>("DATA_IN_HDF5",false,"1 if data is in HDF5 format");
-  p.define<int>("TEXT_OUTPUT",true,"1 if results should be output to text files");
-  p.define<int>("ENFORCE_NORMALIZATION",false,"1 to renormalize last data point");
-  p.define<int>("VERBOSE",false,"1 to print verbose output");
-  p.define<int>("SELF",false,"input is a self energy");
+  p.define<bool>("DATA_IN_HDF5",false,"1 if data is in HDF5 format");
+  p.define<bool>("TEXT_OUTPUT",true,"1 if results should be output to text files");
+  p.define<bool>("ENFORCE_NORMALIZATION",false,"1 to renormalize last data point");
+  p.define<bool>("VERBOSE",false,"1 to print verbose output");
+  p.define<bool>("SELF",false,"input is a self energy");
   p.define<int>("MAX_IT",1000,"Maximum Iterations for the fitting routine");
   p.define<int>("N_ALPHA",60,"Number of alpha samples");
   p.define<double>("ALPHA_MIN",0.01,"Minimum alpha");
@@ -94,13 +94,13 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   //---------------------------------
   p.define<std::string>("DATASPACE","time","Time or Frequency space");
   p.define<std::string>("KERNEL","fermionic","Type of kernel: \nFermionic,Bosonic,Boris,Legendre"); 
-  p.define<int>("PARTICLE_HOLE_SYMMETRY",false,"If particle hole symmetric"); 
+  p.define<bool>("PARTICLE_HOLE_SYMMETRY",false,"If particle hole symmetric"); 
   //*********************************
 
   //---------------------------------
   //    Legendre
   //---------------------------------
-  p.define<int>("LEGENDRE",0,"LEGENDRE");
+  p.define<bool>("LEGENDRE",0,"LEGENDRE");
   p.define<int>("MAXL","Maximum L cutoff");
   
 }

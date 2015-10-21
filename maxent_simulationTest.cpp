@@ -20,10 +20,10 @@ TEST(Simulation,FrequencySimulation){
     MaxEntSimulation::define_parameters(p);
     p["BETA"]=8;
     p["NDAT"]=15;
-    p["PARTICLE_HOLE_SYMMETRY"]=1;
+    p["PARTICLE_HOLE_SYMMETRY"]=true;
     p["DATASPACE"]="frequency";
     p["KERNEL"]="fermionic";
-    p["TEXT_OUTPUT"]=0;
+    p["TEXT_OUTPUT"]=false;
 
 
     //data from DMFT;U=0;beta=8
@@ -99,10 +99,10 @@ TEST(Simulation,FrequencyBosonicSimulation){
     p["BETA"]=2;
     p["NDAT"]=10;
     p["OMEGA_MAX"]=15.0;
-    p["PARTICLE_HOLE_SYMMETRY"]=0;
+    p["PARTICLE_HOLE_SYMMETRY"]=false;
     p["DATASPACE"]="frequency";
     p["KERNEL"]="bosonic";
-    p["TEXT_OUTPUT"]=0;
+    p["TEXT_OUTPUT"]=false;
 
 
     //data from backcontinuation of Gaussian
@@ -169,10 +169,10 @@ TEST(Simulation,TauSimulation){
     MaxEntSimulation::define_parameters(p);
     p["BETA"]=8;
     p["NDAT"]=26;
-    p["PARTICLE_HOLE_SYMMETRY"]=1;
+    p["PARTICLE_HOLE_SYMMETRY"]=true;
     p["DATASPACE"]="time";
     p["KERNEL"]="fermionic";
-    p["TEXT_OUTPUT"]=0;
+    p["TEXT_OUTPUT"]=false;
 
 
     //data from DMFT;U=0;beta=8
@@ -297,10 +297,10 @@ TEST(Simulation,LegendreSimulation){
     MaxEntSimulation::define_parameters(p);
     p["BETA"]=8;
     p["NDAT"]=13;
-    p["PARTICLE_HOLE_SYMMETRY"]=1;
+    p["PARTICLE_HOLE_SYMMETRY"]=true;
     p["DATASPACE"]="legendre";
     p["KERNEL"]="fermionic";
-    p["TEXT_OUTPUT"]=0;
+    p["TEXT_OUTPUT"]=false;
 
 
 
