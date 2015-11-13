@@ -376,7 +376,15 @@ MaxEntParameters::MaxEntParameters(alps::params& p) :
     enforce_strict_normalization(sigma_normalization, norm, ndat());
   }
   std::cerr << "Kernel is set up\n";
-
+  
+  if(p.exists("RT_TIME")){
+    B_.resize(p["NRT"]);
+    B_omega_grid_.resize(p["NRT"]);
+    read_rt_data(p);
+    set_P_matrix(p);
+    
+    std::cerr<< "P kernel is set up\n";
+  }
   vector_type S(ndat());
   bool verbose=p["VERBOSE"];
   //perform the SVD decomposition K = U Sigma V^T
@@ -389,6 +397,57 @@ MaxEntParameters::MaxEntParameters(alps::params& p) :
   compute_minimal_chi2();
 }
 
+///read in the rt points (aka B matrix)
+void MaxEntParameters::read_rt_data(const alps::params& p){
+ std::string fname = p["RT_POINTS"];
+  std::ifstream datstream(fname.c_str());
+  if (!datstream){
+    boost::throw_exception(
+        std::invalid_argument("could not open data text file: " + fname+". data should be specified in parameter RT_POINTS"));
+  }
+  int datIn =0; //counts up to nrt
+  int maxpoint = p["NRT"];
+  while (datstream && datIn <= maxpoint) {
+    double omega, B_i;
+    datstream >> omega >> B_i;
+    B_omega_grid_(datIn) = omega;
+    B_(datIn) = B_i / static_cast<double>(p["NORM"]);
+    datIn++;
+  }
+  //check that input data is sensible
+  if(maxpoint > datIn) {
+    boost::throw_exception(
+        std::invalid_argument("Too few data points in rt file! NRT="));
+  }
+  
+  std::cout<< "Read in " << datIn-1 << " real time points" << std::endl;
+}
 
+///create the P matrix such that B=\int d\omegap P(omega-omegap)A(omegap)
+void MaxEntParameters::set_P_matrix(const alps::params& p){
+  P_.resize(B_.size(),nfreq());
+  double t = p["RT_TIME"];
+  for (size_t i=0;i<B_.size();i++){
+    for(size_t omega_i=0;omega_i<nfreq();omega_i++){
+      double omega = B_omega_grid_(i);
+      double omegap = omega_coord_(omega_i);
+      double w = omegap - omega;
+      //P(\omega) = sin(\omega*t)/(\pi*\omega)
 
+      P_(i,omega_i) = std::sin(w*t)/w/M_PI;
+
+    }
+  }
+  //after constructing P, compute SVD
+  /*Eigen::JacobiSVD<matrix_type> svd(P_,Eigen::ComputeThinU | Eigen::ComputeThinV);
+  //svd.setThreshold(threshold);
+  vector_type PS_=svd.singularValues();
+  PU_=svd.matrixU();
+  PVt_=svd.matrixV().transpose(); 
+  PSigma_= Eigen::MatrixXd::Zero(PS_.size(),PS_.size());
+  for(size_t i=0;i<PS_.size();i++)
+    PSigma_(i,i) = PS_(i);
+    */
+
+}
 

@@ -65,9 +65,14 @@ int main(int argc,char** argv)
             }
         }
         else{
-          MaxEntSimulation my_sim(parms);
-          my_sim.run();
-          my_sim.evaluate();
+          MaxEntSimulation * my_sim;
+          if(parms.exists("RT_TIME"))
+            my_sim = new MaxEntSimulationRT (parms);
+          else
+            my_sim = new MaxEntSimulation (parms);
+
+          my_sim->run();
+          my_sim->evaluate();
         }
   }
     catch(const std::exception &e){

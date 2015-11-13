@@ -113,4 +113,26 @@ private:
   void singular_value_decompose_kernel(bool verbose, vector_type& S);
   ///check G~-1/iw_{n} and default model back continues same limit
   void check_high_frequency_limit(const vector_type& y, const kernel_type kt);
+
+  //----------
+  //RT methods
+  //----------
+  ///Vector of real points
+  vector_type B_;
+  //vector of omega points of B
+  vector_type B_omega_grid_;
+  ///convolution matrix such that B=PA
+  matrix_type P_;
+  
+  //read in rt data (i.e. the B matrix)
+  void read_rt_data(const alps::params& p);
+  //calculate the P matrix such that B=\int PA
+  void set_P_matrix(const alps::params& p);
+
+public:
+  const vector_type& B() const {return B_;}
+  const vector_type& B_omega_grid() const {return B_omega_grid_;}
+  const matrix_type& P() const{return P_;}
+
+
 };

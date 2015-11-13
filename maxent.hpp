@@ -12,7 +12,7 @@
 
 #include"gtest/gtest.h"
 
-class MaxEntHelper : private MaxEntParameters
+class MaxEntHelper : protected MaxEntParameters
 {
 public : 
 
@@ -26,7 +26,7 @@ public :
   const vector_type& Default() const { return def_; }
 
   //compute the 'free energy' Q (eq. 6.8 in Sebastian's thesis) according to equation D.8 in Sebastian's thesis
-  double Q(const vector_type& u, const double alpha) const {
+  virtual double Q(const vector_type& u, const double alpha) const {
     vector_type A=transform_into_real_space(u);
     return 0.5*chi2(A)-alpha*entropy(A);
   }
@@ -42,12 +42,12 @@ public :
   vector_type get_spectrum(const vector_type& u) const;
   vector_type PrincipalValue(const vector_type &w,const vector_type &a) const;
   /// \Sigma*(V^T*RealSpace(u)*V)*\Sigma
-  matrix_type left_side(const vector_type& u) const;
+  virtual matrix_type left_side(const vector_type& u) const;
   /// \Sigma*U^T*(K*RealSpace(u)-y)
-  vector_type right_side(const vector_type& u) const;
+  virtual vector_type right_side(const vector_type& u) const;
   ///  \delta \dot (V^T*RealSpace(u)*V)
   double step_length(const vector_type& delta, const vector_type& u) const;
-  double convergence(const vector_type& u, const double alpha) const;
+  virtual double convergence(const vector_type& u, const double alpha) const;
   double log_prob(const vector_type& u, const double alpha) const;
   double chi_scale_factor(vector_type A, const double chi_sq, const double alpha) const;
   double chi2(const vector_type& u) const;
@@ -65,7 +65,7 @@ private:
 
 
 
-class MaxEntSimulation : private MaxEntHelper
+class MaxEntSimulation : protected MaxEntHelper
 {
 
 public:
@@ -123,3 +123,20 @@ public:
   const vector_type getQvec() const{return qvec;}
 }; 
 
+///Real time simulation class, implements extra term \gamma*R^2
+class MaxEntSimulationRT : public MaxEntSimulation{
+public:
+  ///setup of parameters
+  MaxEntSimulationRT(alps::params& parms);
+  
+private:
+  //these are all virtual functions that are modified slightly 
+  //due to the \gamma*R^2 term
+  vector_type right_side(const vector_type& u) const;
+  matrix_type left_side(const vector_type& u) const;
+  double Q(const vector_type& u, const double alpha) const;
+  double convergence(const vector_type& u, const double alpha) const;
+  double rt_chi(const vector_type& u) const;
+  ///gamma for RT points
+  const double GAMMA;
+}; 

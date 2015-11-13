@@ -102,6 +102,13 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   //---------------------------------
   p.define<bool>("LEGENDRE",0,"LEGENDRE");
   p.define<int>("MAXL","Maximum L cutoff");
+  //---------------------------------
+  //    RT Points
+  //---------------------------------
+  p.define<std::string>("RT_POINTS","input file for known RT points; known as B matrix");
+  //p.define<std::string>("RT_KERNEL","kernel for RT points; known as P matrix");
+  p.define<double>("RT_TIME","length of real time t");
+  p.define<int>("NRT","number of RT_POINTS in file");
   
 }
 void MaxEntSimulation::run()
@@ -379,3 +386,95 @@ vector_type MaxEntSimulation::iteration(vector_type u, const double alpha, const
   //may need a transposeInPlace();
   return Bp;
 }
+
+MaxEntSimulationRT::MaxEntSimulationRT(alps::params& parms)
+  :MaxEntSimulation(parms),GAMMA(1/1e-4) {}
+
+/// \Sigma*U^T*(K*RealSpace(u)-y)+gamma*P^T(B-P*realSpace(u))
+vector_type MaxEntSimulationRT::right_side(const vector_type& u) const {
+  vector_type A = transform_into_real_space(u);
+  vector_type b = 2./ndat()*(maxent_prec_prod(K(), A) - y());
+  b = maxent_prec_prod(U().transpose(), b);
+  b = maxent_prec_prod(Sigma(), b);
+
+  vector_type gTerm = maxent_prec_prod(P(),A)-B();
+  gTerm = GAMMA*maxent_prec_prod_trans(P(),gTerm);
+  return b+gTerm;
+}
+/// the R^2 term that is similar to \chi^2
+double MaxEntSimulationRT::rt_chi(const vector_type& u) const {
+  return GAMMA*(maxent_prec_prod(P(),transform_into_real_space(u))-B()).squaredNorm();
+}
+double MaxEntSimulationRT::Q(const vector_type& u, const double alpha) const {
+    vector_type A=transform_into_real_space(u);
+    return 0.5*chi2(A)-alpha*entropy(A)+rt_chi(u);
+
+}
+
+//Bryan's paper section 2.3 (or after eq 22)
+double MaxEntSimulationRT::convergence(const vector_type& u, const double alpha) const 
+{
+  //using namespace boost::numeric::ublas;
+  vector_type A = transform_into_real_space(u);
+  matrix_type L = Vt().transpose();
+  for (unsigned int i=0; i<L.rows(); ++i) 
+    for (unsigned int j=0; j<L.cols(); ++j) 
+      L(i,j) *= A[i];
+  L = maxent_prec_prod(Vt(), L);
+  
+  matrix_type R = P().transpose();
+  for (unsigned int i=0; i<R.rows(); ++i) 
+    for (unsigned int j=0; j<R.cols(); ++j) 
+      R(i,j) *= A[i];
+  R = maxent_prec_prod(Vt(), R);
+  vector_type Pg =  maxent_prec_prod(P(),A)-B();
+
+  vector_type g = 2./ndat()*(maxent_prec_prod(K(), A) - y());
+  g = maxent_prec_prod(U().transpose(), g);
+  g = maxent_prec_prod(Sigma(), g);
+
+  vector_type alpha_dSdu = -alpha*maxent_prec_prod(L, u);
+  vector_type dLdu = maxent_prec_prod(L, g);
+  vector_type dRdu = maxent_prec_prod(R,Pg);
+  vector_type diff = alpha_dSdu - dLdu -dRdu;
+  double denom = alpha_dSdu.norm() + dLdu.norm()+dRdu.norm();
+  denom = denom*denom;
+  return 2*diff.dot(diff)/denom;
+}
+
+//'left side' is defined as g=Sigma*(V^T*RealSpace(u)*V)*Sigma+ V^T*P^T*P*RealSpace(u)*V
+//see Bryan's paper near Eq. 11 
+matrix_type MaxEntSimulationRT::left_side(const vector_type& u) const
+{
+  vector_type A = transform_into_real_space(u);
+  matrix_type M = Vt().transpose();
+  for (unsigned int i=0; i<M.rows(); ++i) 
+    for (unsigned int j=0; j<M.cols(); ++j) 
+      M(i,j) *= A[i];
+  M = maxent_prec_prod(Vt(), M);
+  M = maxent_prec_prod(Sigma() ,M);
+  M = maxent_prec_prod(Sigma(), M);
+  M *= 2./ndat();
+
+  matrix_type MP = Vt().transpose();
+  for (unsigned int i=0; i<MP.rows(); ++i) 
+    for (unsigned int j=0; j<MP.cols(); ++j) 
+      MP(i,j) *= A[i];
+  MP = maxent_prec_prod(P(), MP);
+  MP = maxent_prec_prod_trans(P() ,MP);
+  MP = maxent_prec_prod(Vt(),MP);
+  MP *= 2.*GAMMA;
+  return M+MP;
+}
+
+//this function constructs delta \dot (V^T*RealSpace(u)*V)
+/*double MaxEntHelper::step_length(const vector_type& delta, const vector_type& u) const 
+{
+  vector_type A = transform_into_real_space(u);
+  matrix_type L = Vt().transpose();
+  for (unsigned int i=0; i<L.rows(); ++i) 
+    for (unsigned int j=0; j<L.cols(); ++j) 
+      L(i,j) *= A[i];
+  L = maxent_prec_prod(Vt(), L);
+  return delta.dot(maxent_prec_prod(L, delta));
+}*/
