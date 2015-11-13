@@ -107,6 +107,7 @@ double MaxEntHelper::step_length(const vector_type& delta, const vector_type& u)
   return delta.dot(maxent_prec_prod(L, delta));
 }
 
+//Bryan's paper section 2.3 (or after eq 22)
 double MaxEntHelper::convergence(const vector_type& u, const double alpha) const 
 {
   //using namespace boost::numeric::ublas;
