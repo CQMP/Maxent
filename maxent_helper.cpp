@@ -19,6 +19,11 @@ MaxEntParameters(p) , def_(nfreq())
     //normalizing the default model
     //def_ /= sum(def_);
     def_ /= def_.sum();
+    /*if(p.exists("RT_TIME")){
+      def_.conservativeResize(2*nfreq());
+      for(int i=0;i<nfreq();i++)
+        def_[nfreq()+i] = def_[i];
+    }*/
     checkDefaultModel(def_);
 }
 

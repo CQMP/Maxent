@@ -126,8 +126,10 @@ private:
   
   //read in rt data (i.e. the B matrix)
   void read_rt_data(const alps::params& p);
-  //calculate the P matrix such that B=\int PA
-  void set_P_matrix(const alps::params& p);
+  //change the kernel to include G(t) kernel
+  void add_Gt_kernel(const alps::params& p);
+  //change the kernel to include the P matrix in B=PA
+  void add_P_kernel(const alps::params& p);
 
 public:
   const vector_type& B() const {return B_;}

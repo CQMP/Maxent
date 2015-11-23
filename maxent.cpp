@@ -66,9 +66,9 @@ int main(int argc,char** argv)
         }
         else{
           MaxEntSimulation * my_sim;
-          if(parms.exists("RT_TIME"))
+          /*if(parms.exists("RT_TIME"))
             my_sim = new MaxEntSimulationRT (parms);
-          else
+          else */
             my_sim = new MaxEntSimulation (parms);
 
           my_sim->run();

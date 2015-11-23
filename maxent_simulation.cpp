@@ -109,6 +109,7 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   //p.define<std::string>("RT_KERNEL","kernel for RT points; known as P matrix");
   p.define<double>("RT_TIME","length of real time t");
   p.define<int>("NRT","number of RT_POINTS in file");
+  p.define<bool>("B_MATRIX",false,"true if RT_POINTS = B, else RT_POINTS=G(t)");
   
 }
 void MaxEntSimulation::run()
@@ -117,7 +118,12 @@ void MaxEntSimulation::run()
   chi_sq.resize(alpha.size());
   spectra.resize(alpha.size());
   u = transform_into_singular_space(Default());
-
+  /*if(B().size() >0){
+    vector_type A = transform_into_real_space(u);
+    for(int i=0;i<nfreq;i++)
+      A[i+nfreq] = A[i];
+    u = transform_into_singular_space(A);    
+  }*/
   ofstream_ spectral_function_file;
   ofstream_ fits_file;
 
@@ -131,6 +137,12 @@ void MaxEntSimulation::run()
     std::cerr << "alpha it: " << a << "\t";
     //fitting procedure for 'u'
     u = levenberg_marquardt(u, alpha[a]);
+    /*if(B().size() >0){
+      vector_type Ai = transform_into_real_space(u);
+      for(int i=0;i<nfreq;i++)
+        Ai[i+nfreq] = Ai[i];
+      u = transform_into_singular_space(Ai);    
+    }*/
     //computation of spectral function out of 'u'
     vector_type A = get_spectrum(u);
     //computation of normalization
@@ -388,7 +400,7 @@ vector_type MaxEntSimulation::iteration(vector_type u, const double alpha, const
 }
 
 MaxEntSimulationRT::MaxEntSimulationRT(alps::params& parms)
-  :MaxEntSimulation(parms),GAMMA(1/1e-4) {}
+  :MaxEntSimulation(parms),GAMMA(1/1e-2) {}
 
 /// \Sigma*U^T*(K*RealSpace(u)-y)+gamma*P^T(B-P*realSpace(u))
 vector_type MaxEntSimulationRT::right_side(const vector_type& u) const {

@@ -254,8 +254,14 @@ void MaxEntParameters::truncate_to_singular_space(const vector_type& S) {
   //(truncated) Sigma has dimension ns_*ns_ (number of singular eigenvalues)
   //(truncated) V^T has dimensions ns_* nfreq(); nfreq() is number of output (real) frequencies
   //ns_ is the dimension of the singular space.
-  U_.conservativeResize(ndat(), ns_);
-  Vt_.conservativeResize(ns_, nfreq());
+  if(B_.size()>0){
+    U_.conservativeResize(ndat()+B_.size(), ns_);
+    Vt_.conservativeResize(ns_, nfreq());
+  }
+  else{
+    U_.conservativeResize(ndat(), ns_);
+    Vt_.conservativeResize(ns_, nfreq());
+  }
   Sigma_= Eigen::MatrixXd::Zero(ns_,ns_);
   for (int s = 0; s < ns_; ++s) {
     std::cout << "# " << s << "\t" << S[s] << "\n";
@@ -268,7 +274,7 @@ void MaxEntParameters::singular_value_decompose_kernel(bool verbose,
   /*boost::numeric::bindings::lapack::gesvd('S', 'S', Kt, S, U_, Vt_);
   */
 
-#ifdef HAVE_LAPACK
+#ifdef HAVE_LAPACK_
 
   matrix_type Kt = K_; // gesvd destroys K!
   lapack_svd(Kt,S, Vt_,U_);
@@ -377,23 +383,27 @@ MaxEntParameters::MaxEntParameters(alps::params& p) :
   std::cerr << "Kernel is set up\n";
   
   if(p.exists("RT_TIME")){
-    B_.resize(p["NRT"]);
     B_omega_grid_.resize(p["NRT"]);
     read_rt_data(p);
-    set_P_matrix(p);
+    if(p["B_MATRIX"])
+      add_P_kernel(p);
+    else
+      add_Gt_kernel(p);
     
-    std::cerr<< "P kernel is set up\n";
+    std::cerr<< "Kernel addition is set up\n";
   }
   vector_type S(ndat());
   bool verbose=p["VERBOSE"];
   //perform the SVD decomposition K = U Sigma V^T
   singular_value_decompose_kernel(verbose, S);
 
+  
   //truncate all matrix to singular space
   truncate_to_singular_space(S);
 
   //compute Ut and 
   compute_minimal_chi2();
+
 }
 
 ///read in the rt points (aka B matrix)
@@ -406,25 +416,98 @@ void MaxEntParameters::read_rt_data(const alps::params& p){
   }
   int datIn =0; //counts up to nrt
   int maxpoint = p["NRT"];
-  while (datstream && datIn <= maxpoint) {
-    double omega, B_i;
-    datstream >> omega >> B_i;
-    B_omega_grid_(datIn) = omega;
-    B_(datIn) = B_i / static_cast<double>(p["NORM"]);
-    datIn++;
+
+  if(p["B_MATRIX"]){
+    B_.resize(p["NRT"].as<int>());
+    /* The data format is
+     *      omega B(omega)
+     * */
+    while (datstream && datIn < maxpoint) {
+      double omega, B_i;
+      datstream >> omega >> B_i;
+      B_omega_grid_(datIn) = omega;
+      B_(datIn) = B_i / static_cast<double>(p["NORM"]);
+      datIn++;
+    }
+
   }
+  else{
+    B_.resize(2*p["NRT"].as<int>());
+    /* The data format for G(t) is
+     *      t ReG Im G
+     *
+     * */
+    while (datstream && datIn/2 < maxpoint) {
+      double omega, B_i_re,B_i_im;
+      datstream >> omega >> B_i_re >> B_i_im;
+      B_omega_grid_(datIn/2) = omega;
+      B_(datIn) = B_i_re / static_cast<double>(p["NORM"]);
+      B_(datIn+1) = B_i_im /  static_cast<double>(p["NORM"]);
+      datIn+=2;
+    }
+  }
+
   //check that input data is sensible
   if(maxpoint > datIn) {
     boost::throw_exception(
-        std::invalid_argument("Too few data points in rt file! NRT="));
+        std::invalid_argument("Too few data points in rt file! NRT="
+          +boost::lexical_cast<std::string>(maxpoint) ));
   }
-  
-  std::cout<< "Read in " << datIn-1 << " real time points" << std::endl;
+  std::cout<< "Read in " << B_.size() << " real time points" << std::endl;
+}
+
+///create the P matrix such that G(t)=\int d\omegap K(t,omegap)A(omegap)
+void MaxEntParameters::add_Gt_kernel(const alps::params& p){
+  int Bsize = B_.size()/2; // size of B is # real and complex parts
+  complex_matrix_type Kc = K_.cast<std::complex<double> >();
+  Kc.conservativeResize(ndat()+Bsize,nfreq());
+
+  double mu = 0;
+  const std::complex<double> CONE(0,1);
+
+  for (size_t i=0;i<Bsize;i++){
+    for(size_t omega_i=0;omega_i<nfreq();omega_i++){
+      double omega = omega_coord_(omega_i);
+      double t = B_omega_grid_(i);
+
+      //switch order of for loops and "cache" exp
+      std::complex<double> f = 1/(std::exp((omega-mu)/T())+1);
+
+      Kc(ndat()+i,omega_i) = -CONE*std::exp(-CONE*(omega-mu)*t)*(1.0-f);   
+    }
+  }
+
+  //rewrite Kc into K_, seperating real and imag parts
+  int newRowSize = 2*ndat();//2*(ndat()+B_.size());
+  int newColSize = nfreq();
+  K_.conservativeResize(newRowSize+B_.size(),newColSize);
+  for (int i=0; i<newRowSize+B_.size(); i+=2) {
+    for (int j=0; j<newColSize; ++j) {
+      K_(i,j) = Kc(i/2,j).real();
+      K_(i+1,j) = Kc(i/2,j).imag();
+    }
+  }
+
+  //resize G(tau) data to have 0 imag component like matsubara freq structure
+  vector_type yc = y_;
+  y_.resize(newRowSize+B_.size());
+  for (int i=0;i<newRowSize;i+=2){
+    y_[i] = yc[i/2];
+    y_[i+1] = 0;
+  }
+  //add in B points
+  for (int i=0;i<B_.size();i++)
+    y_[newRowSize+i] = B_[i];
+
+  //nfreq_ *=2;
+  ndat_ = newRowSize;
 }
 
 ///create the P matrix such that B=\int d\omegap P(omega-omegap)A(omegap)
-void MaxEntParameters::set_P_matrix(const alps::params& p){
-  P_.resize(B_.size(),nfreq());
+//then add it to the kernel
+void MaxEntParameters::add_P_kernel(const alps::params& p){
+
+  K_.conservativeResize(ndat()+B_.size(),nfreq());
   double t = p["RT_TIME"];
   for (size_t i=0;i<B_.size();i++){
     for(size_t omega_i=0;omega_i<nfreq();omega_i++){
@@ -433,20 +516,15 @@ void MaxEntParameters::set_P_matrix(const alps::params& p){
       double w = omegap - omega;
       //P(\omega) = sin(\omega*t)/(\pi*\omega)
 
-      P_(i,omega_i) = std::sin(w*t)/w/M_PI;
+      K_(ndat()+i,omega_i) = std::sin(w*t)/w/M_PI;
 
     }
   }
-  //after constructing P, compute SVD
-  /*Eigen::JacobiSVD<matrix_type> svd(P_,Eigen::ComputeThinU | Eigen::ComputeThinV);
-  //svd.setThreshold(threshold);
-  vector_type PS_=svd.singularValues();
-  PU_=svd.matrixU();
-  PVt_=svd.matrixV().transpose(); 
-  PSigma_= Eigen::MatrixXd::Zero(PS_.size(),PS_.size());
-  for(size_t i=0;i<PS_.size();i++)
-    PSigma_(i,i) = PS_(i);
-    */
-
+  
+  y_.conservativeResize(ndat()+B_.size());
+  //add in B points
+  for (int i=0;i<B_.size();i++){
+    y_[ndat()+i] = B_[i];
+  }
+  
 }
-
