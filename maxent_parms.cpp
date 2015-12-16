@@ -464,7 +464,8 @@ void MaxEntParameters::add_Gt_kernel(const alps::params& p){
 
   double mu = 0;
   const std::complex<double> CONE(0,1);
-
+  //everything should be scaled by 1/sigma
+  double inv_err = 1/1e-1;
   for (size_t i=0;i<Bsize;i++){
     for(size_t omega_i=0;omega_i<nfreq();omega_i++){
       double omega = omega_coord_(omega_i);
@@ -473,7 +474,7 @@ void MaxEntParameters::add_Gt_kernel(const alps::params& p){
       //switch order of for loops and "cache" exp
       std::complex<double> f = 1/(std::exp((omega-mu)/T())+1);
 
-      Kc(ndat()+i,omega_i) = -CONE*std::exp(-CONE*(omega-mu)*t)*(1.0-f);   
+      Kc(ndat()+i,omega_i) = -CONE*std::exp(-CONE*(omega-mu)*t)*(1.0-f)*inv_err;   
     }
   }
 
@@ -497,7 +498,7 @@ void MaxEntParameters::add_Gt_kernel(const alps::params& p){
   }
   //add in B points
   for (int i=0;i<B_.size();i++)
-    y_[newRowSize+i] = B_[i];
+    y_[newRowSize+i] = B_[i]*inv_err;
 
   //nfreq_ *=2;
   ndat_ = newRowSize;
@@ -506,6 +507,9 @@ void MaxEntParameters::add_Gt_kernel(const alps::params& p){
 ///create the P matrix such that B=\int d\omegap P(omega-omegap)A(omegap)
 //then add it to the kernel
 void MaxEntParameters::add_P_kernel(const alps::params& p){
+
+  //everything should be scaled by 1/sigma
+  double inv_err = 1/1e-4;
 
   K_.conservativeResize(ndat()+B_.size(),nfreq());
   double t = p["RT_TIME"];
@@ -516,7 +520,7 @@ void MaxEntParameters::add_P_kernel(const alps::params& p){
       double w = omegap - omega;
       //P(\omega) = sin(\omega*t)/(\pi*\omega)
 
-      K_(ndat()+i,omega_i) = std::sin(w*t)/w/M_PI;
+      K_(ndat()+i,omega_i) = std::sin(w*t)/w/M_PI*inv_err;
 
     }
   }
@@ -524,7 +528,7 @@ void MaxEntParameters::add_P_kernel(const alps::params& p){
   y_.conservativeResize(ndat()+B_.size());
   //add in B points
   for (int i=0;i<B_.size();i++){
-    y_[ndat()+i] = B_[i];
+    y_[ndat()+i] = B_[i]*inv_err;
   }
   
 }
