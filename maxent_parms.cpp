@@ -519,10 +519,12 @@ void MaxEntParameters::add_P_kernel(const alps::params& p){
     for(size_t omega_i=0;omega_i<nfreq();omega_i++){
       double omega = B_omega_grid_(i);
       double omegap = omega_coord_(omega_i);
-      double w = omegap - omega;
+      double w = omega - omegap;
       //P(\omega) = sin(\omega*t)/(\pi*\omega)
-
-      K_(ndat()+i,omega_i) = std::sin(w*t)/w/M_PI*inv_err;
+      if(w==0.0)
+        K_(ndat()+i,omega_i) = 2*t*inv_err;
+      else
+        K_(ndat()+i,omega_i) = 2*std::sin(w*t)/w*inv_err;
 
     }
   }
