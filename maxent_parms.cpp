@@ -292,7 +292,7 @@ void MaxEntParameters::singular_value_decompose_kernel(bool verbose,
     std::cout << "# Singular values of the Kernel:\n";
 
   const double prec = std::sqrt(std::numeric_limits<double>::epsilon())
-      * nfreq() * S[0];
+      * (nfreq()+B().size()) * S[0];
   if (verbose)
     std::cout << "# eps = " << sqrt(std::numeric_limits<double>::epsilon())
         << std::endl << "# prec = " << prec << std::endl;
@@ -416,6 +416,7 @@ void MaxEntParameters::read_rt_data(const alps::params& p){
   }
   int datIn =0; //counts up to nrt
   int maxpoint = p["NRT"];
+  int true_size = 0;
 
   if(p["B_MATRIX"]){
     B_.resize(p["NRT"].as<int>());
@@ -429,7 +430,7 @@ void MaxEntParameters::read_rt_data(const alps::params& p){
       B_(datIn) = B_i / static_cast<double>(p["NORM"]);
       datIn++;
     }
-
+    true_size = B_.size();
   }
   else{
     B_.resize(2*p["NRT"].as<int>());
@@ -445,6 +446,7 @@ void MaxEntParameters::read_rt_data(const alps::params& p){
       B_(datIn+1) = B_i_im /  static_cast<double>(p["NORM"]);
       datIn+=2;
     }
+    true_size = B_.size()/2;
   }
 
   //check that input data is sensible
@@ -453,7 +455,7 @@ void MaxEntParameters::read_rt_data(const alps::params& p){
         std::invalid_argument("Too few data points in rt file! NRT="
           +boost::lexical_cast<std::string>(maxpoint) ));
   }
-  std::cout<< "Read in " << B_.size() << " real time points" << std::endl;
+  std::cout<< "Read in " << true_size << " real time points" << std::endl;
 }
 
 ///create the P matrix such that G(t)=\int d\omegap K(t,omegap)A(omegap)
