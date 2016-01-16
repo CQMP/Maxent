@@ -20,6 +20,9 @@ int main(int argc,char** argv)
 
   alps::params parms(argc,const_cast<const char**>(argv)); 
   MaxEntSimulation::define_parameters(parms);
+  if (parms.help_requested(std::cout)) {
+    return 0;
+  }
   if(!parms.exists("BETA")){
     std::cout<<"Please supply BETA"<<std::endl;
     parms["help"] = true;
@@ -28,9 +31,7 @@ int main(int argc,char** argv)
     std::cout<<"Please supply NDAT"<<std::endl;
     parms["help"] = true;
   }
-  if (parms.help_requested(std::cout)) {
-    return 0;
-  }
+
   std::string basename;
   if(parms.defaulted("BASENAME")){
     basename = alps::remove_extensions(parms.get_origin_name()) + ".out";
