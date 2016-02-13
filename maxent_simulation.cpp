@@ -315,6 +315,7 @@ void MaxEntSimulation::evaluate(){
     avspec*=-M_PI;
     maxspec*=-M_PI;
   }
+  ar.close();
 }
 
 
