@@ -13,6 +13,8 @@
 !maxent_parms.h
 !maxent_simulation.cpp
 !maxent_simulationTest.cpp
+!maxent_backcont.cpp
+!maxent_backcont.hpp
 !maxent_matrix_def.hpp
 !maxent.cpp
 !maxent.h

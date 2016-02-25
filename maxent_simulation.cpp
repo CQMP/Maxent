@@ -11,12 +11,6 @@
 #include <Eigen/LU>
 #include "eigen_hdf5.hpp"
 
-struct ofstream_ : std::ofstream{
-    explicit ofstream_(std::streamsize precision=10){
-	    this->precision(precision);
-    }
-};
-
 MaxEntSimulation::MaxEntSimulation(alps::params &parms)
 : MaxEntHelper(parms)
 , alpha((int)parms["N_ALPHA"])              //This is the # of \alpha parameters that should be tried.
@@ -26,6 +20,7 @@ MaxEntSimulation::MaxEntSimulation(alps::params &parms)
 , verbose(parms["VERBOSE"])
 , text_output(parms["TEXT_OUTPUT"])
 , self(parms["SELF"])
+, make_back(parms["BACKCONTINUE"])
 , qvec((int)parms["N_ALPHA"])
 , nfreq(parms["NFREQ"].as<int>())
 {
@@ -55,6 +50,7 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   p.define<double>("ALPHA_MIN",0.01,"Minimum alpha");
   p.define<double>("ALPHA_MAX",20,"Maximum alpha");
   p.define<double>("NORM",1.0,"NORM");
+  p.define<bool>("BACKCONTINUE",true,"Output A(omega) back to imaginary axis");
   //*********************************
   p.define<double>("BETA","beta, inverse temperature");
   p.define<int>("NDAT","# of input points");
@@ -314,6 +310,15 @@ void MaxEntSimulation::evaluate(){
     //for public facing variables
     avspec*=-M_PI;
     maxspec*=-M_PI;
+  }
+
+  if(text_output && make_back){
+    ofstream_ avspec_back_file,maxspec_back_file;
+    avspec_back_file.open((name+"avspec_back.dat").c_str());
+    maxspec_back_file.open((name+"maxspec_back.dat").c_str());
+
+    backcontinue(avspec_back_file,avspec);
+    backcontinue(maxspec_back_file,maxspec);
   }
   ar.close();
 }

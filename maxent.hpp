@@ -12,6 +12,12 @@
 
 #include"gtest/gtest.h"
 
+struct ofstream_ : std::ofstream{
+    explicit ofstream_(std::streamsize precision=10){
+	    this->precision(precision);
+    }
+};
+
 class MaxEntHelper : private MaxEntParameters
 {
 public : 
@@ -54,6 +60,8 @@ public :
   void print_chi2(const vector_type& u, std::ostream &os) const;
   /// compute S=\int d\omega(A(\omega)-D(\omega)-A(\omega)\ln[A(\omega)/D(\omega))
   double entropy(const vector_type& u) const;
+  /// (back)continue A(\omega) to the imaginary axis; also writes to file
+  void backcontinue(ofstream_ &os, const vector_type &A) const;
 
 private:
   ///discretized and normalized version of the default model.
@@ -88,7 +96,7 @@ private:
   const double norm;
   const int max_it;
   std::string name,Kernel_type;
-  bool verbose,text_output,self;
+  bool verbose,text_output,self,make_back;
   const int nfreq;
 
   vector_type lprob;

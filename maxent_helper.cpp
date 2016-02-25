@@ -9,6 +9,7 @@
 #include <boost/math/special_functions/fpclassify.hpp> //needed for boost::math::isnan
 #include <Eigen/Eigenvalues>
 #include <Eigen/Cholesky>
+#include "maxent_backcont.hpp"
 //NOTE: size1= rows; size2=columns
 
 MaxEntHelper::MaxEntHelper(alps::params& p) :
@@ -225,4 +226,15 @@ vector_type MaxEntHelper::PrincipalValue(const vector_type &w,const vector_type 
     r[N-2] = w[N-3]*r[N-3]/w[N-2];
     r[N-1] = w[N-3]*r[N-3]/w[N-1];
     return r;
+}
+
+void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A) const
+{
+    const MaxEntParameters *pp = this;
+    Backcont bc(pp);
+    vector_type G = bc.backcontinue(A);
+    kernel_type k_type = pp->getKernelType();
+    double beta = 1/(pp->T());
+    for(int n=0; n<G.size();n++)
+      os << pp->inputGrid(n) << " " << G(n) << std::endl;
 }
