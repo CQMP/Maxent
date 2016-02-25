@@ -96,6 +96,10 @@ public:
   int ns() const { return ns_; }
   ///getter function for the default model
   const DefaultModel& Default() const { return *Default_; }
+  ///getter function for input data grid
+  const vector_type& inputGrid() const { return inputGrid_; }
+  ///getter function for input data grid values
+  double inputGrid(const int i) const { return inputGrid_(i); }
 
 private:
   ///The default model

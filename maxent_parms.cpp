@@ -53,7 +53,6 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
       double index, X_i, dX_i;
       datstream >> index >> X_i >> dX_i;
       if (datIn < ndat()) {
-        inputGrid_(datIn) = index;
         y_(datIn) = X_i / static_cast<double>(p["NORM"]);
         sigma_(datIn) = dX_i / static_cast<double>(p["NORM"]);
         datIn++;
@@ -65,7 +64,6 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
       double index, X_i_re, dX_i_re, X_i_im, dX_i_im;
       datstream >> index >> X_i_re >> dX_i_re >> X_i_im >> dX_i_im;
       if (datIn < ndat()) {
-        inputGrid_(datIn) = index;
         y_(datIn) = X_i_re / static_cast<double>(p["NORM"]);
         y_(datIn+1) = X_i_im / static_cast<double>(p["NORM"]);
         sigma_(datIn) = dX_i_re / static_cast<double>(p["NORM"]);

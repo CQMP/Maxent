@@ -31,7 +31,7 @@ enum kernel_type{
 };
 class kernel{
 public:
-  kernel(alps::params &p, const vector_type& freq, const vector_type &inputGrid, const int lmax);
+  kernel(alps::params &p, const vector_type& freq, vector_type &inputGrid, const int lmax);
 
   ///getter function for the kernel matrix
   const matrix_type &operator()()const{return K_;}

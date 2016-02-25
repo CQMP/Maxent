@@ -13,7 +13,7 @@
 
 namespace bmth = boost::math;
 
-kernel::kernel(alps::params &p, const vector_type& freq, const vector_type &inputGrid, const int lmax):
+kernel::kernel(alps::params &p, const vector_type& freq, vector_type &inputGrid, const int lmax):
 ndat_(p["NDAT"]),
 nfreq_(p["NFREQ"]),
 T_(1./static_cast<double>(p["BETA"])),
@@ -58,6 +58,7 @@ K_(ndat_,nfreq_)
       std::cout<<"Using data file tau points"<<std::endl;
       tau_points_= inputGrid;  
     }
+    inputGrid = tau_points_;
   }
     
   if(ktype_==legendre_fermionic_kernel || ktype_==legendre_bosonic_kernel){
@@ -105,6 +106,7 @@ K_(ndat_,nfreq_)
     else if(ktype_==frequency_fermionic_ph_kernel) {
     for (int i=0; i<ndat_; ++i) {
       double omegan = (2*i+1)*M_PI*T_;
+      inputGrid(i) = omegan;
       for (int j=0; j<nfreq_; ++j) {
         double omega = freq[j];
         K_(i,j) =  -omegan / (omegan*omegan + omega*omega);
@@ -114,6 +116,7 @@ K_(ndat_,nfreq_)
   else if (ktype_==frequency_bosonic_ph_kernel) {
     for (int i=0; i<ndat_; ++i) {
       double Omegan = (2*i)*M_PI*T_;
+      inputGrid(i) = Omegan;
       for (int j=0; j<nfreq_; ++j) {
         double Omega = freq[j];
         if(Omega ==0) throw std::runtime_error("Bosonic kernel is singular at frequency zero. Please use grid w/o evaluation at zero.");
@@ -123,6 +126,7 @@ K_(ndat_,nfreq_)
   }else if (ktype_==frequency_anomalous_ph_kernel) {
     for(int i=0;i<ndat_;++i){
       double omegan = (2*i+1)*M_PI*T_;
+      inputGrid(i) = omegan;
       for (int j=0; j<nfreq_; ++j) {
         double omega = freq[j];
         K_(i,j) =  omega*omega / (omegan*omegan + omega*omega);
@@ -137,6 +141,7 @@ K_(ndat_,nfreq_)
       ///otherwise ndat=total number of real+imag points = ndat/2 data points
       for (int i=0; i<ndat_/2; ++i) {
         std::complex<double> iomegan(0, (2*i+1)*M_PI*T_);
+        inputGrid(i) = iomegan.imag();
         for (int j=0; j<nfreq_; ++j) {
           double omega = freq[j];
           Kc(i,j) =  1. / (iomegan - omega);
@@ -146,6 +151,7 @@ K_(ndat_,nfreq_)
     else if (ktype_==frequency_bosonic_kernel){
       for (int i=0; i<ndat_/2; ++i) {
         std::complex<double> iomegan(0, 2*i*M_PI*T_);
+        inputGrid(i) = iomegan.imag();
         for (int j=0; j<nfreq_; ++j) {
           double omega = freq[j];
           Kc(i,j) =  omega / (iomegan + omega);
@@ -155,6 +161,7 @@ K_(ndat_,nfreq_)
     else if (ktype_==frequency_anomalous_kernel){
       for (int i=0; i<ndat_/2; ++i) {
         std::complex<double> iomegan(0, (2*i+1)*M_PI*T_);
+        inputGrid(i) = iomegan.imag();
         for (int j=0; j<nfreq_; ++j) {
           double omega = freq[j];
           Kc(i,j) =  -omega / (iomegan - omega);
