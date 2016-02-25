@@ -358,12 +358,13 @@ MaxEntParameters::MaxEntParameters(alps::params& p) :
   //build a kernel matrix
   kernel ker(p,omega_coord_,inputGrid_,lmax);
   K_=ker();
+  k_type = ker.getKernelType();
 
   //scale lhs and rhs according to errors, etc.
   if (p.defined("COVARIANCE_MATRIX"))
     decompose_covariance_matrix(p);
     
-    check_high_frequency_limit(y(),ker.getKernelType());
+    check_high_frequency_limit(y(),k_type);
 
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
   scale_data_with_error(nfreq());

@@ -37,6 +37,8 @@ public:
   double K(const int i, const int j) const {return K_(i,j);}
   ///returns the entire kernel matrix
   const matrix_type& K() const { return K_; }
+  ///returns kernel type of K
+  const kernel_type getKernelType() const {return k_type; }
 
 private:
   ///temperature
@@ -71,6 +73,8 @@ protected:
   grid grid_;
   ///vector containing input matsubara or tau data
   vector_type inputGrid_;
+  ///type of kernel used
+  kernel_type k_type;
 };
 
 
