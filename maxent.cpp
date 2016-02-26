@@ -23,13 +23,20 @@ int main(int argc,char** argv)
   if (parms.help_requested(std::cout)) {
     return 0;
   }
+  bool exitEarly = false;
+
   if(!parms.exists("BETA")){
     std::cout<<"Please supply BETA"<<std::endl;
-    parms["help"] = true;
+    exitEarly = true;
   }
   if(!parms.exists("NDAT")){
     std::cout<<"Please supply NDAT"<<std::endl;
-    parms["help"] = true;
+    exitEarly = true;
+  }
+  if(parms["DATA"].as<std::string>().empty() && !parms.exists("X_0")
+      && parms["DATA_IN_HDF5"]!=true){
+    std::cout<<"Please supply input data"<<std::endl;
+    exitEarly = true;
   }
 
   std::string basename;
@@ -41,6 +48,10 @@ int main(int argc,char** argv)
     basename=parms["BASENAME"].as<std::string>();
   
   try{
+        if(exitEarly){
+          throw std::runtime_error("Critical parameters not defined");
+        }
+
         //allow for multiple default model runs
         //set MODEL_RUNS = #runs
         //then place:
