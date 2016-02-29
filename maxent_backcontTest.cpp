@@ -170,6 +170,121 @@ alps::params p;
   double limit = G(ndat-1)*iwn;
   EXPECT_EQ((limit+1)<0.1,true);
 }
+
+TEST(Backcont,FrequencyNotPHBackcont){
+  alps::params p;
+  MaxEntSimulation::define_parameters(p);
+  const int ndat = 2*16;
+  const double beta = 8;
+  p["BETA"]=beta;
+  p["NDAT"]=ndat;
+  p["PARTICLE_HOLE_SYMMETRY"]=false;
+  p["DATASPACE"]="frequency";
+  p["KERNEL"]="fermionic";
+  p["TEXT_OUTPUT"]=false;
+  p["BACKCONT"] = false;
+  p["NFREQ"] = 500;
+
+  //data from DMFT;U=0;beta=8
+  //really PH symmetric, so make Re(G)==0
+  p["X_0"]=0;
+  p["X_1"]=-0.58900239090596;
+  p["X_2"]=0;
+  p["X_3"]=-0.40986302909581;
+  p["X_4"]=0;
+  p["X_5"]=-0.32440959736089;
+  p["X_6"]=0;
+  p["X_7"]=-0.26834511172698;
+  p["X_8"]=0;
+  p["X_9"]=-0.2278124578356;
+  p["X_10"]=0;
+  p["X_11"]=-0.19711608409901;
+  p["X_12"]=0;
+  p["X_13"]=-0.173170382827;
+  p["X_14"]=0;
+  p["X_15"]=-0.15406437082322;
+  p["X_16"]=0;
+  p["X_17"]=-0.13853122078645;
+  p["X_18"]=0;
+  p["X_19"]=-0.12569699334634;
+  p["X_20"]=0;
+  p["X_21"]=-0.1149417307568;
+  p["X_22"]=0;
+  p["X_23"]=-0.10581568778351;
+  p["X_24"]=0;
+  p["X_25"]=-0.097986218747872;
+  p["X_26"]=0;
+  p["X_27"]=-0.09120298645574;
+  p["X_28"]=0;
+  p["X_29"]=-0.085274608164208;
+  p["X_30"]=0;
+  p["X_31"]=-0.080052654686189;
+
+  p["SIGMA_0"]=1e-6;
+  p["SIGMA_1"]=1e-6;
+  p["SIGMA_2"]=1e-6;
+  p["SIGMA_3"]=1e-6;
+  p["SIGMA_4"]=1e-6;
+  p["SIGMA_5"]=1e-6;
+  p["SIGMA_6"]=1e-6;
+  p["SIGMA_7"]=1e-6;
+  p["SIGMA_8"]=1e-6;
+  p["SIGMA_9"]=1e-6;
+  p["SIGMA_10"]=1e-6;
+  p["SIGMA_11"]=1e-6;
+  p["SIGMA_12"]=1e-6;
+  p["SIGMA_13"]=1e-6;
+  p["SIGMA_14"]=1e-6;
+  p["SIGMA_15"]=1e-6;
+  p["SIGMA_16"]=1e-6;
+  p["SIGMA_17"]=1e-6;
+  p["SIGMA_18"]=1e-6;
+  p["SIGMA_19"]=1e-6;
+  p["SIGMA_20"]=1e-6;
+  p["SIGMA_21"]=1e-6;
+  p["SIGMA_22"]=1e-6;
+  p["SIGMA_23"]=1e-6;
+  p["SIGMA_24"]=1e-6;
+  p["SIGMA_25"]=1e-6;
+  p["SIGMA_26"]=1e-6;
+  p["SIGMA_27"]=1e-6;
+  p["SIGMA_28"]=1e-6;
+  p["SIGMA_29"]=1e-6;
+  p["SIGMA_30"]=1e-6;
+  p["SIGMA_31"]=1e-6;
+
+  //setup params given above data
+  MaxEntParameters param(p);
+  MaxEntParameters * pp = &param;
+
+  //backcontinue saved output
+  vector_type A = getA();    
+  Backcont bc(pp);
+  vector_type G = bc.backcontinue(A);
+
+  //sensibility check
+  EXPECT_EQ(G.size(),ndat);
+
+  //check im(G) are <0
+  for(int i=1;i<ndat;i+=2){
+    EXPECT_EQ(G(i)<0,true);
+  }
+  
+  // Re(G)==0
+  const double threshhold = 1e10;
+  for(int i=0;i<ndat;i+=2){
+    EXPECT_NEAR(G(i),0,threshhold);
+  }
+
+  //check high frequency term
+  // G(iomega) ~ 1/iomega + ...
+  
+  //now ndat has 2*real_n
+  double iwn = (2*((ndat-2)/2)+1)*M_PI/beta;
+  double limit = G(ndat-1)*iwn;
+  EXPECT_EQ((limit+1)<0.1,true);
+}
+
 TEST(Backcont,TauBackcont){
 alps::params p;
   MaxEntSimulation::define_parameters(p);
