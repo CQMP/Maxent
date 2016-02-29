@@ -322,9 +322,9 @@ TEST(Backcont,FrequencyNotPHBackcont){
   }
   
   // Re(G)==0
-  const double threshold_re = 1e10;
+  const double threshold_re = 1e-10;
   for(int i=0;i<ndat;i+=2){
-    EXPECT_NEAR(G(i),0,threshold_re);
+    EXPECT_NEAR(0,G(i),threshold_re);
   }
 
   //check high frequency term
@@ -510,5 +510,5 @@ alps::params p;
   }
 
   //check high frequency term
-  EXPECT_NEAR(G(0) + G(ndat-1),-1,0.01);
+  EXPECT_NEAR(-1,G(0) + G(ndat-1),0.01);
 }
