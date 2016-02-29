@@ -318,8 +318,9 @@ void MaxEntSimulation::evaluate(){
     avspec_back_file.open((name+"avspec_back.dat").c_str());
     maxspec_back_file.open((name+"maxspec_back.dat").c_str());
 
-    backcontinue(avspec_back_file,avspec);
-    backcontinue(maxspec_back_file,maxspec);
+    std::cerr << "Maximum difference between input and backcontinued data: " <<std::endl;
+    backcontinue(avspec_back_file,avspec,"avspec ");
+    backcontinue(maxspec_back_file,maxspec,"maxspec");
   }
   ar.close();
 }

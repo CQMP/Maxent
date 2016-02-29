@@ -61,7 +61,7 @@ public :
   /// compute S=\int d\omega(A(\omega)-D(\omega)-A(\omega)\ln[A(\omega)/D(\omega))
   double entropy(const vector_type& u) const;
   /// (back)continue A(\omega) to the imaginary axis; also writes to file
-  void backcontinue(ofstream_ &os, const vector_type &A) const;
+  void backcontinue(ofstream_ &os, const vector_type &A, const std::string name) const;
 
 private:
   ///discretized and normalized version of the default model.

@@ -26,3 +26,18 @@ vector_type Backcont::backcontinue(const vector_type &A){
 
   return G;
 }
+double Backcont::max_error(const vector_type &y1, const vector_type &y2){
+  double max_err = 0.0;
+#ifdef NDEBUG
+  if(y1.size() != y2.size()){
+    throw std::runtime_error("backcont vector size mismatch!");
+  }
+#endif
+  for(int i=0;i<y1.size();i++){
+    double delta = std::abs(y1(i)-y2(i));
+    if(delta>max_err){
+      max_err = delta;
+    }
+  }
+  return max_err;
+}

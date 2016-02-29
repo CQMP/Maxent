@@ -228,7 +228,7 @@ vector_type MaxEntHelper::PrincipalValue(const vector_type &w,const vector_type 
     return r;
 }
 
-void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A) const
+void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A, const std::string name) const
 {
     const MaxEntParameters *pp = this;
     Backcont bc(pp);
@@ -237,4 +237,12 @@ void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A) const
     double beta = 1/(pp->T());
     for(int n=0; n<G.size();n++)
       os << pp->inputGrid(n) << " " << G(n) << std::endl;
+
+    //scale y by error then determine 'error' of integral
+    vector_type y_scaled = y();
+    for(int i=0;i<y_scaled.size();i++){
+      y_scaled(i) *= sigma(i);
+    }
+    double max_err = bc.max_error(G,y_scaled); 
+    std::cerr << "\t" << name << ": " << max_err << std::endl;
 }
