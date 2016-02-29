@@ -246,3 +246,28 @@ void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A, const std::
     double max_err = bc.max_error(G,y_scaled); 
     std::cerr << "\t" << name << ": " << max_err << std::endl;
 }
+
+///calculates the varience of a std::vector of eigen3 vectors
+//note: mean,std_dev must be initialized to Zeros(nfreq())
+void determineVariance(std::vector<vector_type> &in,vector_type &mean, vector_type &std_dev){
+#ifndef NDEBUG
+  if(in[0].size() != mean.size() || in[0].size() != std_dev.size())
+    throw std::length_error("mean/std_dev initialization error!");
+#endif
+  std::vector<vector_type>::iterator it=in.begin();
+  while(it != in.end()){
+    mean += (*it);
+    it++;
+  }
+  mean /= in.size();
+  //compute stddev  
+  for(int i=0;i<mean.size();i++){
+    double stddev =0;
+    double mean_i = mean(i);
+    for(int v=0;v<in.size();v++){
+      double val = in[v](i);
+      stddev+= (val-mean_i)*(val-mean_i);
+    }
+    std_dev(i) = sqrt(stddev)/sqrt(in.size()-1);  
+  }
+};

@@ -131,3 +131,7 @@ public:
   const vector_type getQvec() const{return qvec;}
 }; 
 
+///calculates the varience of a std::vector of eigen3 vectors
+//note: mean,std_dev must be initialized to Zeros(nfreq())
+//located in maxent_helper.cpp
+void determineVariance(std::vector<vector_type> &in,vector_type &mean, vector_type &std_dev);

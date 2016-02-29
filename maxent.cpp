@@ -10,6 +10,7 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/exception/diagnostic_information.hpp> 
 
+
 int main(int argc,char** argv)
 {
   //gtest requires char** while alps params requires const char**
@@ -64,6 +65,11 @@ int main(int argc,char** argv)
 	          //ALPSCore requires all params are defined
  	          for(int i=0;i<nruns;i++)
 		          parms.define<std::string>("RUN_" + boost::lexical_cast<std::string>(i),"Run");
+            //vectors to hold spectra
+            std::vector<vector_type> max_spectra(nruns);
+            std::vector<vector_type> av_spectra(nruns);
+
+            vector_type omega_grid;
             for(int i=0;i<nruns;i++){
                 std::string currModel = parms["RUN_" + boost::lexical_cast<std::string>(i)];
                 parms["DEFAULT_MODEL"]= currModel;
@@ -74,6 +80,35 @@ int main(int argc,char** argv)
                 MaxEntSimulation my_sim(parms);
                 my_sim.run();
                 my_sim.evaluate();
+
+                //save spectra for later
+                max_spectra[i] = my_sim.getMaxspec();
+                av_spectra[i]  = my_sim.getAvspec();
+                if(i==0){
+                  omega_grid = my_sim.getOmegaGrid();
+                }
+            }
+          
+            //calculate variance
+            const int nfreq = max_spectra[0].size();
+            vector_type mean_max = vector_type::Zero(nfreq);
+            vector_type stdev_max(nfreq);
+            vector_type mean_av = vector_type::Zero(nfreq);
+            vector_type stdev_av(nfreq);
+
+            determineVariance(max_spectra,mean_max,stdev_max);
+            determineVariance(av_spectra,mean_av,stdev_av);
+
+            //save to file
+            if(parms["TEXT_OUTPUT"]){
+            ofstream_ spec_file;
+            spec_file.open((basename+".varspec.dat").c_str());
+            spec_file << "#omega mean_maxspec stdev_maxspec mean_avspec stdev_avspec" <<std::endl;
+            for (std::size_t  i=0; i<omega_grid.size(); ++i)
+              spec_file << omega_grid(i)
+                << " " << mean_max(i) << " " << stdev_max(i)
+                << " " << mean_av(i)  << " " << stdev_av(i) 
+                << std::endl;
             }
         }
         else{
