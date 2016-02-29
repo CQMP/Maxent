@@ -19,7 +19,7 @@ TEST(Simulation,FrequencySimulation){
     alps::params p;
     MaxEntSimulation::define_parameters(p);
     p["BETA"]=8;
-    p["NDAT"]=15;
+    p["NDAT"]=16;
     p["PARTICLE_HOLE_SYMMETRY"]=true;
     p["DATASPACE"]="frequency";
     p["KERNEL"]="fermionic";

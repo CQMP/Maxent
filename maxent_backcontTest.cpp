@@ -101,7 +101,7 @@ inline vector_type getA(){
 TEST(Backcont,FrequencyPHBackcont){
 alps::params p;
   MaxEntSimulation::define_parameters(p);
-  const int ndat = 15;
+  const int ndat = 16;
   const double beta = 8;
   p["BETA"]=beta;
   p["NDAT"]=ndat;
