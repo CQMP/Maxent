@@ -139,8 +139,8 @@ inline vector_type getA_bose(){
     2.309430855e-12,1.796604746e-12,1.38129249e-12,1.048014483e-12,7.833588341e-13,5.757229701e-13,4.150855633e-13,
     2.928090451e-13,2.014717115e-13,1.347271569e-13,8.71876023e-14,5.432670593e-14,3.239676199e-14,1.835489551e-14,
     9.793051329e-15,4.867328422e-15,2.223589549e-15,9.182626338e-16,3.356814674e-16,1.057805258e-16,2.777688408e-17,
-    5.81961719e-18,9.205221383e-19,1.028597114e-19,7.688695354e-21,4.293447e-22,3.108648028e-23,2.954569301e-24,2.060850086e-25,
-    8.390126133e-27,1.768853078e-28,1.728728019e-30,7.389898536e-33,1.654506858e-35;
+    5.81961719e-18,9.205221383e-19,1.028597114e-19,7.688695354e-21,4.293447e-22,3.108648028e-23,2.954569301e-24,
+    2.060850086e-25,8.390126133e-27,1.768853078e-28,1.728728019e-30,7.389898536e-33,1.654506858e-35;
   return A;
 }
 
@@ -205,9 +205,12 @@ alps::params p;
   //sensibility check
   EXPECT_EQ(G.size(),ndat);
 
-  //check all are <0
-  for(int i=0;i<ndat;i++)
-    EXPECT_EQ(G(i)<0,true);
+  //check that backcont is right to first order
+  const double threshold = 0.1;
+  for(int i=0;i<ndat;i++){
+    double err = std::abs(G(i)-(pp->y(i)*pp->sigma(i)));
+    EXPECT_EQ(err<threshold,true);
+  } 
 
   //check high frequency term
   // G(iomega) ~ 1/iomega + ...
@@ -311,15 +314,17 @@ TEST(Backcont,FrequencyNotPHBackcont){
   //sensibility check
   EXPECT_EQ(G.size(),ndat);
 
-  //check im(G) are <0
-  for(int i=1;i<ndat;i+=2){
-    EXPECT_EQ(G(i)<0,true);
+  //check that backcont is right to first order
+  const double threshold = 0.1;
+  for(int i=0;i<ndat;i++){
+    double err = std::abs(G(i)-(pp->y(i)*pp->sigma(i)));
+    EXPECT_EQ(err<threshold,true);
   }
   
   // Re(G)==0
-  const double threshhold = 1e10;
+  const double threshold_re = 1e10;
   for(int i=0;i<ndat;i+=2){
-    EXPECT_NEAR(G(i),0,threshhold);
+    EXPECT_NEAR(G(i),0,threshold_re);
   }
 
   //check high frequency term
@@ -379,9 +384,14 @@ TEST(Backcont,FrequencyBosonicBackcont){
   //sensibility check
   EXPECT_EQ(G.size(),ndat);
 
-  for(int i=0;i<ndat;i++)
-    EXPECT_EQ(G(i)>=0,true);
-
+  //check that backcont is right to first order
+  const double threshold = 0.1;
+  for(int i=0;i<ndat;i++){
+    double err = std::abs(G(i)-(pp->y(i)*pp->sigma(i)));
+    EXPECT_EQ(err<threshold,true);
+  }
+  
+  
 }
 TEST(Backcont,TauBackcont){
 alps::params p;
@@ -492,9 +502,12 @@ alps::params p;
   //sensibility check
   EXPECT_EQ(G.size(),ndat);
 
-  //check all are <0
-  for(int i=0;i<ndat;i++)
-    EXPECT_EQ(G(i)<0,true);
+  //check that backcont is right to first order
+  const double threshold = 0.1;
+  for(int i=0;i<ndat;i++){
+    double err = std::abs(G(i)-(pp->y(i)*pp->sigma(i)));
+    EXPECT_EQ(err<threshold,true);
+  }
 
   //check high frequency term
   EXPECT_NEAR(G(0) + G(ndat-1),-1,0.01);
