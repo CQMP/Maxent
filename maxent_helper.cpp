@@ -10,6 +10,11 @@
 #include <Eigen/Eigenvalues>
 #include <Eigen/Cholesky>
 #include "maxent_backcont.hpp"
+
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/normal_distribution.hpp>
+#include <boost/random/variate_generator.hpp>
+#include <boost/random.hpp>
 //NOTE: size1= rows; size2=columns
 
 MaxEntHelper::MaxEntHelper(alps::params& p) :
@@ -271,3 +276,83 @@ void determineVariance(std::vector<vector_type> &in,vector_type &mean, vector_ty
     std_dev(i) = sqrt(stddev)/sqrt(in.size()-1);  
   }
 };
+
+///construct positive definite matrix \Gamma
+//Jarrell 4.8
+matrix_type MaxEntHelper::constructGamma(const vector_type& A, const double alpha){
+  matrix_type Lambda(nfreq(),nfreq());
+
+  for(int i=0;i<nfreq();i++){
+    for(int j=0;j<nfreq();j++){
+      //TODO: think more carefully about complex K
+      //construct d^2L/dA_i dA_j
+      double sum = 0;
+      for (int l=0;l<ndat();l++)
+        sum += K(l,i)*K(l,j);
+      Lambda(i,j) = sqrt(A(i))*sum*sqrt(A(j));
+    }
+  }
+  //Gamma = alpha*I + Lambda
+  for (int i=0;i<nfreq();i++)
+    Lambda(i,i) += alpha;
+  
+  return Lambda;
+}
+
+
+void MaxEntHelper::generateCovariantErr(const vector_type& A, const double alpha,ofstream_ &os){
+  matrix_type Gamma = constructGamma(A,alpha);
+  Eigen::SelfAdjointEigenSolver<matrix_type> es(Gamma);
+
+  // Gamma = u^T D u
+  // Gamma^-1 = u D^-1 u^T
+  matrix_type u=es.eigenvectors();
+  matrix_type D=es.eigenvalues().asDiagonal();
+  matrix_type invD = D.inverse();
+
+  //setup and transform sqrt(A)
+  vector_type A_u = A;
+  for (int i=0;i<A.size();i++)
+    A_u(i) = sqrt(A(i));
+  A_u = u*A_u;
+
+  boost::mt19937 rng;
+  rng.seed(static_cast<unsigned int>(std::time(0)));
+
+  std::vector<vector_type> noise_vecs;
+  int max_it = 1000;
+  for(int it=0;it<max_it;it++){
+    //add gaussian noise for A_u and store for later
+    vector_type A_noise = generateGaussNoise(A_u,invD.diagonal(),rng);
+    A_noise = u.transpose()*A_noise;
+    noise_vecs.push_back(A_noise);
+  }
+  std::cout << "Finished generating A*u + Gaussian Noise" << std::endl; 
+  vector_type std_err(nfreq());
+  vector_type mean = vector_type::Zero(nfreq());
+
+  determineVariance(noise_vecs,mean,std_err); 
+
+  //save file
+  os << "#omega A A_mean approx_err" <<std::endl;
+  for (std::size_t  i=0; i<A.size(); ++i){
+      os << omega_coord(i) << " " << A[i] << " " << mean(i)*mean(i) << " " <<A[i]*2*std_err(i)<< std::endl;
+  }
+}
+
+vector_type MaxEntHelper::generateGaussNoise(vector_type data, vector_type err,boost::mt19937 &rng){
+    
+    typedef boost::variate_generator<boost::mt19937&,boost::normal_distribution<> > ran_gen;
+    //notice the & in the first template argument and function rng argument.
+    //If we omit this, it will compile and run
+    //however, the numbers will be less(/not) random b/c it will copy the generator
+    //each time, outputting the mean with some noise, rather than truly random
+    
+    const int N = data.size();
+    vector_type data_noise(N);
+    for(int i=0;i<N;i++){
+        boost::normal_distribution<> s(data[i],err[i]); //
+        data_noise[i] = ran_gen(rng,s)();
+    }
+    return data_noise;
+}

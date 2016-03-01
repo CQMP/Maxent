@@ -9,7 +9,7 @@
 #include <fstream>
 #include "maxent_matrix_def.hpp"
 #include "maxent_parms.hpp"
-
+#include <boost/random/mersenne_twister.hpp>
 #include"gtest/gtest.h"
 
 struct ofstream_ : std::ofstream{
@@ -62,12 +62,15 @@ public :
   double entropy(const vector_type& u) const;
   /// (back)continue A(\omega) to the imaginary axis; also writes to file
   void backcontinue(ofstream_ &os, const vector_type &A, const std::string name) const;
+  matrix_type constructGamma(const vector_type& A, const double alpha);
+  void generateCovariantErr(const vector_type& A, const double alpha, ofstream_ &os);
 
 private:
   ///discretized and normalized version of the default model.
   vector_type def_;
   ///check that the default model is non-zero
   void checkDefaultModel(const vector_type &D) const;
+  vector_type generateGaussNoise(vector_type data, vector_type err,boost::mt19937 &rng);
 };
 
 
@@ -96,7 +99,7 @@ private:
   const double norm;
   const int max_it;
   std::string name,Kernel_type;
-  bool verbose,text_output,self,make_back;
+  bool verbose,text_output,self,make_back,gen_err;
   const int nfreq;
 
   vector_type lprob;

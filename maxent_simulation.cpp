@@ -21,6 +21,7 @@ MaxEntSimulation::MaxEntSimulation(alps::params &parms)
 , text_output(parms["TEXT_OUTPUT"])
 , self(parms["SELF"])
 , make_back(parms["BACKCONTINUE"])
+, gen_err(parms["GENERATE_ERR"])
 , qvec((int)parms["N_ALPHA"])
 , nfreq(parms["NFREQ"].as<int>())
 {
@@ -51,6 +52,7 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   p.define<double>("ALPHA_MAX",20,"Maximum alpha");
   p.define<double>("NORM",1.0,"NORM");
   p.define<bool>("BACKCONTINUE",true,"Output A(omega) back to imaginary axis");
+  p.define<bool>("GENERATE_ERR",false,"Generate a bootstrap approximation for error bars");
   //*********************************
   p.define<double>("BETA","beta, inverse temperature");
   p.define<int>("NDAT","# of input points");
@@ -247,6 +249,14 @@ void MaxEntSimulation::evaluate(){
   }
   ar << alps::make_pvp("/spectrum/average",avspec);
   ar << alps::make_pvp("/spectrum/variance",varspec);
+  
+  if(gen_err){
+    //Bootstrap errors
+    ofstream_ boot_file;
+    boot_file.open((name+"booterr.dat").c_str());
+    generateCovariantErr(maxspec,alpha[max_a],boot_file);
+  }
+  
 
   if(Kernel_type=="anomalous"){ //for the anomalous function: use A(omega)=Im Sigma(omega)/(pi omega).
     ofstream_ maxspec_anom_str;maxspec_anom_str.open((name+"maxspec_anom.dat").c_str());
