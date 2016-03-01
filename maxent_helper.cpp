@@ -302,41 +302,56 @@ matrix_type MaxEntHelper::constructGamma(const vector_type& A, const double alph
 
 void MaxEntHelper::generateCovariantErr(const vector_type& A, const double alpha,ofstream_ &os){
   matrix_type Gamma = constructGamma(A,alpha);
-  Eigen::SelfAdjointEigenSolver<matrix_type> es(Gamma);
+  //first check that we have a positive-definite matrix
+  Eigen::LLT<Eigen::MatrixXd> lltOfG(Gamma);
 
-  // Gamma = u^T D u
-  // Gamma^-1 = u D^-1 u^T
-  matrix_type u=es.eigenvectors();
-  matrix_type D=es.eigenvalues().asDiagonal();
-  matrix_type invD = D.inverse();
-
-  //setup and transform sqrt(A)
-  vector_type A_u = A;
-  for (int i=0;i<A.size();i++)
-    A_u(i) = sqrt(A(i));
-  A_u = u*A_u;
-
-  boost::mt19937 rng;
-  rng.seed(static_cast<unsigned int>(std::time(0)));
-
-  std::vector<vector_type> noise_vecs;
-  int max_it = 1000;
-  for(int it=0;it<max_it;it++){
-    //add gaussian noise for A_u and store for later
-    vector_type A_noise = generateGaussNoise(A_u,invD.diagonal(),rng);
-    A_noise = u.transpose()*A_noise;
-    noise_vecs.push_back(A_noise);
+  if(lltOfG.info() == Eigen::NumericalIssue){
+    std::cerr << "Error! Something has gone wrong with the error"
+              << " bars. Please check your settings!" << std::endl;
+    os << "#Error, no data could be generated" << std::endl;
   }
-  std::cout << "Finished generating A*u + Gaussian Noise" << std::endl; 
-  vector_type std_err(nfreq());
-  vector_type mean = vector_type::Zero(nfreq());
+  else{
+    Eigen::SelfAdjointEigenSolver<matrix_type> es(Gamma);
 
-  determineVariance(noise_vecs,mean,std_err); 
+    // Gamma = u^T D u
+    // Gamma^-1 = u D^-1 u^T
+    matrix_type u=es.eigenvectors();
+    matrix_type D=es.eigenvalues().asDiagonal();
+    matrix_type invD = D.inverse();
+    for(int i=0;i<nfreq();i++){
+      for(int j=0;j<nfreq();j++){
+        Gamma(i,j) *= std::sqrt(A(i))*std::sqrt(A(j));
+      }
+    }
 
-  //save file
-  os << "#omega A A_mean approx_err" <<std::endl;
-  for (std::size_t  i=0; i<A.size(); ++i){
-      os << omega_coord(i) << " " << A[i] << " " << mean(i)*mean(i) << " " <<A[i]*2*std_err(i)<< std::endl;
+    //setup and transform sqrt(A)
+    vector_type A_u = A;
+    for (int i=0;i<A.size();i++)
+      A_u(i) = sqrt(A(i));
+    A_u = u*A_u;
+
+    boost::mt19937 rng;
+    rng.seed(static_cast<unsigned int>(std::time(0)));
+
+    std::vector<vector_type> noise_vecs;
+    int max_it = 10000;
+    for(int it=0;it<max_it;it++){
+      //add gaussian noise for A_u and store for later
+      vector_type A_noise = generateGaussNoise(A_u,invD.diagonal(),rng);
+      A_noise = u.transpose()*A_noise;
+      noise_vecs.push_back(A_noise);
+    }
+    std::cout << "Finished generating A*u + Gaussian Noise" << std::endl; 
+    vector_type std_err(nfreq());
+    vector_type mean = vector_type::Zero(nfreq());
+
+    determineVariance(noise_vecs,mean,std_err); 
+
+    //save file
+    os << "#omega A A_mean approx_err" <<std::endl;
+    for (std::size_t  i=0; i<A.size(); ++i){
+        os << omega_coord(i) << " " << A[i] << " " << mean(i)*mean(i) << " " <<A[i]*2*std_err(i)<< std::endl;
+    }
   }
 }
 
