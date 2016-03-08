@@ -10,6 +10,7 @@
 #include <boost/math/special_functions/fpclassify.hpp> //needed for boost::math::isnan
 #include <Eigen/LU>
 #include "eigen_hdf5.hpp"
+#include <iomanip>
 
 MaxEntSimulation::MaxEntSimulation(alps::params &parms)
 : MaxEntHelper(parms)
@@ -324,11 +325,14 @@ void MaxEntSimulation::evaluate(){
   }
 
   if(text_output && make_back){
-    ofstream_ avspec_back_file,maxspec_back_file;
+    ofstream_ avspec_back_file,maxspec_back_file,chispec_back_file;
     avspec_back_file.open((name+"avspec_back.dat").c_str());
     maxspec_back_file.open((name+"maxspec_back.dat").c_str());
-
-    std::cerr << "Maximum difference between input and backcontinued data: " <<std::endl;
+    chispec_back_file.open((name+"chispec_back.dat").c_str());
+    const std::string sp = "    ";
+    std::cerr << "spectra"<<sp<< " max backcont diff" <<sp<<  "chi^2 value " <<std::endl;
+    std::cerr << "======="<< sp<<" ================="<< sp<< "=========== " <<std::endl;
+    backcontinue(chispec_back_file,specchi,"chispec");
     backcontinue(avspec_back_file,avspec,"avspec ");
     backcontinue(maxspec_back_file,maxspec,"maxspec");
   }

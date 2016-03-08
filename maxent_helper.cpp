@@ -171,7 +171,7 @@ double MaxEntHelper::chi_scale_factor(vector_type A, const double chi_sq, const 
       Ng += lambda[i]/(lambda[i]+alpha);
   }
   std::cerr << "Ng: " << Ng << std::endl;
-  std::cerr << "chi2 max: " << chi_sq << std::endl;
+  //std::cerr << "chi2 max: " << chi_sq << std::endl;
   return sqrt(chi_sq/(ndat()-Ng));
 }
 
@@ -249,7 +249,15 @@ void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A, const std::
       y_scaled(i) *= sigma(i);
     }
     double max_err = bc.max_error(G,y_scaled); 
-    std::cerr << "\t" << name << ": " << max_err << std::endl;
+
+    //A is missing delta_omega value, add back in for chi2
+    vector_type A_chi = A;
+    for (unsigned int i=0; i<A_chi.size(); ++i) 
+      A_chi[i] *= delta_omega(i);
+
+    double chi_sq = chi2(A_chi);
+    const std::string sp = "    ";
+    std::cerr <<  name << sp+sp <<  max_err << sp+sp+"  " << chi_sq << std::endl;
 }
 
 ///calculates the varience of a std::vector of eigen3 vectors
