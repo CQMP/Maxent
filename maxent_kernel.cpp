@@ -34,7 +34,7 @@ K_(ndat_,nfreq_)
   set_kernel_type(dataspace_name,kernel_name, ph_symmetry,legdr_transform);
 
   //determine tau points; allow passing from various sources
-	if(dataspace_name=="time"){
+	if(dataspace_name=="time" || dataspace_name=="real"){
 		//Test for tau
     tau_points_.resize(ndat_);
     //programatically added tau points (see kernelTest)
@@ -129,6 +129,28 @@ K_(ndat_,nfreq_)
       }
     }
   }
+  else if(dtype_ == real_dataspace){
+    const std::complex<double> I(0,1);
+    double mu = p["MU"];
+    complex_matrix_type Kc(ndat_/2, nfreq_);
+      ///ndat/2 is defined as such below because ndat=number of points inputed
+      ///because G(t) is complex, we have both real and imag parts      
+      for (int i=0; i<ndat_/2; ++i) {
+        for (int j=0; j<nfreq_; ++j) {
+          double omega = freq[j];
+          double t = tau_points_[i+1];
+          //switch order of for loops and "cache" exp
+          Kc(i,j) = -I*std::exp(-I*(omega-mu)*t);         
+      }
+    }
+    //reduce to a real kernel
+      for (int i=0; i<ndat_; i+=2) {
+        for (int j=0; j<nfreq_; ++j) {
+          K_(i,j) = Kc(i/2,j).real();
+          K_(i+1,j) = Kc(i/2,j).imag();
+        }
+      }
+  }
   else{
     complex_matrix_type Kc(ndat_/2, nfreq_);
     if (ktype_==frequency_fermionic_kernel) {
@@ -182,6 +204,10 @@ void kernel::set_kernel_type(const std::string &dataspace_name, const std::strin
     dtype_=frequency_dataspace;
   }else if(dataspace_name=="legendre"){
     dtype_=legendre_dataspace;
+  }
+  else if(dataspace_name=="real"){
+    dtype_=real_dataspace;
+    ktype_=real_kernel;
   }
   else
     throw std::invalid_argument("unknown dataspace name. it should be time or frequency");

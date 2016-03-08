@@ -112,6 +112,7 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   p.define<double>("RT_TIME","length of real time t");
   p.define<int>("NRT","number of RT_POINTS in file");
   p.define<bool>("B_MATRIX",false,"true if RT_POINTS = B, else RT_POINTS=G(t)");
+  p.define<double>("MU","chemical potential for G(t) kernel");
   
 }
 void MaxEntSimulation::run()

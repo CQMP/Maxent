@@ -11,7 +11,8 @@
 enum dataspace_type{
   time_dataspace,
   frequency_dataspace,
-  legendre_dataspace
+  legendre_dataspace,
+  real_dataspace
 };
 ///we have a range of different kernels that all need different input parameters. This enum enumerates them.
 enum kernel_type{
@@ -27,7 +28,8 @@ enum kernel_type{
   frequency_anomalous_ph_kernel,
   frequency_fermionic_kernel,
   frequency_bosonic_kernel,
-  frequency_anomalous_kernel
+  frequency_anomalous_kernel,
+  real_kernel
 };
 class kernel{
 public:
