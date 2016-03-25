@@ -1,0 +1,12 @@
+#this param file shows how the same data can be input with PH symmetry
+
+NORM = 1.20109669923          #the particular normalization for this data
+OMEGA_MAX = 40                #Spectral function is larger than default bounds
+KERNEL = bosonic              #Using bosonic data
+BETA = 2.0                    #inverse temperature
+NFREQ = 1000                  #number of output frequencies
+NDAT = 11                     #number of input data points
+MAX_IT = 4000                 #increase maximum iterations for convergence
+DATASPACE = frequency         #frequency data
+PARTICLE_HOLE_SYMMETRY = 1    #non PH symmetric data
+DATA=G_re                     #name of data file
