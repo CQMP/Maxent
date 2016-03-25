@@ -61,9 +61,9 @@ public :
   /// compute S=\int d\omega(A(\omega)-D(\omega)-A(\omega)\ln[A(\omega)/D(\omega))
   double entropy(const vector_type& u) const;
   /// (back)continue A(\omega) to the imaginary axis; also writes to file
-  void backcontinue(ofstream_ &os, const vector_type &A, const std::string name) const;
+  void backcontinue(ofstream_ &os, const vector_type &A, const double norm, const std::string name) const;
   matrix_type constructGamma(const vector_type& A, const double alpha);
-  void generateCovariantErr(const vector_type& A, const double alpha, ofstream_ &os);
+  void generateCovariantErr(const vector_type& A_in, const double alpha, ofstream_ &os);
 
 private:
   ///discretized and normalized version of the default model.

@@ -332,9 +332,9 @@ void MaxEntSimulation::evaluate(){
     const std::string sp = "    ";
     std::cerr << "spectra"<<sp<< " max backcont diff" <<sp<<  "chi^2 value " <<std::endl;
     std::cerr << "======="<< sp<<" ================="<< sp<< "=========== " <<std::endl;
-    backcontinue(chispec_back_file,specchi,"chispec");
-    backcontinue(avspec_back_file,avspec,"avspec ");
-    backcontinue(maxspec_back_file,maxspec,"maxspec");
+    backcontinue(chispec_back_file,specchi,norm,"chispec");
+    backcontinue(avspec_back_file,avspec,norm,"avspec ");
+    backcontinue(maxspec_back_file,maxspec,norm,"maxspec");
   }
   ar.close();
 }

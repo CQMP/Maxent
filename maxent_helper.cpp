@@ -233,15 +233,30 @@ vector_type MaxEntHelper::PrincipalValue(const vector_type &w,const vector_type 
     return r;
 }
 
-void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A, const std::string name) const
+void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A_in,const double norm, const std::string name) const
 {
+    vector_type A = A_in/norm;
     const MaxEntParameters *pp = this;
     Backcont bc(pp);
     vector_type G = bc.backcontinue(A);
     kernel_type k_type = pp->getKernelType();
+    
     double beta = 1/(pp->T());
-    for(int n=0; n<G.size();n++)
-      os << pp->inputGrid(n) << " " << G(n) << std::endl;
+    bool ph_sym = false;
+    if(k_type == frequency_fermionic_ph_kernel ||
+       k_type == frequency_bosonic_ph_kernel   ||
+       k_type == frequency_anomalous_ph_kernel){
+      ph_sym = true;
+    }
+    if(ph_sym){
+      for(int n=0; n<G.size();n++)
+        os << pp->inputGrid(n) << " " << G(n)*norm << std::endl;
+    }
+    else{
+      for(int n=0;n<G.size();n+=2){
+        os << pp->inputGrid(n/2) << " " << G(n)*norm << " " << G(n+1*norm) << std::endl;
+      }
+    }
 
     //scale y by error then determine 'error' of integral
     vector_type y_scaled = y();

@@ -152,6 +152,7 @@ K_(ndat_,nfreq_)
       for (int i=0; i<ndat_/2; ++i) {
         std::complex<double> iomegan(0, 2*i*M_PI*T_);
         inputGrid(i) = iomegan.imag();
+        inputGrid(i+1) = iomegan.imag();
         for (int j=0; j<nfreq_; ++j) {
           double omega = freq[j];
           Kc(i,j) =  omega / (iomegan + omega);
