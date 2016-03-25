@@ -4,6 +4,7 @@ KERNEL = bosonic              #Using bosonic data
 BETA = 2.0                    #inverse temperature
 NFREQ = 1000                  #number of output frequencies
 NDAT = 22                     #number of input data points*2 due to non-PH symmetry
+MAX_IT = 4000                 #increase maximum iterations for convergence
 DATASPACE = frequency         #frequency data
 PARTICLE_HOLE_SYMMETRY = 0    #non PH symmetric data
 DATA=dat_in                   #name of data file
