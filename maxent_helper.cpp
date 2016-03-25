@@ -242,11 +242,11 @@ void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A_in,const dou
     kernel_type k_type = pp->getKernelType();
     
     double beta = 1/(pp->T());
-    bool ph_sym = false;
-    if(k_type == frequency_fermionic_ph_kernel ||
-       k_type == frequency_bosonic_ph_kernel   ||
-       k_type == frequency_anomalous_ph_kernel){
-      ph_sym = true;
+    bool ph_sym = true;
+    if(k_type == frequency_fermionic_kernel ||
+       k_type == frequency_bosonic_kernel   ||
+       k_type == frequency_anomalous_kernel){
+      ph_sym = false;
     }
     if(ph_sym){
       for(int n=0; n<G.size();n++)

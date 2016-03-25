@@ -329,12 +329,19 @@ void MaxEntSimulation::evaluate(){
     avspec_back_file.open((name+"avspec_back.dat").c_str());
     maxspec_back_file.open((name+"maxspec_back.dat").c_str());
     chispec_back_file.open((name+"chispec_back.dat").c_str());
+
     const std::string sp = "    ";
+    double norm_fix = norm;
+    //fix self-energy normalization 
+    if(self){
+      norm_fix *=-M_PI;
+    }
+
     std::cerr << "spectra"<<sp<< " max backcont diff" <<sp<<  "chi^2 value " <<std::endl;
     std::cerr << "======="<< sp<<" ================="<< sp<< "=========== " <<std::endl;
     backcontinue(chispec_back_file,specchi,norm,"chispec");
-    backcontinue(avspec_back_file,avspec,norm,"avspec ");
-    backcontinue(maxspec_back_file,maxspec,norm,"maxspec");
+    backcontinue(avspec_back_file,avspec,norm_fix,"avspec ");
+    backcontinue(maxspec_back_file,maxspec,norm_fix,"maxspec");
   }
   ar.close();
 }
