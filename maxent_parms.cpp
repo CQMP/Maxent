@@ -61,6 +61,12 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
     }
   }
   else{
+    if(ndat()%2 != 0){
+        std::cerr << "WARNING: frequency data without particle-hole symmetry"
+                  << " requires an even amount of input data. Fix parameter file" 
+                  << std::endl;
+        throw std::runtime_error("Your NDAT is odd!");\
+    }
     while (datstream) {
       double index, X_i_re, dX_i_re, X_i_im, dX_i_im;
       datstream >> index >> X_i_re >> dX_i_re >> X_i_im >> dX_i_im;
