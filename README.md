@@ -154,7 +154,7 @@ You can also include tau points in the parameter file, defined like:
 #### Grids
 Maxent creats a default model on a grid between [0,1]
 
-![grids](https://cloud.githubusercontent.com/assets/7354063/8681331/cb2b0852-2a34-11e5-9485-08c8c6a68274.png)
+![grids](https://cloud.githubusercontent.com/assets/7354063/14571315/8ac93a8e-0316-11e6-8255-b9756a2710e8.png)
   
 
 # Utilities
