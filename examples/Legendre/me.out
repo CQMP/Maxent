@@ -1,0 +1,29 @@
+Using flat default model
+using kernel fermionic in domain legendre with ph symmetry
+Kernel is set up
+# 0	1.80993e+09
+# 1	1.16275e+09
+# 2	5.32206e+08
+# 3	2.48624e+08
+# 4	1.02973e+08
+# 5	3.80307e+07
+# 6	1.27156e+07
+# 7	3.69596e+06
+# 8	999676
+# 9	250449
+minimal chi2: 5.99347e-18
+alpha it: 0	WARNING: iteration reached max_it without converging, your minimizer is having problems. Please be careful!
+Q = 0.5chi^2-\alpha*entropy: 1.3593e+10	norm: 1.01217	
+alpha it: 1	WARNING: iteration reached max_it without converging, your minimizer is having problems. Please be careful!
+Q = 0.5chi^2-\alpha*entropy: 882002	norm: 1.00004	
+alpha it: 2	Q = 0.5chi^2-\alpha*entropy: 4.78239	norm: 0.999915	
+...
+alpha it: 14	WARNING: iteration reached max_it without converging, your minimizer is having problems. Please be careful!
+Q = 0.5chi^2-\alpha*entropy: 0.00708256	norm: 0.999915	
+Ng: 138.545
+posterior probability of the default model: 2.97843e-43
+spectra     max backcont diff    chi^2 value 
+=======     =================    =========== 
+chispec        7.50655e-08       4.23956e-06
+avspec         7.50659e-08       1.54179e-11
+maxspec        7.50659e-08       1.54179e-11
