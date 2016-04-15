@@ -72,9 +72,9 @@ The Maxent project uses the following conventions:
 
 ![convention_gtau](https://cloud.githubusercontent.com/assets/7354063/10086425/570a68ce-62dc-11e5-8cd3-1e871f89c695.png) 
 
-![convention_gtau_less_zero](https://cloud.githubusercontent.com/assets/7354063/10086426/57158a92-62dc-11e5-9e6e-5766fdccf8a2.png) 
-
 ![convention_A_omega](https://cloud.githubusercontent.com/assets/7354063/10056184/0ce6afd4-6208-11e5-9bdd-556ae958857c.png)
+
+To see more, see [this pdf](examples/conventions_and_kernels.pdf).
 
 ## Usage
 See `./maxent --help` for a list of required and availble parameters. 
