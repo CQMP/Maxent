@@ -38,7 +38,7 @@ MaxEntSimulation::MaxEntSimulation(alps::params &parms)
 ///define parameter defaults
 void MaxEntSimulation::define_parameters(alps::params &p){
   p.description("Maxent - a utility for " 
-    "performing analytical continuation \n \t using the method of Maximum Entropy\n");
+    "performing analytic continuation \n \t using the method of Maximum Entropy\n");
   //---------------------------------
   //    General
   //---------------------------------

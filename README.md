@@ -1,9 +1,9 @@
 MaxEnt
 ======
 
-MaxEnt Project
+The MaxEnt Project: A utility for performing analytic continuation using the method of Maximum Entropy.
 
-This branch requires the [ALPSCore library](https://github.com/ALPSCore/ALPSCore). 
+Many-body Green's functions calculated on the imaginary axis can be related to a real spectral function, but is an ill-posed problem. One algorithm to solve for the spectral function is the maximum entropy method. This code is an implementation of maximum entropy method as well as useful utilities for dealing with Green's functions and analytic continuation. 
 
 Table of Contents
 =================
