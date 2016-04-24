@@ -97,14 +97,6 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   p.define<std::string>("DATASPACE","time","Time or Frequency space");
   p.define<std::string>("KERNEL","fermionic","Type of kernel: \nFermionic,Bosonic,Boris,Legendre"); 
   p.define<bool>("PARTICLE_HOLE_SYMMETRY",false,"If particle hole symmetric"); 
-  //*********************************
-
-  //---------------------------------
-  //    Legendre
-  //---------------------------------
-  p.define<bool>("LEGENDRE",0,"LEGENDRE");
-  p.define<int>("MAXL","Maximum L cutoff");
-  
 }
 void MaxEntSimulation::run()
 {

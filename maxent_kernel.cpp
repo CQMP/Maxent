@@ -13,7 +13,7 @@
 
 namespace bmth = boost::math;
 
-kernel::kernel(alps::params &p, const vector_type& freq, vector_type &inputGrid, const int lmax):
+kernel::kernel(alps::params &p, const vector_type& freq, vector_type &inputGrid):
 ndat_(p["NDAT"]),
 nfreq_(p["NFREQ"]),
 T_(1./static_cast<double>(p["BETA"])),
@@ -27,11 +27,10 @@ K_(ndat_,nfreq_)
   boost::to_lower(dataspace_name);
   boost::to_lower(kernel_name);
   bool ph_symmetry=p["PARTICLE_HOLE_SYMMETRY"];
-  bool legdr_transform=p["LEGENDRE"];
   std::cout<<"using kernel "<<kernel_name<<" in domain "<<dataspace_name;
   if(ph_symmetry) std::cout<<" with ph symmetry"; else std::cout<<" without ph symmetry"; std::cout<<std::endl;
 
-  set_kernel_type(dataspace_name,kernel_name, ph_symmetry,legdr_transform);
+  set_kernel_type(dataspace_name,kernel_name, ph_symmetry);
 
   //determine tau points; allow passing from various sources
 	if(dataspace_name=="time"){
@@ -83,7 +82,7 @@ K_(ndat_,nfreq_)
       }
     }
     else if(ktype_== time_fermionic_legendre_kernel || ktype_==time_bosonic_legendre_kernel)
-        setup_legendre_kernel(p,freq,lmax);
+        setup_legendre_kernel(p,freq,ndat_);
     //for zero temperature, only positive frequency matters
     else if (ktype_ == time_boris_kernel) {
       for (int i=0; i<ndat_; ++i) {
@@ -182,7 +181,7 @@ K_(ndat_,nfreq_)
 }
 
 void kernel::set_kernel_type(const std::string &dataspace_name, const std::string &kernel_name,
-                             bool ph_symmetry, bool legdr_transform){
+                             bool ph_symmetry){
   if(dataspace_name=="time"){
     dtype_=time_dataspace;
      
@@ -196,12 +195,12 @@ void kernel::set_kernel_type(const std::string &dataspace_name, const std::strin
 
   if(dtype_==time_dataspace){
     if(kernel_name=="fermionic")
-            if(legdr_transform)
+            if(dtype_==legendre_dataspace)
                 ktype_=time_fermionic_legendre_kernel;
             else
                 ktype_=time_fermionic_kernel;
     else if(kernel_name=="bosonic")
-            if(legdr_transform)
+            if(dtype_==legendre_dataspace)
                 ktype_=time_bosonic_legendre_kernel;
             else
                 ktype_=time_bosonic_kernel;
@@ -260,9 +259,8 @@ void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& fre
 
     const double PI = std::acos(-1);
     const std::complex<double> CONE(0,1);
-    //recall that ndat()=lmax, lmax=size of K
-    //here ndat_ = # tau points
-    K_.resize(lmax,nfreq_);
+    //recall that ndat()=lmax
+
     int N = 20000/2;
     gsl_integration_workspace *w = gsl_integration_workspace_alloc (1000);
     
@@ -288,7 +286,7 @@ void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& fre
                 I1+=4*bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+sign*std::exp(-omega/T_));
             }
             I1*=h/3;//*/
-            ///*
+            
             double a = 0;
             double b = 1/T_;
             double epsabs=1.49e-08; //python default resolution
@@ -298,33 +296,14 @@ void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& fre
             
             gsl_function F;
             F.function = &legendre_kernel_integrand;
-            //double p[4] = {l,omega,sign,T_};
+
             integrand_params p = {l,omega,sign,T_};
             F.params = &p;
-            //gsl_integration_qng(&F,a,b,epsabs,epsrel,&result,&err,&nval);
+
             gsl_integration_qag(&F, a,b,epsabs,epsrel, limit, GSL_INTEG_GAUSS61, w, &result, &err);
+            I1=result; 
             
-            I1=result; //*/
-            
-            //commented out integrated Kernel, until convergence is explained
-            //integrated form of Kernel:
-            /*I *= 1/(2*T_)*1/(1+sign*exp(-omega/T_));
-            double Ip=0;
-            for(int v=0;v<=l;v++){
-                Ip+=2*std::pow(omega/T_,-v-1)*bmth::factorial<double>(l+v)/
-                (bmth::factorial<double>(v)*bmth::factorial<double>(l-v))*(std::pow(-1.0,l+v)-exp(-omega/T_));
-            }
-            I*=Ip;
-            I1=I;
-            /*double err2 = I1-I;
-            if(std::abs(err2)>0.1)
-                std::cout<<err2<<" " << l<<" " << j<<" " <<omega << std::endl;
-            if(std::abs(omega)>1)
-                K_(l,j) = -sqrt(2*l+1)*I; //TODO: pi issues
-            else*/
-                K_(l,j) = -sqrt(2*l+1)*I1;
-            
-            
+            K_(l,j) = -sqrt(2*l+1)*I1;
         }
     }
     gsl_integration_workspace_free (w);

@@ -356,14 +356,14 @@ MaxEntParameters::MaxEntParameters(alps::params& p) :
     ContiParameters(p),
     Default_(make_default_model(p, "DEFAULT_MODEL")),
     U_(ndat(), ndat()), Vt_(ndat(), nfreq()), Sigma_(ndat(), ndat()),
-    omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0),lmax(-1)
+    omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0)
 {
   for (int i=0; i<nfreq(); ++i) {
     omega_coord_[i] = (Default().omega_of_t(grid_(i)) + Default().omega_of_t(grid_(i+1)))/2.;
     delta_omega_[i] = Default().omega_of_t(grid_(i+1)) - Default().omega_of_t(grid_(i));
   }
   //build a kernel matrix
-  kernel ker(p,omega_coord_,inputGrid_,lmax);
+  kernel ker(p,omega_coord_,inputGrid_);
   K_=ker();
   k_type = ker.getKernelType();
 

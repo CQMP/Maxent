@@ -31,7 +31,7 @@ enum kernel_type{
 };
 class kernel{
 public:
-  kernel(alps::params &p, const vector_type& freq, vector_type &inputGrid, const int lmax);
+  kernel(alps::params &p, const vector_type& freq, vector_type &inputGrid);
 
   ///getter function for the kernel matrix
   const matrix_type &operator()()const{return K_;}
@@ -45,7 +45,7 @@ public:
 private:
   ///figure out which kernel is to be used
   void set_kernel_type(const std::string &dataspace_name, const std::string &kernel_name,
-                       bool ph_symmetry, bool legdr_transform);
+                       bool ph_symmetry);
   ///set up kernel with the legendre transform
   void setup_legendre_kernel(const alps::params &p, const vector_type& freq, const int lmax);
   ///number; of Matsubara points
