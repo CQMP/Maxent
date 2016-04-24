@@ -14,6 +14,7 @@ Table of Contents
         * [Boost](#boost)
         * [ALPSCore](#alpscore)
         * [Eigen3](#eigen3)
+        * [GSL](#gsl)
         * [LAPACK (Optional)](#lapack-optional)
     * [Installation](#installation)
       * [Tests](#tests)
@@ -39,10 +40,13 @@ Table of Contents
 When compiling both ALPSCore and MaxEnt, be careful to ensure boost was compiled with the same library and stdlib as ALPSCore and MaxEnt.   
 
 #### ALPSCore
-ALPSCore needs to be properly installed, see [ALPSCore library](https://github.com/ALPSCore/ALPSCore).
+ALPSCore needs to be properly installed, see [ALPSCore library](https://github.com/ALPSCore/ALPSCore). ALPSCore provides the location of the Boost libraries.
 
 #### Eigen3
 For our linear algebra routines we use Eigen3 version >=3.1. If not in your path use `-DEIGEN3_INCLUDE_DIR=`
+
+#### GSL
+Maxent requires the GNU Scientific Library (GSL), which can be found [here](https://www.gnu.org/software/gsl/). The choice of BLAS library (the included CBLAS or an external ATLAS/BLAS/etc) does not matter here as the only the integration library is used. If not in your path use `-GSL_INCLUDE_DIR=` 
 
 #### LAPACK (Optional)
 Eigen3 has a good SVD routine, but can be very slow for a large kernel.
