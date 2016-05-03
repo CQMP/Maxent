@@ -21,6 +21,7 @@
 # Jan Woetzel
 #
 # www.mip.informatik.uni-kiel.de
+# Additions by Ryan Levy (github.com/ryanlevy)
 # --------------------------------
 
 IF(WIN32)
@@ -86,6 +87,8 @@ ELSE(WIN32)
       "$ENV{GSL_DIR}"
       "$ENV{GSL_HOME}/bin" 
       "$ENV{GSL_HOME}" 
+      "${GSL_ROOT_DIR}"
+      "${GSL_ROOT_DIR}/bin"
       CACHE STRING "preferred path to GSL (gsl-config)")
     FIND_PROGRAM(GSL_CONFIG gsl-config
       ${GSL_CONFIG_PREFER_PATH}
@@ -154,7 +157,7 @@ ELSE(WIN32)
       MESSAGE(STATUS "Using GSL from ${GSL_PREFIX}")
       
     ELSE(GSL_CONFIG)
-      MESSAGE("FindGSL.cmake: gsl-config not found. Please set it manually. GSL_CONFIG=${GSL_CONFIG}")
+      MESSAGE("FindGSL.cmake: gsl-config not found. Please set GSL_ROOT_DIR as root or gsl-config directory")
     ENDIF(GSL_CONFIG)
 
   ENDIF(UNIX)
@@ -168,3 +171,7 @@ IF(GSL_LIBRARIES)
     
   ENDIF(GSL_INCLUDE_DIR OR GSL_CXX_FLAGS)
 ENDIF(GSL_LIBRARIES)
+IF(NOT GSL_FOUND)
+    include(FindPackageHandleStandardArgs)
+    find_package_handle_standard_args(GSL DEFAULT_MSG GSL_ROOT_DIR)
+ENDIF(NOT GSL_FOUND)

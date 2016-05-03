@@ -46,7 +46,7 @@ ALPSCore needs to be properly installed, see [ALPSCore library](https://github.c
 For our linear algebra routines we use Eigen3 version >=3.1. If not in your path use `-DEIGEN3_INCLUDE_DIR=`
 
 #### GSL
-Maxent requires the GNU Scientific Library (GSL), which can be found [here](https://www.gnu.org/software/gsl/). The choice of BLAS library (the included CBLAS or an external ATLAS/BLAS/etc) does not matter here as the only the integration library is used. If not in your path use `-GSL_INCLUDE_DIR=` 
+Maxent requires the GNU Scientific Library (GSL), which can be found [here](https://www.gnu.org/software/gsl/). The choice of BLAS library (the included CBLAS or an external ATLAS/BLAS/etc) does not matter here as the only the integration library is used. If not in your path use `-GSL_ROOT_DIR=` to the path that has `bin/gsl-config`.
 
 #### LAPACK (Optional)
 Eigen3 has a good SVD routine, but can be very slow for a large kernel.
