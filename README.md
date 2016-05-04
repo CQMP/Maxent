@@ -162,10 +162,11 @@ Maxent creats a default model on a grid between [0,1]
   
 
 # Utilities
-## Pade
-Requires: [GMP](https://gmplib.org/),[Eigen3.1](http://eigen.tuxfamily.org/index.php?title=Main_Page)
-To point cmake to the correct eigen directory, use `-DEIGEN3_INCLUDE_DIR=/path/to/eigen` 
 ## Kramers-Kronig
 Requires: [GSL](http://www.gnu.org/software/gsl/), Boost
 ## Legendre Convert
 Requires: Boost
+## Optional
+### Pade
+Requires: [GMP](https://gmplib.org/),[Eigen3.1](http://eigen.tuxfamily.org/index.php?title=Main_Page)
+Because Pade requires GMP, it does not build automatically. To include it in your build, either run `cmake` from the pade folder, or in your `maxent` build folder add `-DPADE=1` to the`cmake` command 

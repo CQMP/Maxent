@@ -65,5 +65,6 @@ target_link_libraries(maxent
 #add companion utilities
 add_subdirectory(legendre_convert)
 add_subdirectory(kk) 
-add_subdirectory(pade/pade_arbitrary_degree)
-
+if(PADE)
+  add_subdirectory(pade/pade_arbitrary_degree)
+endif(PADE)
