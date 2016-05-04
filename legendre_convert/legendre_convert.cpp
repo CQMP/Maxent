@@ -390,7 +390,7 @@ int main(int argc, char**argv){
   	std::cout << std::setprecision(5); //for formatting
   	//************************
   	  	//see if we can add a point to make Simpon's rule work
-  	if ((N-1)%2==1)//((N-1)%2==1)
+  	if ((N-1)%2==1){//((N-1)%2==1)
   		if(tarr.back()!=beta && tarr[0] == 0){
   			std::cout<<"Adding endpoint G(beta) for integration"<<std::endl;
   			tarr.push_back(beta);
@@ -409,6 +409,7 @@ int main(int argc, char**argv){
   			std::cout<< std::setw(5)<< std::left << tarr[0] << " "<<std::setw(12)<<std::left<<Gtau[0] << " "<<sigma[0] << std::endl;
   			N++;
   		}
+    }
   	//************************
   	//check endpoints
   	double dtau_check = tarr[N-1]-tarr[N-2];
