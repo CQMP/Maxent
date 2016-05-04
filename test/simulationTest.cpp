@@ -3,7 +3,7 @@
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
-#include "maxent.hpp"
+#include "../src/maxent.hpp"
 #include "gtest/gtest.h"
 #include <iostream>
 double getNorm(const vector_type &omega, const vector_type &y){

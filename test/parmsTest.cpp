@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include "maxent.hpp"
+#include "../src/maxent.hpp"
 #include "gtest/gtest.h"
 #include <alps/utilities/temporary_filename.hpp>
 #include <iostream>

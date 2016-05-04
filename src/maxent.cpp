@@ -11,15 +11,9 @@
 #include <boost/exception/diagnostic_information.hpp> 
 
 
-int main(int argc,char** argv)
+int main(int argc,const char** argv)
 {
-  //gtest requires char** while alps params requires const char**
-  if(argc==2 && std::string(argv[1])==std::string("--test")){
-    ::testing::InitGoogleTest(&argc, argv);
-    exit(RUN_ALL_TESTS());
-  }
-
-  alps::params parms(argc,const_cast<const char**>(argv)); 
+  alps::params parms(argc,argv); 
   MaxEntSimulation::define_parameters(parms);
   if (parms.help_requested(std::cout)) {
     return 0;

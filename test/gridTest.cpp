@@ -4,8 +4,8 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include "maxent.hpp"
-#include "maxent_grid.hpp"
+#include "../src/maxent.hpp"
+#include "../src/maxent_grid.hpp"
 #include "gtest/gtest.h"
 #include <fstream>
 

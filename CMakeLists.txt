@@ -42,25 +42,45 @@ include_directories(${GTEST_ROOT})
 include_directories(${GSL_INCLUDE_DIR})
 include_directories(${EIGEN3_INCLUDE_DIR})
 
-add_executable(maxent 
-maxent.cpp
-maxent_helper.cpp
-maxent_parms.cpp
-maxent_parmsTest.cpp
-maxent_grid.cpp
-maxent_gridTest.cpp
-maxent_kernel.cpp
-maxent_legendre_util.cpp
-maxent_simulation.cpp
-maxent_simulationTest.cpp
-maxent_backcont.cpp
-maxent_backcontTest.cpp
-default_modelTest.cpp
-default_model.cpp
-${GTEST_SRC_DIR}/gtest-all.cc
-)
-target_link_libraries(maxent
+set(LIB_FILES 
+  ./src/maxent_helper.cpp
+  ./src/maxent_parms.cpp
+  ./src/maxent_grid.cpp
+  ./src/maxent_kernel.cpp
+  ./src/maxent_legendre_util.cpp
+  ./src/maxent_simulation.cpp
+  ./src/maxent_backcont.cpp
+  ./src/default_model.cpp
+  )
+
+ADD_LIBRARY(libmaxent ${LIB_FILES})
+target_link_libraries(libmaxent
 	${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} )
+
+#executable
+add_executable(maxent 
+  ./src/maxent.cpp
+  )
+target_link_libraries(maxent libmaxent)
+
+#testing setup
+option(Testing "Enable testing" ON)
+include(EnableGtests) #defined in ./cmake
+include_directories("test")
+
+list(APPEND LINK_ALL libmaxent)
+
+enable_testing(test)
+set(test_src
+  default_modelTest
+  backcontTest
+  gridTest
+  parmsTest
+  simulationTest
+)
+foreach(test ${test_src})
+  add_gtest(${test} test)
+endforeach(test)
 
 #add companion utilities
 add_subdirectory(legendre_convert)

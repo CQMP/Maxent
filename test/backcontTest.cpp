@@ -3,9 +3,9 @@
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
-#include "maxent.hpp"
+#include "../src/maxent.hpp"
 #include "gtest/gtest.h"
-#include "maxent_backcont.hpp"
+#include "../src/maxent_backcont.hpp"
 
 inline vector_type getA(){
   vector_type A(500);
