@@ -61,15 +61,14 @@ target_link_libraries(libmaxent
 add_executable(maxent 
   ./src/maxent.cpp
   )
-target_link_libraries(maxent libmaxent)
+target_link_libraries(maxent libmaxent ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 #testing setup
 option(Testing "Enable testing" ON)
 include(EnableGtests) #defined in ./cmake
 include_directories("test")
 
-list(APPEND LINK_ALL libmaxent  ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
-
+list(APPEND LINK_ALL libmaxent ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 enable_testing(test)
 set(test_src
   default_modelTest
