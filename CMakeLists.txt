@@ -68,7 +68,7 @@ option(Testing "Enable testing" ON)
 include(EnableGtests) #defined in ./cmake
 include_directories("test")
 
-list(APPEND LINK_ALL libmaxent)
+list(APPEND LINK_ALL libmaxent  ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 enable_testing(test)
 set(test_src
