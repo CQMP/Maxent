@@ -15,10 +15,60 @@ int main(int argc,const char** argv)
 {
   alps::params parms(argc,argv); 
   MaxEntSimulation::define_parameters(parms);
+  //other help messages
+  parms.define("help.models","show help for default model");
+  parms.define("help.grids","show help for grids");
+
   if (parms.help_requested(std::cout)) {
     return 0;
   }
+  //currently ALPSCore doesn't have a good way 
+  //to show multilple error messages
+  //This is a temp hack, so we can have 
+  //inline grid and default model
+  //descriptions
+  
   bool exitEarly = false;
+
+  if(parms["help.models"]){
+    std::cout << "Default model help - choices for generated default models"<< std::endl;
+    std::cout << "For more information see examples/default_models.pdf\n"   << std::endl;
+    std::cout << std::left << std::setw(23)<< "Model Name"           <<'\t' << "option=default" << std::endl;
+    std::cout << std::left << std::setw(23)<< "=========="           <<'\t' << "==============" << std::endl;
+    std::cout << std::left << std::setw(23)<< "flat"                 <<'\t' << "---" << "\n"
+              << "------------------" << "\n"
+              << std::left << std::setw(23)<< "gaussian"             <<'\t' << "SIGMA" << "\n"
+              << std::left << std::setw(23)<< "double gaussian"      <<'\t' << "SIGMA;SHIFT=0" << "\n"
+              << std::left << std::setw(23)<< "two gaussians"        <<'\t' << "SIGMA1;SIGMA2;SHIFT2;NORM1=0.5;SHIFT1=0" << "\n"
+              << std::left << std::setw(23)<< "shifted gaussians"    <<'\t' << "SIGMA;SHIFT=0"  << "\n"
+              << "------------------" << "\n"
+              << std::left << std::setw(23)<< "lorentzian"           <<'\t' << "GAMMA" << "\n"
+              << std::left << std::setw(23)<< "double lorentzian"    <<'\t' << "GAMMA;SHIFT=0" << "\n"
+              << std::left << std::setw(23)<< "two lorentzians"      <<'\t' << "GAMMA1;GAMMA2;SHIFT2;SHIFT1=0" << "\n"
+              << std::left << std::setw(23)<< "shifted lorentzian"   <<'\t' << "GAMMA;SHIFT=0" << "\n"
+              << "------------------" << "\n"
+              << std::left << std::setw(23)<< "LinearRiseExpDecay"   <<'\t' << "LAMBDA" << "\n"
+              << std::left << std::setw(23)<< "QuadraticRiseExpDecay"<<'\t' << "LAMBDA" << std::endl;
+    exitEarly = true;
+  }
+  if(parms["help.grids"]){
+    if(exitEarly) //display both messages
+      std::cout << std::endl;
+
+    std::cout << "Grid help - real frequency omega grid choices for A(omega)" << std::endl;
+    std::cout << "For more information see examples/grids.pdf\n"              << std::endl;
+    std::cout <<std::left << std::setw(15)<< "Grid Name"      <<'\t' << "option=default" << std::endl;
+    std::cout <<std::left << std::setw(15)<< "========="      <<'\t' << "==============" << std::endl;
+    std::cout <<std::left << std::setw(15)<< "lorentzian"     <<'\t' << "CUT=0.1" << "\n"
+              <<std::left << std::setw(15)<< "half-lorentzian"<<'\t' << "CUT=0.1" << "\n"
+              <<std::left << std::setw(15)<< "quadratic"      <<'\t' << "SPREAD=4" << "\n"
+              <<std::left << std::setw(15)<< "log"            <<'\t' << "LOG_MIN=0.0001" << "\n"
+              <<std::left << std::setw(15)<< "linear"         <<'\t' << "---" << std::endl;
+    exitEarly = true;
+  }
+
+  if(exitEarly)
+    return 0;
 
   if(!parms.exists("BETA")){
     std::cout<<"Please supply BETA"<<std::endl;
