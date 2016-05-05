@@ -56,7 +56,8 @@ set(LIB_FILES
 ADD_LIBRARY(libmaxent ${LIB_FILES})
 target_link_libraries(libmaxent
 	${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} )
-
+#remove default "lib" prefix
+set_target_properties(libmaxent PROPERTIES PREFIX "")
 #executable
 add_executable(maxent 
   ./src/maxent.cpp
