@@ -129,16 +129,15 @@ void ContiParameters::read_data_from_param_file(const alps::params& p) {
         << std::endl;
 
   for (int i = 0; i < ndat(); ++i) {
-    if (!p.defined("X_" + boost::lexical_cast<std::string>(i))) {
-      throw std::runtime_error("parameter X_i missing!");
+    if (!p.exists("X_" + boost::lexical_cast<std::string>(i))) {
+      throw std::runtime_error("parameter X_"+ boost::lexical_cast<std::string>(i)+ " missing!");
     }
     y_(i) = static_cast<double>(p["X_" + boost::lexical_cast<std::string>(i)])
         / static_cast<double>(p["NORM"]);
     if (!p.defined("COVARIANCE_MATRIX")) {
-      if (!p.defined("SIGMA_" + boost::lexical_cast<std::string>(i))) {
+      if (!p.exists("SIGMA_" + boost::lexical_cast<std::string>(i))) {
         throw std::runtime_error(
-            std::string("parameter SIGMA_i missing!") + "SIGMA_"
-                + boost::lexical_cast<std::string>(i));
+            std::string("parameter SIGMA_"+boost::lexical_cast<std::string>(i)+ " missing! "));
       }
       sigma_(i) = static_cast<double>(p["SIGMA_"
           + boost::lexical_cast<std::string>(i)])
@@ -164,6 +163,15 @@ y_(ndat_),sigma_(ndat_),K_(),grid_(p),inputGrid_(ndat_)
       read_data_from_text_file(p);
     }
   } else {
+      //if using input file with X_i, need to define them first
+      for (int i = 1; i < ndat(); ++i) {
+        //first check for explictly assigned
+        std::string x_str = "X_"+boost::lexical_cast<std::string>(i);
+        if(!p.defined(x_str)){
+          p.define<double>(x_str,"");
+          p.define<double>("SIGMA_"+boost::lexical_cast<std::string>(i),"");
+        }
+      }
     read_data_from_param_file(p);
   }
 }
