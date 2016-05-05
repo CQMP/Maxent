@@ -76,6 +76,7 @@ set(test_src
   gridTest
   parmsTest
   simulationTest
+  paramFailureTest
 )
 foreach(test ${test_src})
   add_gtest(${test} test)

@@ -8,7 +8,20 @@
 #include "gtest/gtest.h"
 #include <alps/utilities/temporary_filename.hpp>
 #include <iostream>
-
+void write_minimal_param_file(const std::string &str){
+    std::ofstream tmpfile(str.c_str());
+    tmpfile<<"BETA=2" <<std::endl;
+    tmpfile<<"X_0=.1" <<std::endl;
+    tmpfile<<"X_1=.2" <<std::endl;
+    tmpfile<<"X_2=.3" <<std::endl;
+    tmpfile<<"X_3=.4" <<std::endl;
+    tmpfile<<"SIGMA_0=.5" <<std::endl;
+    tmpfile<<"SIGMA_1=.5" <<std::endl;
+    tmpfile<<"SIGMA_2=.5" <<std::endl;
+    tmpfile<<"SIGMA_3=.5" <<std::endl;
+    tmpfile.close();
+  
+}
 TEST(Parameters,ContiParams){
 	//set up parameters
 	alps::params p;
@@ -49,6 +62,27 @@ TEST(Parameters,ContiParams){
         EXPECT_EQ(c.sigma(i),0.5);
     }
 }
+TEST(Parameters,DataInParam){
+  std::string pf=alps::temporary_filename("param_file.dat");
+  write_minimal_param_file(pf);
+
+  //fake input
+  alps::params p(pf);
+  MaxEntSimulation::define_parameters(p);
+  p["NDAT"] = 4;
+  
+  ContiParameters c(p);
+  EXPECT_EQ(c.ndat(),4);
+  EXPECT_EQ(c.T(),0.5);
+
+  for(int i=0;i<c.ndat();i++){
+    EXPECT_NEAR(c.y(i),(i+1)*0.1,1e-10);
+    EXPECT_EQ(c.sigma(i),0.5);
+  }
+
+  boost::filesystem::remove(pf);
+}
+
 TEST(Parameters,MaxentParams){
     //set up parameters
 	alps::params p;
