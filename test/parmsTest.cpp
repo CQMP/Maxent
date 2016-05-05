@@ -127,7 +127,7 @@ TEST(Parameters,MaxentParams){
     EXPECT_NEAR(c.Default().omega(0),-6,1e-10);
 	EXPECT_NEAR(c.Default().omega(1.0),6,1e-10);
 }
-TEST(Paramaters,HighFrequencyCheck){
+TEST(Parameters,HighFrequencyCheck){
     alps::params p;
     MaxEntSimulation::define_parameters(p);
 	p["N_ALPHA"] = 60;
