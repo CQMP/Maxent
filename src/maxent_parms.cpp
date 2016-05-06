@@ -46,6 +46,7 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
         std::invalid_argument("could not open data text file: " + fname+". data should be specified in parameter DATA"));
   }
   int datIn =0; //counts up to ndat
+  int expectedDatIn = 0;
   std::string dataspace = p["DATASPACE"].as<std::string>();
   boost::to_lower(dataspace);
   if(dataspace == "time" || dataspace == "legendre" || p["PARTICLE_HOLE_SYMMETRY"]==1){
@@ -58,7 +59,9 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
         sigma_(datIn) = dX_i / static_cast<double>(p["NORM"]);
         datIn++;
       }
+      expectedDatIn++;
     }
+    expectedDatIn-=1;
   }
   else{
     if(ndat()%2 != 0){
@@ -79,11 +82,23 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
         sigma_(datIn+1) = dX_i_im / static_cast<double>(p["NORM"]);
         datIn+=2;
       }
+      expectedDatIn++;
     }
+    //fix for matsubara length
+    expectedDatIn*=2;
+    expectedDatIn-=1;
   }
   if(p.defined("COVARIANCE_MATRIX")) {
     std::string fname = p["COVARIANCE_MATRIX"];
     read_covariance_matrix_from_text_file(fname);
+  }
+
+  //check for user error
+  if(expectedDatIn<ndat()){
+    throw std::runtime_error(
+        std::string("The NDAT value ("+boost::lexical_cast<std::string>(ndat_) 
+                    +") is not <= the elements in your input file ("
+                    +p["DATA"].as<std::string>()+")"));
   }
 }
 
