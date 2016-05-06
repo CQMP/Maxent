@@ -9,24 +9,8 @@
 #include <alps/utilities/temporary_filename.hpp>
 #include"gtest/gtest.h"
 #include <fstream>
+#include "write_test_files.hpp"
 
-void write_minimal_tab_file(const std::string &str){
-  {
-    std::ofstream tmpfile(str.c_str());
-    tmpfile<<-20<<" "<<1./40<<std::endl;
-    tmpfile<<20<<" "<<1./40<<std::endl;
-    tmpfile.close();
-  }
-}
-void write_tab_file_with_junk(const std::string &str){
-  {
-    std::ofstream tmpfile(str.c_str());
-    tmpfile<<"# this is a file with junk in it."<<std::endl;
-    tmpfile<<-20<<" "<<1./40<<" default model data" <<std::endl;
-    tmpfile<<20<<" "<<1./40<<std::endl;
-    tmpfile.close();
-  }
-}
 
 ///create a tabulated default model
 TEST(TabFunction, TabFunctionConstruction){

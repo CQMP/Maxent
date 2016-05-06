@@ -8,30 +8,8 @@
 #include "gtest/gtest.h"
 #include <alps/utilities/temporary_filename.hpp>
 #include <iostream>
+#include "write_test_files.hpp"
 
-void write_minimal_param_file(const std::string &str){
-    std::ofstream tmpfile(str.c_str());
-    tmpfile<<"BETA=2" <<std::endl;
-    tmpfile<<"X_0=.1" <<std::endl;
-    tmpfile<<"X_1=.2" <<std::endl;
-    tmpfile<<"X_2=.3" <<std::endl;
-    tmpfile<<"X_3=.4" <<std::endl;
-    tmpfile<<"SIGMA_0=.5" <<std::endl;
-    tmpfile<<"SIGMA_1=.5" <<std::endl;
-    tmpfile<<"SIGMA_2=.5" <<std::endl;
-    tmpfile<<"SIGMA_3=.5" <<std::endl;
-    tmpfile.close();
-}
-void write_minimal_input_file(const std::string &str){
-  std::ofstream tmpfile(str.c_str());
-  tmpfile<<0<<" "<<-0.4<<" "<<0.01<<std::endl;
-  tmpfile<<1<<" "<<-0.2<<" "<<0.01<<std::endl;
-  tmpfile<<2<<" "<<-0.2<<" "<<0.01<<std::endl;
-  tmpfile<<3<<" "<<-0.5<<" "<<0.01<<std::endl;
-  tmpfile<<4<<" "<<-0.6<<" "<<0.01<<std::endl;
-  tmpfile.close();
-
-}
 TEST(Parameters,CatchMissingDataInParamFile){
   std::string pf=alps::temporary_filename("param_file.dat");
   write_minimal_param_file(pf);

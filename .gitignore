@@ -23,6 +23,7 @@ src/!maxent_kernel.hpp
 !src/default_model.hpp
 !src/default_model.cpp
 !test/default_modelTest.cpp
+!test/write_test_files.hpp
 !src/maxent_legendre_util.cpp
 !src/maxent_legendre_util.hpp
 !CMakeLists.txt

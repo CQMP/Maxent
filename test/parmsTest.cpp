@@ -8,20 +8,8 @@
 #include "gtest/gtest.h"
 #include <alps/utilities/temporary_filename.hpp>
 #include <iostream>
-void write_minimal_param_file(const std::string &str){
-    std::ofstream tmpfile(str.c_str());
-    tmpfile<<"BETA=2" <<std::endl;
-    tmpfile<<"X_0=.1" <<std::endl;
-    tmpfile<<"X_1=.2" <<std::endl;
-    tmpfile<<"X_2=.3" <<std::endl;
-    tmpfile<<"X_3=.4" <<std::endl;
-    tmpfile<<"SIGMA_0=.5" <<std::endl;
-    tmpfile<<"SIGMA_1=.5" <<std::endl;
-    tmpfile<<"SIGMA_2=.5" <<std::endl;
-    tmpfile<<"SIGMA_3=.5" <<std::endl;
-    tmpfile.close();
-  
-}
+#include "write_test_files.hpp"
+
 TEST(Parameters,ContiParams){
 	//set up parameters
 	alps::params p;
