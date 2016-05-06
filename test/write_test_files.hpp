@@ -21,11 +21,11 @@ void write_minimal_param_file(const std::string &str){
 }
 void write_minimal_input_file(const std::string &str){
   std::ofstream tmpfile(str.c_str());
-  tmpfile<<0<<" "<<-0.4<<" "<<0.01<<std::endl;
-  tmpfile<<1<<" "<<-0.2<<" "<<0.01<<std::endl;
-  tmpfile<<2<<" "<<-0.2<<" "<<0.01<<std::endl;
-  tmpfile<<3<<" "<<-0.5<<" "<<0.01<<std::endl;
-  tmpfile<<4<<" "<<-0.6<<" "<<0.01<<std::endl;
+  tmpfile<<0<<" "<<0.1<<" "<<0.5<<std::endl;
+  tmpfile<<1<<" "<<0.2<<" "<<0.5<<std::endl;
+  tmpfile<<2<<" "<<0.3<<" "<<0.5<<std::endl;
+  tmpfile<<3<<" "<<0.4<<" "<<0.5<<std::endl;
+  tmpfile<<4<<" "<<0.5<<" "<<0.5<<std::endl;
   tmpfile.close();
 
 }

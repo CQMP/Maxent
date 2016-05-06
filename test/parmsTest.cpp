@@ -71,6 +71,29 @@ TEST(Parameters,DataInParam){
   boost::filesystem::remove(pf);
 }
 
+TEST(Parameters,DataInFile){
+std::string pf=alps::temporary_filename("in_file.dat");
+  write_minimal_input_file(pf);
+
+  //fake input
+  alps::params p;
+  MaxEntSimulation::define_parameters(p);
+  p["BETA"]=2;
+  p["DATA"]=pf;
+  p["NDAT"] = 5;
+
+  ContiParameters c(p);
+  EXPECT_EQ(c.ndat(),5);
+  EXPECT_EQ(c.T(),0.5);
+
+  for(int i=0;i<c.ndat();i++){
+    EXPECT_NEAR(c.y(i),(i+1)*0.1,1e-10);
+    EXPECT_EQ(c.sigma(i),0.5);
+  }
+
+  boost::filesystem::remove(pf);
+}
+
 TEST(Parameters,MaxentParams){
     //set up parameters
 	alps::params p;
