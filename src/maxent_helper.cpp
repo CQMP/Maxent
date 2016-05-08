@@ -35,7 +35,8 @@ void MaxEntHelper::checkDefaultModel(const vector_type &D) const{
     for(int i=0;i<D.size();i++){
         double Di=D(i);
         if(Di==0 || boost::math::isnan(Di))
-          throw std::logic_error("dude, your D is zero");
+          throw std::logic_error("Error: Default model point = 0 at omega="
+                                +boost::lexical_cast<std::string>(omega_coord(i)));
     }
 }
 

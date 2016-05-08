@@ -191,7 +191,7 @@ void kernel::set_kernel_type(const std::string &dataspace_name, const std::strin
     dtype_=legendre_dataspace;
   }
   else
-    throw std::invalid_argument("unknown dataspace name. it should be time or frequency");
+    throw std::invalid_argument("unknown dataspace name. it should be time, frequency, or legendre");
 
   if(dtype_==time_dataspace){
     if(kernel_name=="fermionic")
