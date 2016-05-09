@@ -22,12 +22,8 @@ configure_file(
 include_directories("${PROJECT_BINARY_DIR}/config")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 message(STATUS "Finding packages, please stand by...")
-include(UseGtest)
 find_package(GSL REQUIRED)
 find_package (Eigen3 3.1 REQUIRED)
-
-set (GTEST_INCLUDE_DIR ${GTEST_ROOT}/include )
-set (GTEST_SRC_DIR ${GTEST_ROOT}/src)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -DNDEBUG -Wno-return-type-c-linkage")
 
@@ -36,9 +32,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2")
 endif()
 
-include_directories(${CMAKE_SOURCE_DIR}/gtest/include)
-include_directories(${GTEST_INCLUDE_DIR})
-include_directories(${GTEST_ROOT})
 include_directories(${GSL_INCLUDE_DIR})
 include_directories(${EIGEN3_INCLUDE_DIR})
 

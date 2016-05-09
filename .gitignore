@@ -10,7 +10,7 @@
 !src/maxent_kernel.cpp
 !src/maxent_grid.hpp
 !test/gridTest.cpp
-src/!maxent_kernel.hpp
+!src/maxent_kernel.hpp
 !src/maxent_parms.h
 !src/maxent_simulation.cpp
 !test/simulationTest.cpp
@@ -40,6 +40,7 @@ src/!maxent_kernel.hpp
 !COPYRIGHT.TXT
 !HEADER.TXT
 !scripts/
+!test/gtest*
 
 .DS_Store
 *.pyc

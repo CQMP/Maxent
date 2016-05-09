@@ -10,7 +10,6 @@
 #include "maxent_matrix_def.hpp"
 #include "maxent_parms.hpp"
 #include <boost/random/mersenne_twister.hpp>
-#include"gtest/gtest.h"
 
 struct ofstream_ : std::ofstream{
     explicit ofstream_(std::streamsize precision=10){

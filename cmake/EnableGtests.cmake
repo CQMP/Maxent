@@ -15,10 +15,10 @@ function(add_gtest test)
 
     if(${ARGC} EQUAL 2)
         set(source "${ARGV1}/${test}")
-        set(gtest_src "${GTEST_SRC_DIR}/gtest_main.cc;${GTEST_SRC_DIR}/gtest-all.cc")
+        set(gtest_src "${ARGV1}/gtest_main.cc;${ARGV1}/gtest-all.cc")
     else(${ARGC} EQUAL 2)
         set(source "${test}")
-        set(gtest_src "${GTEST_SRC_DIR}/gtest_main.cc;${GTEST_SRC_DIR}/gtest-all.cc")
+        set(gtest_src "gtest/gtest_main.cc;gtest/gtest-all.cc")
     endif(${ARGC} EQUAL 2)
 
     add_executable(${test} ${source} ${gtest_src})

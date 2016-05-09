@@ -4,7 +4,7 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 #include "../src/maxent.hpp"
-#include "gtest/gtest.h"
+#include "gtest.h"
 #include "../src/maxent_backcont.hpp"
 
 inline vector_type getA(){

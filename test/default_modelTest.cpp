@@ -7,7 +7,7 @@
 
 #include "../src/default_model.hpp"
 #include <alps/utilities/temporary_filename.hpp>
-#include"gtest/gtest.h"
+#include"gtest.h"
 #include <fstream>
 #include "write_test_files.hpp"
 

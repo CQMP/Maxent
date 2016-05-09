@@ -5,7 +5,7 @@
  */
 
 #include "../src/maxent.hpp"
-#include "gtest/gtest.h"
+#include "gtest.h"
 #include <alps/utilities/temporary_filename.hpp>
 #include <iostream>
 #include "write_test_files.hpp"
