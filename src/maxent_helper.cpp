@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2015 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2016 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -9,6 +9,12 @@
 #include <boost/math/special_functions/fpclassify.hpp> //needed for boost::math::isnan
 #include <Eigen/Eigenvalues>
 #include <Eigen/Cholesky>
+#include "maxent_backcont.hpp"
+
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/normal_distribution.hpp>
+#include <boost/random/variate_generator.hpp>
+#include <boost/random.hpp>
 //NOTE: size1= rows; size2=columns
 
 MaxEntHelper::MaxEntHelper(alps::params& p) :
@@ -34,7 +40,8 @@ void MaxEntHelper::checkDefaultModel(const vector_type &D) const{
     for(int i=0;i<D.size();i++){
         double Di=D(i);
         if(Di==0 || boost::math::isnan(Di))
-          throw std::logic_error("dude, your D is zero");
+          throw std::logic_error("Error: Default model point = 0 at omega="
+                                +boost::lexical_cast<std::string>(omega_coord(i)));
     }
 }
 
@@ -170,7 +177,7 @@ double MaxEntHelper::chi_scale_factor(vector_type A, const double chi_sq, const 
       Ng += lambda[i]/(lambda[i]+alpha);
   }
   std::cerr << "Ng: " << Ng << std::endl;
-  std::cerr << "chi2 max: " << chi_sq << std::endl;
+  //std::cerr << "chi2 max: " << chi_sq << std::endl;
   return sqrt(chi_sq/(ndat()-Ng));
 }
 
@@ -230,4 +237,166 @@ vector_type MaxEntHelper::PrincipalValue(const vector_type &w,const vector_type 
     r[N-2] = w[N-3]*r[N-3]/w[N-2];
     r[N-1] = w[N-3]*r[N-3]/w[N-1];
     return r;
+}
+
+void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A_in,const double norm, const std::string name) const
+{
+    vector_type A = A_in/norm;
+    const MaxEntParameters *pp = this;
+    Backcont bc(pp);
+    vector_type G = bc.backcontinue(A);
+    kernel_type k_type = pp->getKernelType();
+    
+    double beta = 1/(pp->T());
+    bool ph_sym = true;
+    if(k_type == frequency_fermionic_kernel ||
+       k_type == frequency_bosonic_kernel   ||
+       k_type == frequency_anomalous_kernel){
+      ph_sym = false;
+    }
+    if(ph_sym){
+      for(int n=0; n<G.size();n++)
+        os << pp->inputGrid(n) << " " << G(n)*norm << std::endl;
+    }
+    else{
+      for(int n=0;n<G.size();n+=2){
+        os << pp->inputGrid(n/2) << " " << G(n)*norm << " " << G(n+1*norm) << std::endl;
+      }
+    }
+
+    //scale y by error then determine 'error' of integral
+    vector_type y_scaled = y();
+    for(int i=0;i<y_scaled.size();i++){
+      y_scaled(i) *= sigma(i);
+    }
+    double max_err = bc.max_error(G,y_scaled); 
+
+    //A is missing delta_omega value, add back in for chi2
+    vector_type A_chi = A;
+    for (unsigned int i=0; i<A_chi.size(); ++i) 
+      A_chi[i] *= delta_omega(i);
+
+    double chi_sq = chi2(A_chi);
+    const std::string sp = "    ";
+    std::cerr <<  name << sp+sp <<  max_err << sp+sp+"  " << chi_sq << std::endl;
+}
+
+///calculates the varience of a std::vector of eigen3 vectors
+//note: mean,std_dev must be initialized to Zeros(nfreq())
+void determineVariance(std::vector<vector_type> &in,vector_type &mean, vector_type &std_dev){
+#ifndef NDEBUG
+  if(in[0].size() != mean.size() || in[0].size() != std_dev.size())
+    throw std::length_error("mean/std_dev initialization error!");
+#endif
+  std::vector<vector_type>::iterator it=in.begin();
+  while(it != in.end()){
+    mean += (*it);
+    it++;
+  }
+  mean /= in.size();
+  //compute stddev  
+  for(int i=0;i<mean.size();i++){
+    double stddev =0;
+    double mean_i = mean(i);
+    for(int v=0;v<in.size();v++){
+      double val = in[v](i);
+      stddev+= (val-mean_i)*(val-mean_i);
+    }
+    std_dev(i) = sqrt(stddev)/sqrt(in.size()-1);  
+  }
+};
+
+///construct positive definite matrix \Gamma
+//Jarrell 4.8
+matrix_type MaxEntHelper::constructGamma(const vector_type& A, const double alpha){
+  matrix_type Lambda(nfreq(),nfreq());
+
+  for(int i=0;i<nfreq();i++){
+    for(int j=0;j<nfreq();j++){
+      //TODO: think more carefully about complex K
+      //construct d^2L/dA_i dA_j
+      double sum = 0;
+      for (int l=0;l<ndat();l++)
+        sum += K(l,i)*K(l,j);
+      Lambda(i,j) = sqrt(A(i))*sum*sqrt(A(j));
+    }
+  }
+  //Gamma = alpha*I + Lambda
+  for (int i=0;i<nfreq();i++)
+    Lambda(i,i) += alpha;
+  
+  return Lambda;
+}
+
+
+void MaxEntHelper::generateCovariantErr(const vector_type& A, const double alpha,ofstream_ &os){
+  matrix_type Gamma = constructGamma(A,alpha);
+  //first check that we have a positive-definite matrix
+  Eigen::LLT<Eigen::MatrixXd> lltOfG(Gamma);
+
+  if(lltOfG.info() == Eigen::NumericalIssue){
+    std::cerr << "Error! Something has gone wrong with the error"
+              << " bars. Please check your settings!" << std::endl;
+    os << "#Error, no data could be generated" << std::endl;
+  }
+  else{
+    Eigen::SelfAdjointEigenSolver<matrix_type> es(Gamma);
+
+    // Gamma = u^T D u
+    // Gamma^-1 = u D^-1 u^T
+    matrix_type u=es.eigenvectors();
+    matrix_type D=es.eigenvalues().asDiagonal();
+    matrix_type invD = D.inverse();
+    for(int i=0;i<nfreq();i++){
+      for(int j=0;j<nfreq();j++){
+        Gamma(i,j) *= std::sqrt(A(i))*std::sqrt(A(j));
+      }
+    }
+
+    //setup and transform sqrt(A)
+    vector_type A_u = A;
+    for (int i=0;i<A.size();i++)
+      A_u(i) = sqrt(A(i));
+    A_u = u*A_u;
+
+    boost::mt19937 rng;
+    rng.seed(static_cast<unsigned int>(std::time(0)));
+
+    std::vector<vector_type> noise_vecs;
+    int max_it = 10000;
+    for(int it=0;it<max_it;it++){
+      //add gaussian noise for A_u and store for later
+      vector_type A_noise = generateGaussNoise(A_u,invD.diagonal(),rng);
+      A_noise = u.transpose()*A_noise;
+      noise_vecs.push_back(A_noise);
+    }
+    std::cout << "Finished generating A*u + Gaussian Noise" << std::endl; 
+    vector_type std_err(nfreq());
+    vector_type mean = vector_type::Zero(nfreq());
+
+    determineVariance(noise_vecs,mean,std_err); 
+
+    //save file
+    os << "#omega A A_mean approx_err" <<std::endl;
+    for (std::size_t  i=0; i<A.size(); ++i){
+        os << omega_coord(i) << " " << A[i] << " " << mean(i)*mean(i) << " " <<A[i]*2*std_err(i)<< std::endl;
+    }
+  }
+}
+
+vector_type MaxEntHelper::generateGaussNoise(vector_type data, vector_type err,boost::mt19937 &rng){
+    
+    typedef boost::variate_generator<boost::mt19937&,boost::normal_distribution<> > ran_gen;
+    //notice the & in the first template argument and function rng argument.
+    //If we omit this, it will compile and run
+    //however, the numbers will be less(/not) random b/c it will copy the generator
+    //each time, outputting the mean with some noise, rather than truly random
+    
+    const int N = data.size();
+    vector_type data_noise(N);
+    for(int i=0;i<N;i++){
+        boost::normal_distribution<> s(data[i],err[i]); //
+        data_noise[i] = ran_gen(rng,s)();
+    }
+    return data_noise;
 }

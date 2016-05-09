@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 1998-2015 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2016 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
-#include "maxent.hpp"
-#include "gtest/gtest.h"
+#include "../src/maxent.hpp"
+#include "gtest.h"
 #include <iostream>
 double getNorm(const vector_type &omega, const vector_type &y){
     int size = omega.size();
@@ -19,7 +19,7 @@ TEST(Simulation,FrequencySimulation){
     alps::params p;
     MaxEntSimulation::define_parameters(p);
     p["BETA"]=8;
-    p["NDAT"]=15;
+    p["NDAT"]=16;
     p["PARTICLE_HOLE_SYMMETRY"]=true;
     p["DATASPACE"]="frequency";
     p["KERNEL"]="fermionic";

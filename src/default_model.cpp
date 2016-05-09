@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2015 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2016 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -133,27 +133,27 @@ boost::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, st
     boost::shared_ptr<Model> Mod(new TwoGaussians(parms));
     return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
-  else if (p_name == "shifted gaussian") {
+  else if (p_name == "shifted gaussian" || p_name == "shiftedgaussian") {
     std::cout << "Using shifted Gaussian default model" << std::endl;
     boost::shared_ptr<Model> Mod(new ShiftedGaussian(parms));
     return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
-  else if (p_name == "double gaussian") {
+  else if (p_name == "double gaussian" || p_name == "doublegaussian") {
     std::cout << "Using double Gaussian default model" << std::endl;
     boost::shared_ptr<Model> Mod(new DoubleGaussian(parms));
     return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
-  else if (p_name == "general double gaussian") {
+  else if (p_name == "general double gaussian" || p_name == "generaldoublegaussian") {
     std::cout << "Using general double Gaussian default model" << std::endl;
     boost::shared_ptr<Model> Mod(new GeneralDoubleGaussian(parms));
     return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
-  else if (p_name == "linear rise exp decay") {
+  else if (p_name == "linear rise exp decay" || p_name == "linearriseexpdecay") {
     std::cout << "Using linear rise exponential decay default model" << std::endl;
     boost::shared_ptr<Model> Mod(new LinearRiseExpDecay(parms));
     return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
-  else if (p_name == "quadratic rise exp decay") {
+  else if (p_name == "quadratic rise exp decay" || p_name == "quadraticriseexpdecay") {
     std::cout << "Using quadratic rise exponential decay default model" << std::endl;
     boost::shared_ptr<Model> Mod(new QuadraticRiseExpDecay(parms));
     return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
@@ -168,12 +168,12 @@ boost::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, st
     boost::shared_ptr<Model> Mod(new TwoLorentzians(parms));
     return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
-  else if (p_name == "shifted lorentzian") {
+  else if (p_name == "shifted lorentzian" || p_name == "shiftedlorentzian") {
     std::cout << "Using shifted Lorentzian default model" << std::endl;
     boost::shared_ptr<Model> Mod(new ShiftedLorentzian(parms));
     return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
-  else if (p_name == "double lorentzian") {
+  else if (p_name == "double lorentzian" || p_name == "doublelorentzian") {
     std::cout << "Using double Lorentzian default model" << std::endl;
     boost::shared_ptr<Model> Mod(new DoubleLorentzian(parms));
     return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));

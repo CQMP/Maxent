@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2015 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2016 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -10,12 +10,7 @@
 #include <boost/math/special_functions/fpclassify.hpp> //needed for boost::math::isnan
 #include <Eigen/LU>
 #include "eigen_hdf5.hpp"
-
-struct ofstream_ : std::ofstream{
-    explicit ofstream_(std::streamsize precision=10){
-	    this->precision(precision);
-    }
-};
+#include <iomanip>
 
 MaxEntSimulation::MaxEntSimulation(alps::params &parms)
 : MaxEntHelper(parms)
@@ -26,6 +21,8 @@ MaxEntSimulation::MaxEntSimulation(alps::params &parms)
 , verbose(parms["VERBOSE"])
 , text_output(parms["TEXT_OUTPUT"])
 , self(parms["SELF"])
+, make_back(parms["BACKCONTINUE"])
+, gen_err(parms["GENERATE_ERR"])
 , qvec((int)parms["N_ALPHA"])
 , nfreq(parms["NFREQ"].as<int>())
 {
@@ -41,7 +38,7 @@ MaxEntSimulation::MaxEntSimulation(alps::params &parms)
 ///define parameter defaults
 void MaxEntSimulation::define_parameters(alps::params &p){
   p.description("Maxent - a utility for " 
-    "performing analytical continuation \n \t using the method of Maximum Entropy\n");
+    "performing analytic continuation \n \t using the method of Maximum Entropy\n");
   //---------------------------------
   //    General
   //---------------------------------
@@ -55,12 +52,16 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   p.define<double>("ALPHA_MIN",0.01,"Minimum alpha");
   p.define<double>("ALPHA_MAX",20,"Maximum alpha");
   p.define<double>("NORM",1.0,"NORM");
+  p.define<bool>("BACKCONTINUE",true,"Output A(omega) back to imaginary axis");
+  p.define<bool>("GENERATE_ERR",false,"Generate a bootstrap approximation for error bars");
   //*********************************
   p.define<double>("BETA","beta, inverse temperature");
   p.define<int>("NDAT","# of input points");
   p.define<std::string>("DATA","","data file input");
   p.define<std::string>("BASENAME","","Specified output name \n(generated if not given)");
   p.define<int>("MODEL_RUNS","How many default model runs");
+  p.define<double>("X_0","G input for param file entry");
+  p.define<double>("SIGMA_0","G error input for param file entry");
   p.define<double>("TAU_0","Used for input tau points");
 
 
@@ -97,13 +98,7 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   p.define<std::string>("DATASPACE","time","Time or Frequency space");
   p.define<std::string>("KERNEL","fermionic","Type of kernel: \nFermionic,Bosonic,Boris,Legendre"); 
   p.define<bool>("PARTICLE_HOLE_SYMMETRY",false,"If particle hole symmetric"); 
-  //*********************************
 
-  //---------------------------------
-  //    Legendre
-  //---------------------------------
-  p.define<bool>("LEGENDRE",0,"LEGENDRE");
-  p.define<int>("MAXL","Maximum L cutoff");
   //---------------------------------
   //    RT Points
   //---------------------------------
@@ -270,6 +265,14 @@ void MaxEntSimulation::evaluate(){
   }
   ar << alps::make_pvp("/spectrum/average",avspec);
   ar << alps::make_pvp("/spectrum/variance",varspec);
+  
+  if(gen_err){
+    //Bootstrap errors
+    ofstream_ boot_file;
+    boot_file.open((name+"booterr.dat").c_str());
+    generateCovariantErr(maxspec,alpha[max_a],boot_file);
+  }
+  
 
   if(Kernel_type=="anomalous"){ //for the anomalous function: use A(omega)=Im Sigma(omega)/(pi omega).
     ofstream_ maxspec_anom_str;maxspec_anom_str.open((name+"maxspec_anom.dat").c_str());
@@ -278,13 +281,13 @@ void MaxEntSimulation::evaluate(){
     for (std::size_t  i=0; i<avspec.size(); ++i){ 
       //if(omega_coord(i)>=0.)
       spec[i] = avspec[i]*omega_coord(i)*M_PI;
-      avspec_anom_str << omega_coord(i) << " " << avspec[i]*omega_coord(i)*M_PI<<std::endl;
+      avspec_anom_str << omega_coord(i) << " " << spec[i]<<std::endl;
     }
     ar << alps::make_pvp("/spectrum/anomalous/average",spec);
     for (std::size_t i=0; i<spectra[0].size(); ++i){
       //if(omega_coord(i)>=0.)
       spec[i] = spectra[max_a][i]*norm*omega_coord(i)*M_PI;
-      maxspec_anom_str << omega_coord(i) << " " << spectra[max_a][i]*norm*omega_coord(i)*M_PI << std::endl;
+      maxspec_anom_str << omega_coord(i) << " " << spec[i] << std::endl;
     }
     ar << alps::make_pvp("/spectrum/anomalous/maximum",spec);
   }
@@ -308,7 +311,7 @@ void MaxEntSimulation::evaluate(){
     if (text_output) {
       ofstream_ maxspec_anom_str;maxspec_anom_str.open((name+"avspec_bose.dat").c_str());
       for (std::size_t i=0; i<spectra[0].size(); ++i){
-        maxspec_anom_str << omega_coord(i) << " " << spectra[max_a][i]*norm*omega_coord(i) << std::endl;
+        maxspec_anom_str << omega_coord(i) << " " << spec[i] << std::endl;
       }
     }
     ar << alps::make_pvp("/spectrum/bosonic/maximum",spec);
@@ -335,6 +338,27 @@ void MaxEntSimulation::evaluate(){
     avspec*=-M_PI;
     maxspec*=-M_PI;
   }
+
+  if(text_output && make_back){
+    ofstream_ avspec_back_file,maxspec_back_file,chispec_back_file;
+    avspec_back_file.open((name+"avspec_back.dat").c_str());
+    maxspec_back_file.open((name+"maxspec_back.dat").c_str());
+    chispec_back_file.open((name+"chispec_back.dat").c_str());
+
+    const std::string sp = "    ";
+    double norm_fix = norm;
+    //fix self-energy normalization 
+    if(self){
+      norm_fix *=-M_PI;
+    }
+
+    std::cerr << "spectra"<<sp<< " max backcont diff" <<sp<<  "chi^2 value " <<std::endl;
+    std::cerr << "======="<< sp<<" ================="<< sp<< "=========== " <<std::endl;
+    backcontinue(chispec_back_file,specchi,norm,"chispec");
+    backcontinue(avspec_back_file,avspec,norm_fix,"avspec ");
+    backcontinue(maxspec_back_file,maxspec,norm_fix,"maxspec");
+  }
+  ar.close();
 }
 
 

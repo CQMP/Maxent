@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2015 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2016 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -46,9 +46,10 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
         std::invalid_argument("could not open data text file: " + fname+". data should be specified in parameter DATA"));
   }
   int datIn =0; //counts up to ndat
+  int expectedDatIn = 0;
   std::string dataspace = p["DATASPACE"].as<std::string>();
   boost::to_lower(dataspace);
-  if(dataspace == "time" || p["PARTICLE_HOLE_SYMMETRY"]==1){
+  if(dataspace == "time" || dataspace == "legendre" || p["PARTICLE_HOLE_SYMMETRY"]==1){
     while (datstream) {
       double index, X_i, dX_i;
       datstream >> index >> X_i >> dX_i;
@@ -58,9 +59,17 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
         sigma_(datIn) = dX_i / static_cast<double>(p["NORM"]);
         datIn++;
       }
+      expectedDatIn++;
     }
+    expectedDatIn-=1;
   }
   else{
+    if(ndat()%2 != 0){
+        std::cerr << "WARNING: frequency data without particle-hole symmetry"
+                  << " requires an even amount of input data. Fix parameter file" 
+                  << std::endl;
+        throw std::runtime_error("Your NDAT is odd!");\
+    }
     while (datstream) {
       double index, X_i_re, dX_i_re, X_i_im, dX_i_im;
       datstream >> index >> X_i_re >> dX_i_re >> X_i_im >> dX_i_im;
@@ -73,11 +82,23 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
         sigma_(datIn+1) = dX_i_im / static_cast<double>(p["NORM"]);
         datIn+=2;
       }
+      expectedDatIn++;
     }
+    //fix for matsubara length
+    expectedDatIn*=2;
+    expectedDatIn-=1;
   }
   if(p.defined("COVARIANCE_MATRIX")) {
     std::string fname = p["COVARIANCE_MATRIX"];
     read_covariance_matrix_from_text_file(fname);
+  }
+
+  //check for user error
+  if(expectedDatIn<ndat()){
+    throw std::runtime_error(
+        std::string("The NDAT value ("+boost::lexical_cast<std::string>(ndat_) 
+                    +") is not <= the elements in your input file ("
+                    +p["DATA"].as<std::string>()+")"));
   }
 }
 
@@ -123,16 +144,15 @@ void ContiParameters::read_data_from_param_file(const alps::params& p) {
         << std::endl;
 
   for (int i = 0; i < ndat(); ++i) {
-    if (!p.defined("X_" + boost::lexical_cast<std::string>(i))) {
-      throw std::runtime_error("parameter X_i missing!");
+    if (!p.exists("X_" + boost::lexical_cast<std::string>(i))) {
+      throw std::runtime_error("parameter X_"+ boost::lexical_cast<std::string>(i)+ " missing!");
     }
     y_(i) = static_cast<double>(p["X_" + boost::lexical_cast<std::string>(i)])
         / static_cast<double>(p["NORM"]);
     if (!p.defined("COVARIANCE_MATRIX")) {
-      if (!p.defined("SIGMA_" + boost::lexical_cast<std::string>(i))) {
+      if (!p.exists("SIGMA_" + boost::lexical_cast<std::string>(i))) {
         throw std::runtime_error(
-            std::string("parameter SIGMA_i missing!") + "SIGMA_"
-                + boost::lexical_cast<std::string>(i));
+            std::string("parameter SIGMA_"+boost::lexical_cast<std::string>(i)+ " missing! "));
       }
       sigma_(i) = static_cast<double>(p["SIGMA_"
           + boost::lexical_cast<std::string>(i)])
@@ -158,6 +178,15 @@ y_(ndat_),sigma_(ndat_),K_(),grid_(p),inputGrid_(ndat_)
       read_data_from_text_file(p);
     }
   } else {
+      //if using input file with X_i, need to define them first
+      for (int i = 1; i < ndat(); ++i) {
+        //first check for explictly assigned
+        std::string x_str = "X_"+boost::lexical_cast<std::string>(i);
+        if(!p.defined(x_str)){
+          p.define<double>(x_str,"");
+          p.define<double>("SIGMA_"+boost::lexical_cast<std::string>(i),"");
+        }
+      }
     read_data_from_param_file(p);
   }
 }
@@ -356,21 +385,22 @@ MaxEntParameters::MaxEntParameters(alps::params& p) :
     ContiParameters(p),
     Default_(make_default_model(p, "DEFAULT_MODEL")),
     U_(ndat(), ndat()), Vt_(ndat(), nfreq()), Sigma_(ndat(), ndat()),
-    omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0),lmax(-1)
+    omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0)
 {
   for (int i=0; i<nfreq(); ++i) {
     omega_coord_[i] = (Default().omega_of_t(grid_(i)) + Default().omega_of_t(grid_(i+1)))/2.;
     delta_omega_[i] = Default().omega_of_t(grid_(i+1)) - Default().omega_of_t(grid_(i));
   }
   //build a kernel matrix
-  kernel ker(p,omega_coord_,inputGrid_,lmax);
+  kernel ker(p,omega_coord_,inputGrid_);
   K_=ker();
+  k_type = ker.getKernelType();
 
   //scale lhs and rhs according to errors, etc.
   if (p.defined("COVARIANCE_MATRIX"))
     decompose_covariance_matrix(p);
     
-    check_high_frequency_limit(y(),ker.getKernelType());
+    check_high_frequency_limit(y(),k_type);
 
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
   scale_data_with_error(nfreq());

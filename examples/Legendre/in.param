@@ -1,0 +1,10 @@
+BETA = 2                  #inverse temperature
+NDAT = 10                 #num of data points
+DATASPACE=Legendre        #!$G(\ell)$!
+KERNEL=fermionic          #fermionic|bosonic values
+DATA=gl.dat               #location of data file
+PARTICLE_HOLE_SYMMETRY=1  #0|1
+NFREQ=5000                #increase oemga grid for better
+                          #integration and convergence
+FREQUENCY_GRID=quadratic  #use more points away from origin
+N_ALPHA=15                #reduce number alpha search space

@@ -1,9 +1,9 @@
 MaxEnt
 ======
 
-MaxEnt Project
+The MaxEnt Project: A utility for performing analytic continuation using the method of Maximum Entropy.
 
-This branch requires the [ALPSCore library](https://github.com/ALPSCore/ALPSCore). 
+Many-body Green's functions calculated on the imaginary axis can be related to a real spectral function, but is an ill-posed problem. One algorithm to solve for the spectral function is the maximum entropy method. This code is an implementation of maximum entropy method as well as useful utilities for dealing with Green's functions and analytic continuation. 
 
 Table of Contents
 =================
@@ -14,6 +14,7 @@ Table of Contents
         * [Boost](#boost)
         * [ALPSCore](#alpscore)
         * [Eigen3](#eigen3)
+        * [GSL](#gsl)
         * [LAPACK (Optional)](#lapack-optional)
     * [Installation](#installation)
       * [Tests](#tests)
@@ -39,10 +40,13 @@ Table of Contents
 When compiling both ALPSCore and MaxEnt, be careful to ensure boost was compiled with the same library and stdlib as ALPSCore and MaxEnt.   
 
 #### ALPSCore
-ALPSCore needs to be properly installed, see [ALPSCore library](https://github.com/ALPSCore/ALPSCore).
+ALPSCore needs to be properly installed, see [ALPSCore library](https://github.com/ALPSCore/ALPSCore). ALPSCore provides the location of the Boost libraries.
 
 #### Eigen3
 For our linear algebra routines we use Eigen3 version >=3.1. If not in your path use `-DEIGEN3_INCLUDE_DIR=`
+
+#### GSL
+Maxent requires the GNU Scientific Library (GSL), which can be found [here](https://www.gnu.org/software/gsl/). The choice of BLAS library (the included CBLAS or an external ATLAS/BLAS/etc) does not matter here as the only the integration library is used. If not in your path use `-GSL_ROOT_DIR=` to the path that has `bin/gsl-config`.
 
 #### LAPACK (Optional)
 Eigen3 has a good SVD routine, but can be very slow for a large kernel.
@@ -72,9 +76,9 @@ The Maxent project uses the following conventions:
 
 ![convention_gtau](https://cloud.githubusercontent.com/assets/7354063/10086425/570a68ce-62dc-11e5-8cd3-1e871f89c695.png) 
 
-![convention_gtau_less_zero](https://cloud.githubusercontent.com/assets/7354063/10086426/57158a92-62dc-11e5-9e6e-5766fdccf8a2.png) 
-
 ![convention_A_omega](https://cloud.githubusercontent.com/assets/7354063/10056184/0ce6afd4-6208-11e5-9bdd-556ae958857c.png)
+
+To see more, see [this pdf](examples/conventions_and_kernels.pdf).
 
 ## Usage
 See `./maxent --help` for a list of required and availble parameters. 
@@ -154,14 +158,15 @@ You can also include tau points in the parameter file, defined like:
 #### Grids
 Maxent creats a default model on a grid between [0,1]
 
-![grids](https://cloud.githubusercontent.com/assets/7354063/8681331/cb2b0852-2a34-11e5-9485-08c8c6a68274.png)
+![grids](https://cloud.githubusercontent.com/assets/7354063/14571315/8ac93a8e-0316-11e6-8255-b9756a2710e8.png)
   
 
 # Utilities
-## Pade
-Requires: [GMP](https://gmplib.org/),[Eigen3.1](http://eigen.tuxfamily.org/index.php?title=Main_Page)
-To point cmake to the correct eigen directory, use `-DEIGEN3_INCLUDE_DIR=/path/to/eigen` 
 ## Kramers-Kronig
 Requires: [GSL](http://www.gnu.org/software/gsl/), Boost
 ## Legendre Convert
 Requires: Boost
+## Optional
+### Pade
+Requires: [GMP](https://gmplib.org/),[Eigen3.1](http://eigen.tuxfamily.org/index.php?title=Main_Page)
+Because Pade requires GMP, it does not build automatically. To include it in your build, either run `cmake` from the pade folder, or in your `maxent` build folder add `-DPADE=1` to the`cmake` command 

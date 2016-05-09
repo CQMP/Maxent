@@ -1,13 +1,14 @@
 /*
- * Copyright (C) 1998-2015 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2016 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include "maxent.hpp"
-#include "gtest/gtest.h"
+#include "../src/maxent.hpp"
+#include "gtest.h"
 #include <alps/utilities/temporary_filename.hpp>
 #include <iostream>
+#include "write_test_files.hpp"
 
 TEST(Parameters,ContiParams){
 	//set up parameters
@@ -49,6 +50,50 @@ TEST(Parameters,ContiParams){
         EXPECT_EQ(c.sigma(i),0.5);
     }
 }
+TEST(Parameters,DataInParam){
+  std::string pf=alps::temporary_filename("param_file.dat");
+  write_minimal_param_file(pf);
+
+  //fake input
+  alps::params p(pf);
+  MaxEntSimulation::define_parameters(p);
+  p["NDAT"] = 4;
+  
+  ContiParameters c(p);
+  EXPECT_EQ(c.ndat(),4);
+  EXPECT_EQ(c.T(),0.5);
+
+  for(int i=0;i<c.ndat();i++){
+    EXPECT_NEAR(c.y(i),(i+1)*0.1,1e-10);
+    EXPECT_EQ(c.sigma(i),0.5);
+  }
+
+  boost::filesystem::remove(pf);
+}
+
+TEST(Parameters,DataInFile){
+std::string pf=alps::temporary_filename("in_file.dat");
+  write_minimal_input_file(pf);
+
+  //fake input
+  alps::params p;
+  MaxEntSimulation::define_parameters(p);
+  p["BETA"]=2;
+  p["DATA"]=pf;
+  p["NDAT"] = 5;
+
+  ContiParameters c(p);
+  EXPECT_EQ(c.ndat(),5);
+  EXPECT_EQ(c.T(),0.5);
+
+  for(int i=0;i<c.ndat();i++){
+    EXPECT_NEAR(c.y(i),(i+1)*0.1,1e-10);
+    EXPECT_EQ(c.sigma(i),0.5);
+  }
+
+  boost::filesystem::remove(pf);
+}
+
 TEST(Parameters,MaxentParams){
     //set up parameters
 	alps::params p;
@@ -93,7 +138,7 @@ TEST(Parameters,MaxentParams){
     EXPECT_NEAR(c.Default().omega(0),-6,1e-10);
 	EXPECT_NEAR(c.Default().omega(1.0),6,1e-10);
 }
-TEST(Paramaters,HighFrequencyCheck){
+TEST(Parameters,HighFrequencyCheck){
     alps::params p;
     MaxEntSimulation::define_parameters(p);
 	p["N_ALPHA"] = 60;

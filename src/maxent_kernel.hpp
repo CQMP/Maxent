@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2015 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2016 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -33,7 +33,7 @@ enum kernel_type{
 };
 class kernel{
 public:
-  kernel(alps::params &p, const vector_type& freq, const vector_type &inputGrid, const int lmax);
+  kernel(alps::params &p, const vector_type& freq, vector_type &inputGrid);
 
   ///getter function for the kernel matrix
   const matrix_type &operator()()const{return K_;}
@@ -47,7 +47,7 @@ public:
 private:
   ///figure out which kernel is to be used
   void set_kernel_type(const std::string &dataspace_name, const std::string &kernel_name,
-                       bool ph_symmetry, bool legdr_transform);
+                       bool ph_symmetry);
   ///set up kernel with the legendre transform
   void setup_legendre_kernel(const alps::params &p, const vector_type& freq, const int lmax);
   ///number; of Matsubara points

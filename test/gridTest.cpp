@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 1998-2015 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2016 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include "maxent.hpp"
-#include "maxent_grid.hpp"
-#include "gtest/gtest.h"
+#include "../src/maxent.hpp"
+#include "../src/maxent_grid.hpp"
+#include "gtest.h"
 #include <fstream>
 
 //these tests only make sure the grids are initiallized

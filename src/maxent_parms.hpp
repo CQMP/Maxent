@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2015 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2016 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -37,6 +37,8 @@ public:
   double K(const int i, const int j) const {return K_(i,j);}
   ///returns the entire kernel matrix
   const matrix_type& K() const { return K_; }
+  ///returns kernel type of K
+  const kernel_type getKernelType() const {return k_type; }
 
 private:
   ///temperature
@@ -71,6 +73,8 @@ protected:
   grid grid_;
   ///vector containing input matsubara or tau data
   vector_type inputGrid_;
+  ///type of kernel used
+  kernel_type k_type;
 };
 
 
@@ -92,6 +96,10 @@ public:
   int ns() const { return ns_; }
   ///getter function for the default model
   const DefaultModel& Default() const { return *Default_; }
+  ///getter function for input data grid
+  const vector_type& inputGrid() const { return inputGrid_; }
+  ///getter function for input data grid values
+  double inputGrid(const int i) const { return inputGrid_(i); }
 
 private:
   ///The default model
@@ -103,8 +111,6 @@ private:
   vector_type delta_omega_;
   ///the number of singular values
   int ns_;
-  ///computed l cut off of legendre transform
-  int lmax;
   ///compute the minimal chi2 that is possible given the SVD of the kernel
   void compute_minimal_chi2() const;
   ///reduce the matrices to the number of non-zero singular values

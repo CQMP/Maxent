@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2015 ALPS Collaboration. See COPYRIGHT.TXT
+ * Copyright (C) 1998-2016 ALPS Collaboration. See COPYRIGHT.TXT
  * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
@@ -9,8 +9,13 @@
 #include <fstream>
 #include "maxent_matrix_def.hpp"
 #include "maxent_parms.hpp"
+#include <boost/random/mersenne_twister.hpp>
 
-#include"gtest/gtest.h"
+struct ofstream_ : std::ofstream{
+    explicit ofstream_(std::streamsize precision=10){
+	    this->precision(precision);
+    }
+};
 
 class MaxEntHelper : protected MaxEntParameters
 {
@@ -54,12 +59,17 @@ public :
   void print_chi2(const vector_type& u, std::ostream &os) const;
   /// compute S=\int d\omega(A(\omega)-D(\omega)-A(\omega)\ln[A(\omega)/D(\omega))
   double entropy(const vector_type& u) const;
+  /// (back)continue A(\omega) to the imaginary axis; also writes to file
+  void backcontinue(ofstream_ &os, const vector_type &A, const double norm, const std::string name) const;
+  matrix_type constructGamma(const vector_type& A, const double alpha);
+  void generateCovariantErr(const vector_type& A_in, const double alpha, ofstream_ &os);
 
 private:
   ///discretized and normalized version of the default model.
   vector_type def_;
   ///check that the default model is non-zero
   void checkDefaultModel(const vector_type &D) const;
+  vector_type generateGaussNoise(vector_type data, vector_type err,boost::mt19937 &rng);
 };
 
 
@@ -88,7 +98,7 @@ private:
   const double norm;
   const int max_it;
   std::string name,Kernel_type;
-  bool verbose,text_output,self;
+  bool verbose,text_output,self,make_back,gen_err;
   const int nfreq;
 
   vector_type lprob;
@@ -140,3 +150,7 @@ private:
   ///gamma for RT points
   const double GAMMA;
 }; 
+///calculates the varience of a std::vector of eigen3 vectors
+//note: mean,std_dev must be initialized to Zeros(nfreq())
+//located in maxent_helper.cpp
+void determineVariance(std::vector<vector_type> &in,vector_type &mean, vector_type &std_dev);
