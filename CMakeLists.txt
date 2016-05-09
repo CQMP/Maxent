@@ -59,22 +59,11 @@ target_link_libraries(maxent libmaxent ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${
 
 #testing setup
 option(Testing "Enable testing" ON)
-include(EnableGtests) #defined in ./cmake
-include_directories("test")
+
 
 list(APPEND LINK_ALL libmaxent ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 enable_testing(test)
-set(test_src
-  default_modelTest
-  backcontTest
-  gridTest
-  parmsTest
-  simulationTest
-  paramFailureTest
-)
-foreach(test ${test_src})
-  add_gtest(${test} test)
-endforeach(test)
+add_subdirectory(test)
 
 #add companion utilities
 add_subdirectory(legendre_convert)
@@ -82,3 +71,6 @@ add_subdirectory(kk)
 if(PADE)
   add_subdirectory(pade/pade_arbitrary_degree)
 endif(PADE)
+
+#install
+install(TARGETS maxent DESTINATION bin)
