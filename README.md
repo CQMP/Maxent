@@ -5,6 +5,10 @@ The MaxEnt Project: A utility for performing analytic continuation using the met
 
 Many-body Green's functions calculated on the imaginary axis can be related to a real spectral function, but is an ill-posed problem. One algorithm to solve for the spectral function is the maximum entropy method. This code is an implementation of maximum entropy method as well as useful utilities for dealing with Green's functions and analytic continuation. 
 
+extendedKernel Branch
+=====================
+This branch contains development on using real time Green's function for maxent
+
 Table of Contents
 =================
   * [MaxEnt](#maxent)
@@ -24,6 +28,7 @@ Table of Contents
           * [Particle Hole Symmetric Data](#particle-hole-symmetric-data)
           * [Non-Particle Hole Symmetric Data](#non-particle-hole-symmetric-data)
           * [Time Data](#time-data)
+          * [Real Time](#real-time)
         * [Kernels](#kernels)
         * [Default Models](#default-models)
         * [Grids](#grids)
@@ -137,9 +142,33 @@ You can also include tau points in the parameter file, defined like:
  ...
  TAU_NDAT-1=xxx
  ```
+
+##### Real Time  
+This version of maxent has two additional features - the real time kernel and the real time maxent  
+**Real time kernel**  
+If you want to continue both imaginary and real time simultaneously, you can specify the following parameters
+````
+B_MATRIX=0 #use the G(t) kernel addition; can omit as well
+NRT = __ #number of real time points
+RT_TIME = __ #real time t_max
+RT_POINTS = file.txt # location of G(t) file; format: t ReG ImG
+
+````
+**real time maxent**  
+To use the additional `B=PA` formalism, use the following parameters:
+````
+B_MATRIX=1 #use the B=PA formalism
+NRT = __ #number of real time points
+RT_TIME = __ #real time t_max
+RT_POINTS = file.txt # location of B file; format: t B(t)
+MU =_ #chemical potential for kernel
+
+````
 #### Kernels
 ![Fermionic Kernels](https://cloud.githubusercontent.com/assets/7354063/10101709/42e4cae2-6368-11e5-999b-0483d4f4358f.png)
 ![Time Kernels](https://cloud.githubusercontent.com/assets/7354063/8755770/57c4ab3e-2c9b-11e5-98a3-1a073d67ee34.png)
+**This branch includes the real time kernel "real"**  
+if using the real time kernel, specify the chemical potential `MU`.
 
 #### Default Models
 [View Examples Here](examples/default_models.pdf)
