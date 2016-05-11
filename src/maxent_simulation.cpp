@@ -107,7 +107,7 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   p.define<double>("RT_TIME","length of real time t");
   p.define<int>("NRT","number of RT_POINTS in file");
   p.define<bool>("B_MATRIX",false,"true if RT_POINTS = B, else RT_POINTS=G(t)");
-  p.define<double>("MU","chemical potential for G(t) kernel");
+  p.define<double>("MU",0,"chemical potential for G(t) kernel");
   
 }
 void MaxEntSimulation::run()
@@ -438,6 +438,8 @@ vector_type MaxEntSimulationRT::right_side(const vector_type& u) const {
 
   vector_type gTerm = maxent_prec_prod(P(),A)-B();
   gTerm = GAMMA*maxent_prec_prod_trans(P(),gTerm);
+  gTerm = maxent_prec_prod(Vt(),gTerm);
+  vector_type temp = b+gTerm;
   return b+gTerm;
 }
 /// the R^2 term that is similar to \chi^2

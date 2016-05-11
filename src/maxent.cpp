@@ -157,7 +157,7 @@ int main(int argc,const char** argv)
         }
         else{
           MaxEntSimulation * my_sim;
-          if(parms.exists("RT_TIME"))
+          if(parms["B_MATRIX"])
             my_sim = new MaxEntSimulationRT (parms);
           else 
             my_sim = new MaxEntSimulation (parms);

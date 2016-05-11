@@ -284,7 +284,7 @@ void MaxEntParameters::truncate_to_singular_space(const vector_type& S) {
   //(truncated) Sigma has dimension ns_*ns_ (number of singular eigenvalues)
   //(truncated) V^T has dimensions ns_* nfreq(); nfreq() is number of output (real) frequencies
   //ns_ is the dimension of the singular space.
-  if(B_.size()>0){
+  if(K_.rows() > ndat()){
     U_.conservativeResize(ndat()+B_.size(), ns_);
     Vt_.conservativeResize(ns_, nfreq());
   }
@@ -417,7 +417,7 @@ MaxEntParameters::MaxEntParameters(alps::params& p) :
     B_omega_grid_.resize(p["NRT"]);
     read_rt_data(p);
     if(p["B_MATRIX"])
-      add_P_kernel(p);
+      set_P_matrix(p);
     else
       add_Gt_kernel(p);
     
@@ -536,7 +536,7 @@ void MaxEntParameters::add_Gt_kernel(const alps::params& p){
   //nfreq_ *=2;
   ndat_ = newRowSize;
 }
-
+/*
 ///create the P matrix such that B=\int d\omegap P(omega-omegap)A(omegap)
 //then add it to the kernel
 void MaxEntParameters::add_P_kernel(const alps::params& p){
@@ -566,4 +566,20 @@ void MaxEntParameters::add_P_kernel(const alps::params& p){
     y_[ndat()+i] = B_[i]*inv_err;
   }
   
+}
+*/
+
+void MaxEntParameters::set_P_matrix(const alps::params& p){
+  P_.resize(B_.size(),nfreq());
+  double t = p["RT_TIME"];
+  for (size_t i=0;i<B_.size();i++){
+    for(size_t omega_i=0;omega_i<nfreq();omega_i++){
+      double omega = B_omega_grid_(i);
+      double omegap = omega_coord_(omega_i);
+      double w = omegap - omega;
+      //P(\omega) = sin(\omega*t)/(\pi*\omega)
+
+      P_(i,omega_i) = std::sin(w*t)/w/M_PI;
+    }
+  }
 }

@@ -135,7 +135,9 @@ private:
   //change the kernel to include G(t) kernel
   void add_Gt_kernel(const alps::params& p);
   //change the kernel to include the P matrix in B=PA
-  void add_P_kernel(const alps::params& p);
+  //void add_P_kernel(const alps::params& p);
+  //create the matrix P; does not add to kernel
+  void set_P_matrix(const alps::params& p);
 
 public:
   const vector_type& B() const {return B_;}
