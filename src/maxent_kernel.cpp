@@ -236,27 +236,23 @@ void kernel::set_kernel_type(const std::string &dataspace_name, const std::strin
   }
 
 }
-struct integrand_params {int l; double omega; double sign; double T_;};
+struct integrand_params {int l; double omega;double T_;};
 
 ///Integrand of the Legendre Kernel for GSL integration
 double  legendre_kernel_integrand(double x, void * params){
     double tau = x;
-    //parms = [l,omega,sign,T_]
+    //parms = [l,omega,T_]
     integrand_params *p = (integrand_params *)params;
     int l = p->l;
     double omega = p->omega;
-    double sign = p->sign;
     double T_ = p->T_;
     //std::cout<< l<< std::endl;
-    return bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+sign*std::exp(-omega/T_));
+    return bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+std::exp(-omega/T_));
 }
 void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& freq,const int lmax){
     if(lmax>boost::math::max_factorial<double>::value)
         throw std::runtime_error("lmax is greater than boost factorial precision");
     
-    //sign of kernel +/- => fermionic/bosonic
-    const double sign =std::pow(-1.0,(int)ktype_==time_bosonic_legendre_kernel);
-
     const double PI = std::acos(-1);
     const std::complex<double> CONE(0,1);
     //recall that ndat()=lmax
@@ -279,11 +275,11 @@ void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& fre
             I1 += bmth::legendre_p(l, -1.0)*std::exp(-omega/T_)/(1+sign*std::exp(-omega/T_));
             for(int i=1;i<N;i++){
                 double tau = 0 + 2*i*h;
-                I1+=2*bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+sign*std::exp(-omega/T_));
+                I1+=2*bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+std::exp(-omega/T_));
             }
             for(int i=1;i<N+1;i++){
                 double tau= 0+ (2*i-1)*h;
-                I1+=4*bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+sign*std::exp(-omega/T_));
+                I1+=4*bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+std::exp(-omega/T_));
             }
             I1*=h/3;//*/
             
@@ -297,7 +293,7 @@ void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& fre
             gsl_function F;
             F.function = &legendre_kernel_integrand;
 
-            integrand_params p = {l,omega,sign,T_};
+            integrand_params p = {l,omega,T_};
             F.params = &p;
 
             gsl_integration_qag(&F, a,b,epsabs,epsrel, limit, GSL_INTEG_GAUSS61, w, &result, &err);

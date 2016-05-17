@@ -40,7 +40,6 @@ set(LIB_FILES
   ./src/maxent_parms.cpp
   ./src/maxent_grid.cpp
   ./src/maxent_kernel.cpp
-  ./src/maxent_legendre_util.cpp
   ./src/maxent_simulation.cpp
   ./src/maxent_backcont.cpp
   ./src/default_model.cpp
