@@ -191,16 +191,6 @@ y_(ndat_),sigma_(ndat_),K_(),grid_(p),inputGrid_(ndat_)
   }
 }
 
-void ContiParameters::enforce_strict_normalization(double sigma_normalization,
-    double norm, const int ntab) {
-  std::cout << "enforcing strict normalization." << std::endl;
-  double artificial_norm_enforcement_sigma = sigma_normalization / norm;
-  for (int j = 0; j < ntab; ++j) {
-    K_(ndat() - 1, j) = 1. / artificial_norm_enforcement_sigma;
-  }
-  y_[ndat() - 1] = 1. / artificial_norm_enforcement_sigma;
-}
-
 void ContiParameters::scale_data_with_error(const int ntab) {
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
   for (int i = 0; i < ndat(); i++) {
@@ -399,12 +389,6 @@ MaxEntParameters::MaxEntParameters(alps::params& p) :
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
   scale_data_with_error(nfreq());
 
-  //this enforces a strict normalization if needed. not sure that this is done properly. recheck!
-  if(p["ENFORCE_NORMALIZATION"]) {
-    double sigma_normalization=p["SIGMA_NORMALIZATION"];
-    double norm=p["NORM"];
-    enforce_strict_normalization(sigma_normalization, norm, ndat());
-  }
   std::cerr << "Kernel is set up\n";
 
   vector_type S(ndat());

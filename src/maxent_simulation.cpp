@@ -44,7 +44,6 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   //---------------------------------
   p.define<bool>("DATA_IN_HDF5",false,"1 if data is in HDF5 format");
   p.define<bool>("TEXT_OUTPUT",true,"1 if results should be output to text files");
-  p.define<bool>("ENFORCE_NORMALIZATION",false,"1 to renormalize last data point");
   p.define<bool>("VERBOSE",false,"1 to print verbose output");
   p.define<bool>("SELF",false,"input is a self energy");
   p.define<int>("MAX_IT",1000,"Maximum Iterations for the fitting routine");

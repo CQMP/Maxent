@@ -54,8 +54,6 @@ protected:
   void decompose_covariance_matrix(const alps::params& p);
   ///This function scales both the y (data) and the kernel with the errors
   void scale_data_with_error(const int ntab);
-  ///This function removes the last element from the kernel and replaces it with a condition that enforces a strict normalization
-  void enforce_strict_normalization(double sigma_normalization, double norm, const int ntab);
 
   ///number of fitting data points / size of y
   int ndat_; //TODO: find a better way of changing this. If we use Gl, we change the size of y
