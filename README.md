@@ -139,7 +139,9 @@ You can also include tau points in the parameter file, defined like:
  ```
 #### Kernels
 ![Fermionic Kernels](https://cloud.githubusercontent.com/assets/7354063/10101709/42e4cae2-6368-11e5-999b-0483d4f4358f.png)
-![Time Kernels](https://cloud.githubusercontent.com/assets/7354063/8755770/57c4ab3e-2c9b-11e5-98a3-1a073d67ee34.png)
+![Time Kernels](https://cloud.githubusercontent.com/assets/7354063/15372450/754a55fa-1d0e-11e6-8483-e2c827591946.png)
+
+For the `TZero` kernel, supply any `BETA` value.
 
 #### Default Models
 [View Examples Here](examples/default_models.pdf)

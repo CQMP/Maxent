@@ -243,3 +243,37 @@ TEST(Parameters,HDF5ContiParams){
   }
   boost::filesystem::remove(tf);
 }
+TEST(Parameters,TZero){
+	//set up parameters
+	alps::params p;
+	MaxEntSimulation::define_parameters(p);
+	p["OMEGA_MAX"] = 6.0;
+  p["OMEGA_MIN"]=0;
+	p["KERNEL"] = "TZero";
+  p["DATASPACE"] = "time"; 
+	p["BETA"] = 9999999999; //should allow anything
+	p["NDAT"] = 5;
+	p["TEXT_OUTPUT"] = false;
+	p["X_0"]=-0.5;
+  p["X_1"]=-0.31968831176465;
+  p["X_2"]=-0.22989567294666;
+  p["X_3"]=-0.18028809394476;
+  p["X_4"]=-0.15025032491734;
+	p["SIGMA_0"]=0.5;
+	p["SIGMA_1"]=0.5;
+	p["SIGMA_2"]=0.5;
+	p["SIGMA_3"]=0.5;
+	p["SIGMA_4"]=0.5;
+  p["TAU_0"]=0;
+  p["TAU_1"]=0.3203125;
+  p["TAU_2"]=0.640625;
+  p["TAU_3"]=0.9609375;
+  p["TAU_4"]=1.28125;
+
+	MaxEntParameters c(p);
+  //this is really just to make sure
+  //nothing weird happens at T=0
+
+	EXPECT_EQ(c.ndat(),5);
+	
+}

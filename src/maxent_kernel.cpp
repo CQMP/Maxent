@@ -54,6 +54,10 @@ K_(ndat_,nfreq_)
       }
     }
     else{
+      if(p.exists("X_2")){
+        //using data file entry so there is no input grid
+        throw std::runtime_error("Missing input tau points! Define them with TAU_0=....");
+      }
       std::cout<<"Using data file tau points"<<std::endl;
       tau_points_= inputGrid;  
     }
@@ -204,9 +208,9 @@ void kernel::set_kernel_type(const std::string &dataspace_name, const std::strin
                 ktype_=time_bosonic_legendre_kernel;
             else
                 ktype_=time_bosonic_kernel;
-    else if(kernel_name=="boris")
+    else if(kernel_name=="tzero")
       ktype_=time_boris_kernel;
-    else throw std::invalid_argument("unknown kernel name. In the time domain it should be fermionic, bosonic, or boris.");
+    else throw std::invalid_argument("unknown kernel name. In the time domain it should be fermionic, bosonic, or tzero.");
   }else if(dtype_ == legendre_dataspace){
       if(kernel_name=="fermionic")
           ktype_=legendre_fermionic_kernel;
