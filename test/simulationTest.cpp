@@ -10,7 +10,7 @@ double getNorm(const vector_type &omega, const vector_type &y){
     int size = omega.size();
     double norm = 0.0;
     for(int i=0;i<size-1;i++){
-	norm+=(omega[i+1]-omega[i])*y[i];
+	    norm+=(omega[i+1]-omega[i])*y[i];
     }
     norm+=(omega[size-1]-omega[size-2])*y[size-1];
     return norm;
@@ -79,6 +79,13 @@ TEST(Simulation,FrequencySimulation){
     EXPECT_EQ(my_sim.getMaxspec()[0]<minZero,true);
     EXPECT_EQ(my_sim.getMaxspec()[gridsize-1]<minZero,true);
 
+    EXPECT_EQ(my_sim.getChispec()[0]<minZero,true);
+    EXPECT_EQ(my_sim.getChispec()[gridsize-1]<minZero,true);
+
+    EXPECT_EQ(my_sim.getAvspecBack().size(), 16);
+    EXPECT_EQ(my_sim.getMaxspecBack().size(),16);
+    EXPECT_EQ(my_sim.getChispecBack().size(),16);
+
 		//flat default model is not very Lorentzian
 		EXPECT_EQ(my_sim.getPostProb()<minZero,true);
 
@@ -89,8 +96,10 @@ TEST(Simulation,FrequencySimulation){
     //check norm
     double max_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getMaxspec());
     double av_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getAvspec());
+    double chi_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getChispec());
     EXPECT_NEAR(max_norm,1,1e-2);
     EXPECT_NEAR(av_norm,1,1e-2);
+    EXPECT_NEAR(chi_norm,1,1e-2);
     SUCCEED();
 }
 TEST(Simulation,FrequencyBosonicSimulation){
@@ -145,6 +154,9 @@ TEST(Simulation,FrequencyBosonicSimulation){
 
     EXPECT_EQ(my_sim.getMaxspec()[0]<minZero,true);
     EXPECT_EQ(my_sim.getMaxspec()[gridsize-1]<minZero,true);
+
+    EXPECT_EQ(my_sim.getChispec()[0]<minZero,true);
+    EXPECT_EQ(my_sim.getChispec()[gridsize-1]<minZero,true);
   
     //TODO: write better peak finder
     //attempt to confirm peak around omega=5
@@ -153,6 +165,10 @@ TEST(Simulation,FrequencyBosonicSimulation){
 
 		EXPECT_EQ(my_sim.getPostProb()<minZero,true);
 
+    EXPECT_EQ(my_sim.getAvspecBack().size(), 10);
+    EXPECT_EQ(my_sim.getMaxspecBack().size(),10);
+    EXPECT_EQ(my_sim.getChispecBack().size(),10);
+
 		//expect a converged solution/good minimum found
 		vector_type q = my_sim.getQvec();
 		EXPECT_EQ(q[q.size()-1]<1,true);
@@ -160,8 +176,10 @@ TEST(Simulation,FrequencyBosonicSimulation){
     //check norm
     double max_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getMaxspec());
     double av_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getAvspec());
+    double chi_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getChispec());
     EXPECT_NEAR(max_norm,1,1e-1);
     EXPECT_NEAR(av_norm,1,1e-1);
+    EXPECT_NEAR(chi_norm,1,1e-1);
     SUCCEED();
 }
 TEST(Simulation,TauSimulation){
@@ -276,8 +294,15 @@ TEST(Simulation,TauSimulation){
     EXPECT_EQ(my_sim.getMaxspec()[0]<minZero,true);
     EXPECT_EQ(my_sim.getMaxspec()[gridsize-1]<minZero,true);
 
+    EXPECT_EQ(my_sim.getChispec()[0]<minZero,true);
+    EXPECT_EQ(my_sim.getChispec()[gridsize-1]<minZero,true);
+
 		//flat default model is not very Lorentzian
 		EXPECT_EQ(my_sim.getPostProb()<minZero,true);
+
+    EXPECT_EQ(my_sim.getAvspecBack().size(), 26);
+    EXPECT_EQ(my_sim.getMaxspecBack().size(),26);
+    EXPECT_EQ(my_sim.getChispecBack().size(),26);
 
 		//expect a converged solution/good minimum found
 		vector_type q = my_sim.getQvec();
@@ -286,8 +311,10 @@ TEST(Simulation,TauSimulation){
     //check norm
     double max_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getMaxspec());
     double av_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getAvspec());
+    double chi_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getChispec());
     EXPECT_NEAR(max_norm,1,1e-2);
     EXPECT_NEAR(av_norm,1,1e-2);
+    EXPECT_NEAR(chi_norm,1,1e-2);
     SUCCEED();
 }
 
@@ -351,9 +378,16 @@ TEST(Simulation,LegendreSimulation){
 
     EXPECT_EQ(my_sim.getMaxspec()[0]<minZero,true);
     EXPECT_EQ(my_sim.getMaxspec()[gridsize-1]<minZero,true);
+    
+    EXPECT_EQ(my_sim.getChispec()[0]<minZero,true);
+    EXPECT_EQ(my_sim.getChispec()[gridsize-1]<minZero,true);
 
 		//flat default model is not very Lorentzian
 		EXPECT_EQ(my_sim.getPostProb()<minZero,true);
+
+    EXPECT_EQ(my_sim.getAvspecBack().size(), 13);
+    EXPECT_EQ(my_sim.getMaxspecBack().size(),13);
+    EXPECT_EQ(my_sim.getChispecBack().size(),13);
 
 		//expect a converged solution/good minimum found
 		vector_type q = my_sim.getQvec();
@@ -362,8 +396,10 @@ TEST(Simulation,LegendreSimulation){
     //check norm
     double max_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getMaxspec());
     double av_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getAvspec());
+    double chi_norm = getNorm(my_sim.getOmegaGrid(),my_sim.getChispec());
     EXPECT_NEAR(max_norm,1,1e-2);
     EXPECT_NEAR(av_norm,1,1e-2);
+    EXPECT_NEAR(chi_norm,1,1e-2);
     SUCCEED();
 }
 

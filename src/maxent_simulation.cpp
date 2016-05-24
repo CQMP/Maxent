@@ -19,7 +19,6 @@ MaxEntSimulation::MaxEntSimulation(alps::params &parms)
 , max_it(parms["MAX_IT"])                                       //The number of iterations done in the root finding procedure
 , Kernel_type(parms["KERNEL"].as<std::string>())
 , verbose(parms["VERBOSE"])
-, text_output(parms["TEXT_OUTPUT"])
 , self(parms["SELF"])
 , make_back(parms["BACKCONTINUE"])
 , gen_err(parms["GENERATE_ERR"])
@@ -163,6 +162,7 @@ void MaxEntSimulation::evaluate(){
   }
 
   vector_type def = get_spectrum(transform_into_singular_space(Default()));
+  chispec = spectra[a_chi]*norm;
   if (text_output){
     ofstream_ chispec_file;
     chispec_file.open((name+"chispec.dat").c_str());
@@ -316,12 +316,14 @@ void MaxEntSimulation::evaluate(){
     maxspec*=-M_PI;
   }
 
-  if(text_output && make_back){
+  if(make_back){
     ofstream_ avspec_back_file,maxspec_back_file,chispec_back_file;
-    avspec_back_file.open((name+"avspec_back.dat").c_str());
-    maxspec_back_file.open((name+"maxspec_back.dat").c_str());
-    chispec_back_file.open((name+"chispec_back.dat").c_str());
 
+    if(text_output){
+      avspec_back_file.open((name+"avspec_back.dat").c_str());
+      maxspec_back_file.open((name+"maxspec_back.dat").c_str());
+      chispec_back_file.open((name+"chispec_back.dat").c_str());
+    }
     const std::string sp = "    ";
     double norm_fix = norm;
     //fix self-energy normalization 
@@ -331,9 +333,9 @@ void MaxEntSimulation::evaluate(){
 
     std::cerr << "spectra"<<sp<< " max backcont diff" <<sp<<  "chi^2 value " <<std::endl;
     std::cerr << "======="<< sp<<" ================="<< sp<< "=========== " <<std::endl;
-    backcontinue(chispec_back_file,specchi,norm,"chispec");
-    backcontinue(avspec_back_file,avspec,norm_fix,"avspec ");
-    backcontinue(maxspec_back_file,maxspec,norm_fix,"maxspec");
+    backcontinue(chispec_back_file,specchi,norm,"chispec",chispec_back);
+    backcontinue(avspec_back_file,avspec,norm_fix,"avspec ",avspec_back);
+    backcontinue(maxspec_back_file,maxspec,norm_fix,"maxspec",maxspec_back);
   }
   ar.close();
 }

@@ -60,7 +60,7 @@ public :
   /// compute S=\int d\omega(A(\omega)-D(\omega)-A(\omega)\ln[A(\omega)/D(\omega))
   double entropy(const vector_type& u) const;
   /// (back)continue A(\omega) to the imaginary axis; also writes to file
-  void backcontinue(ofstream_ &os, const vector_type &A, const double norm, const std::string name) const;
+  void backcontinue(ofstream_ &os, const vector_type &A, const double norm, const std::string name,vector_type &ext_back);
   matrix_type constructGamma(const vector_type& A, const double alpha);
   void generateCovariantErr(const vector_type& A_in, const double alpha, ofstream_ &os);
 
@@ -70,6 +70,8 @@ private:
   ///check that the default model is non-zero
   void checkDefaultModel(const vector_type &D) const;
   vector_type generateGaussNoise(vector_type data, vector_type err,boost::mt19937 &rng);
+protected:
+  bool text_output;
 };
 
 
@@ -98,7 +100,7 @@ private:
   const double norm;
   const int max_it;
   std::string name,Kernel_type;
-  bool verbose,text_output,self,make_back,gen_err;
+  bool verbose,self,make_back,gen_err;
   const int nfreq;
 
   vector_type lprob;
@@ -109,8 +111,17 @@ private:
   vector_type avspec;
   ///classic MaxEnt
   vector_type maxspec;
+  ///historic MaxEnt
+  vector_type chispec;
   ///grid of Omega points
   vector_type omegaGrid;
+  ///averaged spectrum back-continued
+  vector_type avspec_back;
+  ///classic MaxEnt back-continued
+  vector_type maxspec_back;
+  ///historic MaxEnt back-continued
+  vector_type chispec_back;
+  ///grid of Omega points
   //posterior probability of the default model
   double postprobdef;
   ///vector of calculated Q values for each alpha iteration
@@ -120,8 +131,16 @@ private:
 public:
   ///getter for avspec, the averaged spectrum
   const vector_type getAvspec() const{return avspec;}
+   ///getter for chispec, the spectrum with the best chi^2
+  const vector_type getChispec() const{return chispec;} 
   ///getter for maxspec, the most probable spectrum
   const vector_type getMaxspec() const{return maxspec;}
+  ///getter for avspec_back, the averaged spectrum back-continued
+  const vector_type getAvspecBack() const{return avspec_back;}
+  ///getter for maxspec_back, the back-continued maxspec
+  const vector_type getMaxspecBack() const{return maxspec_back;}
+   ///getter for chispec_back, the spectrum chispec back-contonued
+  const vector_type getChispecBack() const{return chispec_back;} 
   ///getter for the grid of omega points used in determining 
   ///the spectral function A(omega)
   const vector_type getOmegaGrid() const{return omegaGrid;}

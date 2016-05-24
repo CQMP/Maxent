@@ -18,7 +18,7 @@
 //NOTE: size1= rows; size2=columns
 
 MaxEntHelper::MaxEntHelper(alps::params& p) :
-MaxEntParameters(p) , def_(nfreq())
+MaxEntParameters(p) , def_(nfreq()), text_output(p["TEXT_OUTPUT"])
 {
     for (int i=0; i<nfreq(); ++i)
         def_[i] = MaxEntParameters::Default().D(omega_coord(i)) * delta_omega(i);
@@ -234,7 +234,7 @@ vector_type MaxEntHelper::PrincipalValue(const vector_type &w,const vector_type 
     return r;
 }
 
-void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A_in,const double norm, const std::string name) const
+void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A_in,const double norm, const std::string name, vector_type &ext_back)
 {
     vector_type A = A_in/norm;
     const MaxEntParameters *pp = this;
@@ -249,16 +249,19 @@ void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A_in,const dou
        k_type == frequency_anomalous_kernel){
       ph_sym = false;
     }
-    if(ph_sym){
-      for(int n=0; n<G.size();n++)
-        os << pp->inputGrid(n) << " " << G(n)*norm << std::endl;
-    }
-    else{
-      for(int n=0;n<G.size();n+=2){
-        os << pp->inputGrid(n/2) << " " << G(n)*norm << " " << G(n+1*norm) << std::endl;
+    ext_back = G*norm;
+    if(text_output){
+      if(ph_sym){
+        for(int n=0; n<G.size();n++){
+          os << pp->inputGrid(n) << " " << G(n)*norm << std::endl;
+        }
+      }
+      else{
+        for(int n=0;n<G.size();n+=2){
+          os << pp->inputGrid(n/2) << " " << G(n)*norm << " " << G(n+1*norm) << std::endl;
+        }
       }
     }
-
     //scale y by error then determine 'error' of integral
     vector_type y_scaled = y();
     for(int i=0;i<y_scaled.size();i++){
