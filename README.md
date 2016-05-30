@@ -1,13 +1,13 @@
-MaxEnt
+Maxent
 ======
 
-The MaxEnt Project: A utility for performing analytic continuation using the method of Maximum Entropy.
+The Maxent Project: A utility for performing analytic continuation using the method of Maximum Entropy.
 
 Many-body Green's functions calculated on the imaginary axis can be related to a real spectral function, but is an ill-posed problem. One algorithm to solve for the spectral function is the maximum entropy method. This code is an implementation of maximum entropy method as well as useful utilities for dealing with Green's functions and analytic continuation. 
 
 Table of Contents
 =================
-  * [MaxEnt](#maxent)
+  * [Maxent](#maxent)
   * [Table of Contents](#table-of-contents)
     * [Requirements](#requirements)
       * [Libraries](#libraries)
@@ -37,7 +37,7 @@ Table of Contents
 ### Libraries
 
 #### Boost
-When compiling both ALPSCore and MaxEnt, be careful to ensure boost was compiled with the same library and stdlib as ALPSCore and MaxEnt.   
+When compiling both ALPSCore and Maxent, be careful to ensure boost was compiled with the same library and stdlib as ALPSCore and Maxent.   
 
 #### ALPSCore
 ALPSCore needs to be properly installed, see [ALPSCore library](https://github.com/ALPSCore/ALPSCore). ALPSCore provides the location of the Boost libraries.
@@ -66,7 +66,7 @@ $ make -j 8
 Sometimes it is more convenient to have `CC=gcc CXX=g++` (or clang, etc) before the cmake command.
 
 ### Tests
-Once compiled please run `./maxent --test`
+Once compiled please run `make test`
 to ensure everything works.  
 
 ## Convention
@@ -81,6 +81,9 @@ The Maxent project uses the following conventions:
 To see more, see [this pdf](examples/conventions_and_kernels.pdf).
 
 ## Usage
+Upon installation there will be a binary `maxent`. It uses [ALPSCore parameters](https://github.com/ALPSCore/ALPSCore/wiki/Tutorial%3A-parameters), which can take a param file as input (see [examples](./examples)), or command line arguments of the form `--PARAMETER=value`.  
+The three required parameters are `BETA` (inverse temperature), `NDAT` (the number of input data points), and either the location of the input data `DATA` or input through the param file using `X_i` (see below).
+
 See `./maxent --help` for a list of required and availble parameters. 
 
 #### Input
