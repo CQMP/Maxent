@@ -5,7 +5,7 @@ NFREQ=1000               #num of output frequencies
 DATASPACE=frequency      #!$G(i\omega)$!
 KERNEL=fermionic         #fermionic|bosonic values
 FREQUENCY_GRID=Quadratic #this grid is better for features away from 0
-PARTICLE_HOLE_SYMMETRY=1 #0|1
+PARTICLE_HOLE_SYMMETRY=1 #generated at half-filling
 DATA="Selfin"            #location of data file
 SELF=1                   #this will output !$\Sigma(\omega)$! rather than !$A(\omega)$!
 NORM=0.25                #self energy norm = !$U^2\cdot n(1-n)$!
