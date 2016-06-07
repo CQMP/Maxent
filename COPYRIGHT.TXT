@@ -1,2 +1,0 @@
-Copyright (C) 2012-16 University of Michigan
-Copyright (C) 1998-14 ETH Zurich
