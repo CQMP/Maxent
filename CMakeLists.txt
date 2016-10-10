@@ -73,3 +73,11 @@ endif(PADE)
 
 #install
 install(TARGETS maxent DESTINATION bin)
+legendre_convert)
+add_subdirectory(kk) 
+if(PADE)
+  add_subdirectory(pade/pade_arbitrary_degree)
+endif(PADE)
+
+#install
+install(TARGETS maxent DESTINATION bin)
