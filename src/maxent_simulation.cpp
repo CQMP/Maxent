@@ -86,8 +86,11 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   p.define<double>("SHIFT",0.0,"shift of a model");
   p.define<double>("SHIFT1",0.0,"for Two Gaussians model");
   p.define<double>("SHIFT2","for Two Gaussians model");
+  p.define<double>("SIGMA1","for Two Gaussians model");
+  p.define<double>("SIGMA2","for Two Gaussians model");
   p.define<double>("SIGMA","stddev - For Gaussian models");
   p.define<double>("GAMMA","width of Lorentzian model"); 
+  p.define<double>("GAMMA1","for Two Lorentzian models");
   p.define<double>("GAMMA2","for Two Lorentzian models");
 
   p.define<double>("LAMBDA","for ___ExpDecay models");
