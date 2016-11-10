@@ -1,0 +1,24 @@
+{
+    "license": "other-open", 
+    "creators": [
+        {
+            "name": "Ryan Levy",
+            "affiliation": "University of Illinois, Urbana-Champaign"
+        }, 
+        {
+            "name": "James P.F. LeBlanc",
+            "affiliation": "Memorial University of Newfoundland, Canada"
+        },
+        {
+            "affiliation": "University of Michigan", 
+            "name": "Emanuel Gull"
+        }
+    ], 
+    "access_right": "open", 
+    "related_identifiers": [
+        {
+            "identifier": "arXiv:1606.00368", 
+            "relation": "isSupplementTo"
+        }
+    ]
+}

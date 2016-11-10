@@ -25,7 +25,13 @@ message(STATUS "Finding packages, please stand by...")
 find_package(GSL REQUIRED)
 find_package (Eigen3 3.1 REQUIRED)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -DNDEBUG -Wno-return-type-c-linkage")
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG(-Wno-return-type-c-linkage SUPPORTS_FLAG)
+if(SUPPORTS_FLAG)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-return-type-c-linkage")
+endif()
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -DNDEBUG")
 
 #let gcc take advantage of Eigen3 vectorization
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
