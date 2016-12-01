@@ -98,7 +98,7 @@ private:
     define<double>("real.LOG_MIN", 1.0e-4, "Log grid minimum point parameter");
     define<double>("real.OMEGA_MIN", -25, "lowest frequency point");
     define<double>("real.OMEGA_MAX", 25, "highest frequency point");
-    define<std::string>("real.OUTPUT", "output file format");
+    define<std::string>("real.OUTPUT", "output file name");
     
     define<int>("imag.NDAT", "number of input frequency points");
     define<double>("imag.BETA", "inverse temperature");

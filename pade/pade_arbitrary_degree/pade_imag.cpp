@@ -38,7 +38,10 @@ imaginary_domain_data::imaginary_domain_data(const PadeParams &p):G_(p){
     datstream >> index >> X_i_real >> X_i_imag >> std::ws;
     std::cout<<" read: "<<index<<" "<<X_i_real<<" "<<X_i_imag<<std::endl;
     val_[i] = std::complex<double>(X_i_real, X_i_imag)/norm_;
-    if(std::abs(G_.freq(i)-index)>1.e-5) throw std::invalid_argument("Grid mismatch. make sure the first entry contains the grid points!!");
+    if(std::abs(G_.freq(i)-index)>1.e-5){
+      std::cerr<<"G frequency: "<<G_.freq(i)<<" index: "<<index<<std::endl;
+      throw std::invalid_argument("Grid mismatch. make sure the first entry contains the grid points!!");
+    }
   }
 }
 

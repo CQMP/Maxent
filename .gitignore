@@ -1,6 +1,6 @@
 #everything in folder ignored
 
-*
+#*
 !.gitignore
 !src/maxent_helper.cpp
 !src/maxent_parms.cpp
