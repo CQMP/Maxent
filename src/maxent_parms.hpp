@@ -51,7 +51,7 @@ public:
   ///returns the entire kernel matrix
   const matrix_type& K() const { return K_; }
   ///returns kernel type of K
-  const kernel_type getKernelType() const {return k_type; }
+  kernel_type getKernelType() const {return k_type; }
 
 private:
   ///temperature

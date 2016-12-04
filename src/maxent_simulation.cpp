@@ -104,6 +104,7 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   p.define<double>("SPREAD",4,"spread for quadratic grid");
   p.define<double>("LOG_MIN",1.0e-4,"log_min for log grid");
   p.define<int>("NFREQ",1000,"Number of A(omega) frequencies");
+  p.define<int>("NTAB",5001,"Discretization points of the Default model");
   p.define<std::string>("FREQUENCY_GRID","Lorentzian","Type of frequency grid");
 
   //---------------------------------

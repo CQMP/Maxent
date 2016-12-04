@@ -41,6 +41,12 @@
 // ->  LinearRiseExpDecay : public Model
 // ->  QuadraticRiseExpDecay : public Model
 
+///Default model.
+
+///This is the class for a default model. Default models need to provide three things:
+///1. a mapping \f$\omega(t)\f$ from \f$t\f$ in the interval \f$[0,1]\f$ to the interval where the model is non-zero, such that \f$\omega(0)=\omega_{min}\f$, \f$\omega(1)=\omega_{max}\f$
+///2. Given a frequency \f$\omega\f$, the value of the default model \f$D(\omega)\f$ at that frequency
+///3. Given a number \f$t\f$ in the interval \f$[0,1]\f$, the integral \f$x(t)=\int _0^t D(\omega(t))\f$
 class DefaultModel 
 {
 public:
@@ -51,10 +57,10 @@ public:
 
   virtual ~DefaultModel(){}
 
-  ///omega returns a frequency point, given x between 0 and 1.
-  virtual double omega(const double x) const = 0;
+  ///omega maps the t in the interval [0,1] to a frequency between omega_min and omega_max.
+  virtual double omega(const double t) const = 0;
 
-  ///D returns the derivative of the integrated default model
+  ///D value of the default model at frequency omega
   virtual double D(const double omega) const = 0;
 
   ///returns the integrated default model
@@ -74,7 +80,9 @@ protected:
 };
 
 
+///Flat default model.
 
+///This model is just a constant between \f$\omega_{min}\f$ and \f$\omega_{max}\f$.
 class FlatDefaultModel : public DefaultModel
 {
 public:
@@ -97,7 +105,10 @@ public:
 };
 
 
-///general class for a model function. Implements operator() which, given a frequency omega, will give back the value of the default model at that frequency.
+///general class for a model function.
+
+///This class implements operator() which, given a frequency \f$\omega\f$, will give back the value of the default model at that frequency.
+///The class is mainly used inside GeneralDefaultModel below.
 class Model
 {
 public:
@@ -338,7 +349,7 @@ private:
   const int ntab;
   std::vector<double> xtab; //xtab has an equidistantly tabulated discretized model function
 
-  double norm();
+  void tabulate_integral();
 };
 
 

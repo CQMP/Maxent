@@ -385,7 +385,9 @@ MaxEntParameters::MaxEntParameters(alps::params& p) :
     omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0)
 {
   for (int i=0; i<nfreq(); ++i) {
+    //set the omega_coord into the middle of two grid points
     omega_coord_[i] = (Default().omega_of_t(grid_(i)) + Default().omega_of_t(grid_(i+1)))/2.;
+    //and set delta_omega to the distance between the two neighboring grid points
     delta_omega_[i] = Default().omega_of_t(grid_(i+1)) - Default().omega_of_t(grid_(i));
   }
   //build a kernel matrix
@@ -397,7 +399,7 @@ MaxEntParameters::MaxEntParameters(alps::params& p) :
   if (p.defined("COVARIANCE_MATRIX"))
     decompose_covariance_matrix(p);
     
-    check_high_frequency_limit(y(),k_type);
+  check_high_frequency_limit(y(),k_type);
 
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
   scale_data_with_error(nfreq());

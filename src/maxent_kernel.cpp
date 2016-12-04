@@ -298,7 +298,7 @@ void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& fre
                 double tau= 0+ (2*i-1)*h;
                 I1+=4*bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+std::exp(-omega/T_));
             }
-            I1*=h/3;//*/
+            I1*=h/3;*/
             
             double a = 0;
             double b = 1/T_;

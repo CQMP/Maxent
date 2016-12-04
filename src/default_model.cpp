@@ -75,12 +75,9 @@ double TabFunction::operator()(const double omega) {
 GeneralDefaultModel::GeneralDefaultModel(const alps::params& p, boost::shared_ptr<Model> mod)
 : DefaultModel(p)
 , Mod(mod)
-, ntab(5001)
+, ntab(p["NTAB"])
 , xtab(ntab) {
-  double sum = norm();
-  for (int o=0; o<ntab; ++o) {
-    xtab[o] *= 1./sum;
-  }
+  tabulate_integral();
 }
 
 ///given a number x between 0 and 1, find the frequency omega belonging to x.
@@ -88,6 +85,7 @@ double GeneralDefaultModel::omega(const double x) const {
   //range check for x
   if(x>1. || x<0.)
     throw std::logic_error("parameter x is out of bounds!");
+  //binary search in ordered xtab
   std::vector<double>::const_iterator ub = std::upper_bound(xtab.begin(), xtab.end(), x);
   int omega_index = ub - xtab.begin();
   if (ub==xtab.end())
@@ -96,6 +94,7 @@ double GeneralDefaultModel::omega(const double x) const {
   double om2 = omega_min + omega_index*(omega_max-omega_min)/(ntab-1);
   double x1 = xtab[omega_index-1];
   double x2 = xtab[omega_index];
+  //linear interpolation
   return -(om2-om1)/(x2-x1)*(x2-x)+om2;
 }
 
@@ -104,7 +103,8 @@ double GeneralDefaultModel::D(const double omega) const {
   return (*Mod)(omega);
 }
 
-//I have no idea what this does.
+///x returns the integral of the default model, \f$x(t) = \int_0^t dt' D(\omega(t')) \f$
+///This function performs a linear interpolation of the default model integral values given t between 0 and 1.
 double GeneralDefaultModel::x(const double t) const {
   if(t>1. || t<0.) throw std::logic_error("parameter t is out of bounds!");
   int od = (int)(t*(ntab-1));
@@ -115,7 +115,7 @@ double GeneralDefaultModel::x(const double t) const {
   return -(x2-x1)*(od+1-t*ntab)+x2;
 }
 
-double GeneralDefaultModel::norm() {
+void GeneralDefaultModel::tabulate_integral() {
   double sum = 0;
   xtab[0] = 0.;
   //this is an evaluation on an equidistant grid; sum integrated by trapezoidal rule
@@ -126,7 +126,10 @@ double GeneralDefaultModel::norm() {
     sum += ((*Mod)(omega1) + (*Mod)(omega2)) / 2. * delta_omega;
     xtab[o] = sum;
   }
-  return sum;
+  if(std::abs(sum -1)>1.e-7) std::cerr<<"careful: your default model does not integrate to one."<<std::endl;
+  for (int o=0; o<ntab; ++o) {
+    xtab[o] *= 1./sum;
+  }
 }
 
 boost::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, std::string const& name){

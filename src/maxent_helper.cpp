@@ -33,10 +33,11 @@
 MaxEntHelper::MaxEntHelper(alps::params& p) :
 MaxEntParameters(p) , def_(nfreq()), text_output(p["TEXT_OUTPUT"])
 {
-    for (int i=0; i<nfreq(); ++i)
-        def_[i] = MaxEntParameters::Default().D(omega_coord(i)) * delta_omega(i);
-    //normalizing the default model
-    //def_ /= sum(def_);
+    for (int i=0; i<nfreq(); ++i){
+      def_[i] = MaxEntParameters::Default().D(omega_coord(i))* delta_omega(i);
+    }
+    //normalizing the default model. Note that it is possible that it is NOT normalized to one here, because of the nfreq() discretization.
+    //in practice, increasing nfreq() here (NFREQ in the parameter file) will make this normalization more accurate.
     def_ /= def_.sum();
     checkDefaultModel(def_);
 }
@@ -292,7 +293,7 @@ void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A_in,const dou
     std::cerr <<  name << sp+sp <<  max_err << sp+sp+"  " << chi_sq << std::endl;
 }
 
-///calculates the varience of a std::vector of eigen3 vectors
+///calculates the variance of a std::vector of eigen3 vectors
 //note: mean,std_dev must be initialized to Zeros(nfreq())
 void determineVariance(std::vector<vector_type> &in,vector_type &mean, vector_type &std_dev){
 #ifndef NDEBUG
@@ -317,7 +318,7 @@ void determineVariance(std::vector<vector_type> &in,vector_type &mean, vector_ty
   }
 };
 
-///construct positive definite matrix \Gamma
+///construct positive definite matrix \f$\Gamma\f$
 //Jarrell 4.8
 matrix_type MaxEntHelper::constructGamma(const vector_type& A, const double alpha){
   matrix_type Lambda(nfreq(),nfreq());
