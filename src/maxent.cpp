@@ -103,7 +103,14 @@ int main(int argc,const char** argv)
 
   std::string basename;
   if(parms.defaulted("BASENAME")){
-    basename = alps::remove_extensions(parms.get_origin_name()) + ".out";
+    if (argv[1][0]!='-'){//how ALPSCore tests if there's an input file
+      basename = alps::remove_extensions(parms.get_origin_name()) + ".out";
+    }
+    else{
+      //command line only terms, output in current directory 
+      std::string runtime_path =boost::filesystem::current_path().string();
+      basename = runtime_path+"/maxent.out";
+    }
     parms["BASENAME"] = basename;
   }
   else
