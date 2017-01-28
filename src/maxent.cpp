@@ -27,10 +27,14 @@
 int main(int argc,const char** argv)
 {
   alps::params parms(argc,argv); 
-  MaxEntSimulation::define_parameters(parms);
+  if(!parms.exists("BETA")){
+    MaxEntSimulation::define_parameters(parms);
   //other help messages
   parms.define("help.models","show help for default model");
   parms.define("help.grids","show help for grids");
+  //TODO: fix RUN_(i)
+  }
+
 
   if (parms.help_requested(std::cout)) {
     return 0;
@@ -136,7 +140,7 @@ int main(int argc,const char** argv)
                 parms["BASENAME"] = basename+'.'+currModel;
                 MaxEntSimulation my_sim(parms);
                 my_sim.run();
-                my_sim.evaluate();
+                my_sim.evaluate(parms);
 
                 //save spectra for later
                 max_spectra[i] = my_sim.getMaxspec();
@@ -171,7 +175,7 @@ int main(int argc,const char** argv)
         else{
           MaxEntSimulation my_sim(parms);
           my_sim.run();
-          my_sim.evaluate();
+          my_sim.evaluate(parms);
         }
   }
     catch(const std::exception &e){

@@ -100,7 +100,7 @@ public:
   ///the maxent calculation
   void run();
   ///the evaluation and writing of files
-  void evaluate();
+  void evaluate(alps::params& params);
   vector_type levenberg_marquardt(vector_type u, const double alpha) const;
   vector_type iteration(vector_type u, const double alpha, const double mu) const;
   ///define parameter defaults

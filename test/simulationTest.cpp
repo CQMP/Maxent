@@ -77,7 +77,7 @@ TEST(Simulation,FrequencySimulation){
     
     MaxEntSimulation my_sim(p);
     my_sim.run();
-    my_sim.evaluate();
+    my_sim.evaluate(p);
     int gridsize = my_sim.getOmegaGrid().size();
     
 		//legendre has a harder time with high freq
@@ -153,7 +153,7 @@ TEST(Simulation,FrequencyBosonicSimulation){
     
     MaxEntSimulation my_sim(p);
     my_sim.run();
-    my_sim.evaluate();
+    my_sim.evaluate(p);
     int gridsize = my_sim.getOmegaGrid().size();
     
     const double minZero = 1e-5;
@@ -292,7 +292,7 @@ TEST(Simulation,TauSimulation){
     
     MaxEntSimulation my_sim(p);
     my_sim.run();
-    my_sim.evaluate();
+    my_sim.evaluate(p);
     int gridsize = my_sim.getOmegaGrid().size();
     
 		//legendre has a harder time with high freq
@@ -377,7 +377,7 @@ TEST(Simulation,LegendreSimulation){
     
     MaxEntSimulation my_sim(p);
     my_sim.run();
-    my_sim.evaluate();
+    my_sim.evaluate(p);
     int gridsize = my_sim.getOmegaGrid().size();
     
 		//legendre has a harder time with high freq

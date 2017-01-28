@@ -160,7 +160,7 @@ void MaxEntSimulation::run()
 	    omegaGrid(i)=omega_coord(i);
 }
   //everything from here on down is evaluation.
-void MaxEntSimulation::evaluate(){
+void MaxEntSimulation::evaluate(alps::params &params){
   if (text_output) {
     ofstream_ chi_squared_file;
     chi_squared_file.open((name+"chi2.dat").c_str());
@@ -195,6 +195,7 @@ void MaxEntSimulation::evaluate(){
   if (verbose) std::cerr << "chi scale factor: " << factor << std::endl;
 
 	alps::hdf5::archive ar(name+"out.h5", alps::hdf5::archive::WRITE);
+  params.save(ar,"/parameters");
 	ar << alps::make_pvp("/alpha/values",alpha);
 
   vector_type om(spectra[0].size());
