@@ -69,7 +69,7 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   p.define<double>("BETA","beta, inverse temperature");
   p.define<int>("NDAT","# of input points");
   p.define<std::string>("DATA","","data file input");
-  p.define<std::string>("BASENAME","","Specified output name \n(generated if not given)");
+  p.define<std::string>("BASENAME","","Specified relative path and output name \n(generated if not given)");
   p.define<int>("MODEL_RUNS","How many default model runs");
   p.define<double>("X_0","G input for param file entry");
   p.define<double>("SIGMA_0","G error input for param file entry");
