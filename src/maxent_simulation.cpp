@@ -116,6 +116,9 @@ void MaxEntSimulation::define_parameters(alps::params &p){
 }
 void MaxEntSimulation::run()
 {
+  //this is the main simulation 'run'.
+  //by the time 'run' is being called, we've already made the kernel, SVDecomposed it, made a default model, etc. Those things are done in the constructors
+  //of the various objects: Default, Kernel, etc.
   lprob.resize(alpha.size());
   chi_sq.resize(alpha.size());
   spectra.resize(alpha.size());

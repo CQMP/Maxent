@@ -110,14 +110,18 @@ private:
 
   ///grid of alpha values
   vector_type alpha;
+  ///overall normalization
   const double norm;
+  ///number of alpha iterations
   const int max_it;
   std::string name,Kernel_type;
   bool verbose,self,make_back,gen_err;
+  ///number of real frequency points
   const int nfreq;
 
   vector_type lprob;
   vector_type chi_sq;
+  ///buffer of all the spectra for all alphas
   std::vector<vector_type> spectra;
   vector_type u;
   ///averaged spectrum
@@ -138,7 +142,7 @@ private:
   //posterior probability of the default model
   double postprobdef;
   ///vector of calculated Q values for each alpha iteration
-  //this is one method of checking if a minimum was found
+  ///this is one method of checking if a minimum was found
   vector_type qvec;
 
 public:
@@ -165,7 +169,7 @@ public:
   const vector_type getQvec() const{return qvec;}
 }; 
 
-///calculates the varience of a std::vector of eigen3 vectors
+///calculates the variance of a std::vector of eigen3 vectors
 //note: mean,std_dev must be initialized to Zeros(nfreq())
 //located in maxent_helper.cpp
 void determineVariance(std::vector<vector_type> &in,vector_type &mean, vector_type &std_dev);

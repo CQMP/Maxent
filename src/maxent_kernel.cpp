@@ -33,14 +33,14 @@ T_(1./static_cast<double>(p["BETA"])),
 K_(ndat_,nfreq_)
 {
   using namespace boost::numeric;
-  //K_.clear();
   K_=matrix_type::Zero(ndat_,nfreq_);
   std::string dataspace_name = p["DATASPACE"];
   std::string kernel_name = p["KERNEL"];
   boost::to_lower(dataspace_name);
   boost::to_lower(kernel_name);
   bool ph_symmetry=p["PARTICLE_HOLE_SYMMETRY"];
-  std::cout<<"using kernel "<<kernel_name<<" in domain "<<dataspace_name;
+  std::cout<<"using kernel "<<kernel_name<<" in domain "<<dataspace_name<<std::endl;
+  std::cout<<"Kernel operates on "<<ndat_<<" known imaginary time/frequency data points and "<<nfreq_<<" real frequency points"<<std::endl;
   if(ph_symmetry) std::cout<<" with ph symmetry"; else std::cout<<" without ph symmetry"; std::cout<<std::endl;
 
   set_kernel_type(dataspace_name,kernel_name, ph_symmetry);
@@ -251,7 +251,6 @@ void kernel::set_kernel_type(const std::string &dataspace_name, const std::strin
       else throw std::invalid_argument("unknown kernel name. In the non-particle hole symmetric frequency domain it should be fermionic, bosonic, or anomalous.");
     }
   }
-
 }
 struct integrand_params {int l; double omega;double T_;};
 
@@ -283,22 +282,6 @@ void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& fre
             double I1=0;
             double omega =freq[j];
             double h = (1/T_-0)/(2*N);
-            //int Pl(x(tau))*exp(-tau*omega)/(1\pm exp(-beta*omega))
-            
-            //Simpsons with
-            //Simpson's method of integrations
-            //eval endpoints
-            /*I1 += bmth::legendre_p(l, 1.0)*std::exp(-0*omega)/(1+sign*std::exp(-omega/T_));
-            I1 += bmth::legendre_p(l, -1.0)*std::exp(-omega/T_)/(1+sign*std::exp(-omega/T_));
-            for(int i=1;i<N;i++){
-                double tau = 0 + 2*i*h;
-                I1+=2*bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+std::exp(-omega/T_));
-            }
-            for(int i=1;i<N+1;i++){
-                double tau= 0+ (2*i-1)*h;
-                I1+=4*bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+std::exp(-omega/T_));
-            }
-            I1*=h/3;*/
             
             double a = 0;
             double b = 1/T_;

@@ -298,15 +298,6 @@ void MaxEntParameters::truncate_to_singular_space(const vector_type& S) {
 
 void MaxEntParameters::singular_value_decompose_kernel(bool verbose,
     vector_type& S) {
-  /*boost::numeric::bindings::lapack::gesvd('S', 'S', Kt, S, U_, Vt_);
-  */
-
-#ifdef HAVE_LAPACK
-
-  matrix_type Kt = K_; // gesvd destroys K!
-  lapack_svd(Kt,S, Vt_,U_);
-
-#else
   const double threshold = std::sqrt(std::numeric_limits<double>::epsilon())
       * nfreq();
   Eigen::JacobiSVD<matrix_type> svd(K_,Eigen::ComputeThinU | Eigen::ComputeThinV);
@@ -314,7 +305,7 @@ void MaxEntParameters::singular_value_decompose_kernel(bool verbose,
   S=svd.singularValues();
   U_=svd.matrixU();
   Vt_=svd.matrixV().transpose(); 
-#endif
+
   if (verbose)
     std::cout << "# Singular values of the Kernel:\n";
 
