@@ -24,13 +24,14 @@
 #include "maxent_kernel.hpp"
 #include "maxent_matrix_def.hpp"
 
-///This class has all the information about general analytic continuation things. It does not know about specifics of maxent.
-class ContinuationParameters {
+///This class has all the information about general, non-SVD specific analytic continuation things.
+///It constructs kernels, grids, etc.
+class KernelAndGrid {
 
 public:
   
   ///constructs the kernel and grid from the parameters p. Also reads in the data.
-  ContinuationParameters(alps::params& p);
+  KernelAndGrid(alps::params& p);
   
   ///value of the Matsubara data at index i
   double y(const int i) const { return y_[i]; }
@@ -90,15 +91,20 @@ protected:
 
 
 
-///This class contains all of the maxent specific parameters, along with the singular value decomposed kernel.
-class SVDContinuation : public ContinuationParameters
+///This class contains all of the information about singular value decompositions.
+///It inherits from the KernelAndGrid class that was responsible for building
+///the kernel.
+class SVDContinuation : public KernelAndGrid
 {
 public:
-  ///constructs the maxent specific parameters out of parameters p
+  ///constructs and singular value decomposes the kernel
   SVDContinuation(alps::params& p);
   
+  ///SVD decomposes the kernel into U*S*V^T. This is U
   const matrix_type& U() const { return U_; }
+  ///SVD decomposes the kernel into U*S*V^T. This is V^T
   const matrix_type& Vt() const { return Vt_; }
+  ///SVD decomposes the kernel into U*S*V^T. This is the vector Sigma that forms the diagonal of S
   const matrix_type& Sigma() const { return Sigma_; }
   double omega_coord(const int i) const { return omega_coord_[i]; }
   const vector_type& omega_coord() const { return omega_coord_; }

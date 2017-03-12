@@ -51,7 +51,7 @@ namespace bmth = boost::math;
 
 ///Read data from a text file, with filename given by p["DATA"] in the parameters.
 ///The format should be index data error
-void ContinuationParameters::read_data_from_text_file(const alps::params& p) {
+void KernelAndGrid::read_data_from_text_file(const alps::params& p) {
   std::string fname = p["DATA"];
   std::ifstream datstream(fname.c_str());
   if (!datstream){
@@ -121,7 +121,7 @@ void ContinuationParameters::read_data_from_text_file(const alps::params& p) {
 ///if the parameter COVARIANCE_MATRIX is specified, then the covariance matrix is read in instead of the error.
 ///The covariance matrix is expected to be stored at /Covariance
 
-void ContinuationParameters::read_data_from_hdf5_file(const alps::params& p) {
+void KernelAndGrid::read_data_from_hdf5_file(const alps::params& p) {
   std::string fname = p["DATA"];
   //attempt to read from h5 archive
   alps::hdf5::archive ar(fname, alps::hdf5::archive::READ);
@@ -149,7 +149,7 @@ void ContinuationParameters::read_data_from_hdf5_file(const alps::params& p) {
   }
 }
 
-void ContinuationParameters::read_data_from_param_file(const alps::params& p) {
+void KernelAndGrid::read_data_from_param_file(const alps::params& p) {
   if (!p.defined("NORM")) {
     throw std::runtime_error("parameter NORM missing!");
   } else
@@ -174,7 +174,7 @@ void ContinuationParameters::read_data_from_param_file(const alps::params& p) {
   }
 }
 
-ContinuationParameters::ContinuationParameters(alps::params& p) :
+KernelAndGrid::KernelAndGrid(alps::params& p) :
 T_(1/p["BETA"].as<double>()),ndat_(p["NDAT"]), nfreq_(p["NFREQ"]),
 y_(ndat_),sigma_(ndat_),K_(),grid_(p),inputGrid_(ndat_)
 {
@@ -204,7 +204,7 @@ y_(ndat_),sigma_(ndat_),K_(),grid_(p),inputGrid_(ndat_)
   }
 }
 
-void ContinuationParameters::scale_data_with_error(const int ntab) {
+void KernelAndGrid::scale_data_with_error(const int ntab) {
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
   for (int i = 0; i < ndat(); i++) {
     y_[i] /= sigma_[i];
@@ -214,7 +214,7 @@ void ContinuationParameters::scale_data_with_error(const int ntab) {
   }
 }
 
-void ContinuationParameters::read_covariance_matrix_from_text_file(
+void KernelAndGrid::read_covariance_matrix_from_text_file(
     const std::string& fname) {
   cov_.resize(ndat(), ndat());
   std::cerr << "Reading covariance matrix\n";
@@ -233,7 +233,7 @@ void ContinuationParameters::read_covariance_matrix_from_text_file(
   }
 }
 
-void ContinuationParameters::decompose_covariance_matrix(const alps::params& p){
+void KernelAndGrid::decompose_covariance_matrix(const alps::params& p){
     vector_type var(ndat());
     //bindings::lapack::syev('V', bindings::upper(cov_) , var, bindings::lapack::optimal_workspace()); 
     //TODO: check if this truly implements lapack's expected overwrite of cov_
@@ -365,7 +365,7 @@ void SVDContinuation::check_high_frequency_limit(const vector_type& y,const kern
 }
 
 SVDContinuation::SVDContinuation(alps::params& p) :
-    ContinuationParameters(p),
+    KernelAndGrid(p),
     Default_(make_default_model(p, "DEFAULT_MODEL")),
     U_(ndat(), ndat()), Vt_(ndat(), nfreq()), Sigma_(ndat(), ndat()),
     omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0)

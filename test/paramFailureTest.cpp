@@ -33,7 +33,7 @@ TEST(Parameters,CatchMissingDataInParamFile){
   p["NDAT"] = 5;
 
   try{
-    ContinuationParameters c(p);
+    KernelAndGrid c(p);
     boost::filesystem::remove(pf);
     FAIL() << "expected error on missing X_4 datapoint";
 
@@ -46,7 +46,7 @@ TEST(Parameters,CatchMissingDataInParamFile){
   p["X_4"]=0.5;
   
   try{
-    ContinuationParameters c2(p);
+    KernelAndGrid c2(p);
     boost::filesystem::remove(pf);
     FAIL() << "expected error on missing SIGMA_4";
   }
@@ -69,7 +69,7 @@ TEST(Parameters,CatchMissingDataInDataFile){
   p["NDAT"] = 6;
 
   try{
-    ContinuationParameters c(p);
+    KernelAndGrid c(p);
     boost::filesystem::remove(pf);
     FAIL() << "expected error on missing 4th datapoint";
 

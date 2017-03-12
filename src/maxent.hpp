@@ -30,6 +30,7 @@ struct ofstream_ : std::ofstream{
     }
 };
 
+///This class has Maxent specific stuff, like default models, entropy functions, and the like.
 class MaxEntHelper : private SVDContinuation
 {
 public : 
