@@ -234,16 +234,14 @@ void ContiParameters::read_covariance_matrix_from_text_file(
 }
 
 void ContiParameters::decompose_covariance_matrix(const alps::params& p){
-  using namespace boost::numeric;
     vector_type var(ndat());
     //bindings::lapack::syev('V', bindings::upper(cov_) , var, bindings::lapack::optimal_workspace()); 
     //TODO: check if this truly implements lapack's expected overwrite of cov_
     Eigen::SelfAdjointEigenSolver<matrix_type> es(cov_);
     var=es.eigenvalues();
     cov_=es.eigenvectors();
-    matrix_type cov_trans = cov_.transpose();
-    matrix_type K_loc = maxent_prec_prod(cov_trans, K_);
-    vector_type y_loc = maxent_prec_prod(cov_trans, y_);
+    matrix_type K_loc = cov_.transpose()*K_;
+    vector_type y_loc = cov_.transpose()*y_;
     if (p["VERBOSE"])
       std::cout << "# Eigenvalues of the covariance matrix:\n";
     // We drop eigenvalues of the covariance matrix which are smaller than 1e-10
@@ -274,10 +272,7 @@ void ContiParameters::decompose_covariance_matrix(const alps::params& p){
 }
 
 void MaxEntParameters::compute_minimal_chi2()const {
-  using namespace boost::numeric;
-  matrix_type Ut = U_.transpose(); //U^T has dimension ns_*ndat()
-  vector_type t = maxent_prec_prod(Ut, y_); //t has dimension ns_
-  vector_type y2 = maxent_prec_prod(U_, t); //y2 has dimension ndat(), which is dimension of y
+  vector_type y2 = U_*(U_.transpose()*y_); //y2 has dimension ndat(), which is dimension of y
   double chi = (y_ - y2).norm(); //this measures the loss of precision when transforming to singular space and back.
   std::cout << "minimal chi2: " << chi * chi / y_.size() << std::endl;
 }

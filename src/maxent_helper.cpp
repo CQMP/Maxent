@@ -64,13 +64,14 @@ vector_type MaxEntHelper::transform_into_singular_space(vector_type A) const
     A[i] /= D;
     A[i] = A[i]==0. ? 0. : log(A[i]);
   }
-  return maxent_prec_prod(Vt(), A);
+  return Vt()* A;
 }
 
 //returns exp(V^T*u)*Default(i). This quantity is then usually called 'A'
 vector_type MaxEntHelper::transform_into_real_space(vector_type u) const
 {
-  u = maxent_prec_prod(Vt().transpose(), u);
+  u = Vt().transpose()*u;
+
   for (unsigned int i=0; i<u.size(); ++i) {
     u[i] = exp(u[i]);
     u[i] *= Default(i);
@@ -97,11 +98,13 @@ matrix_type MaxEntHelper::left_side(const vector_type& u) const
   for (unsigned int i=0; i<M.rows(); ++i) 
     for (unsigned int j=0; j<M.cols(); ++j) 
       M(i,j) *= A[i];
-  M = maxent_prec_prod(Vt(), M);
-  M = maxent_prec_prod(Sigma() ,M);
-  M = maxent_prec_prod(Sigma(), M);
+  M = Vt()*M;
+  M = Sigma()*M;
+  M = Sigma()* M;
   M *= 2./ndat();
+
   return M;
+
 }
 
 
@@ -110,9 +113,9 @@ matrix_type MaxEntHelper::left_side(const vector_type& u) const
 //up to a factor of 2./ndat(). Compare this to Eq. D.12 in Sebastian's thesis
 vector_type MaxEntHelper::right_side(const vector_type& u) const
 {
-  vector_type b = 2./ndat()*(maxent_prec_prod(K(), transform_into_real_space(u)) - y());
-  b = maxent_prec_prod(U().transpose(), b);
-  b = maxent_prec_prod(Sigma(), b);
+  vector_type b = 2./ndat()*(K()*transform_into_real_space(u) - y());
+  b = U().transpose()*b;
+  b = Sigma()* b;
   return b;
 }
 
@@ -124,8 +127,8 @@ double MaxEntHelper::step_length(const vector_type& delta, const vector_type& u)
   for (unsigned int i=0; i<L.rows(); ++i) 
     for (unsigned int j=0; j<L.cols(); ++j) 
       L(i,j) *= A[i];
-  L = maxent_prec_prod(Vt(), L);
-  return delta.dot(maxent_prec_prod(L, delta));
+  L = Vt()* L;
+  return delta.dot(L* delta);
 }
 
 //Bryan's paper section 2.3 (or after eq 22)
@@ -137,9 +140,9 @@ double MaxEntHelper::convergence(const vector_type& u, const double alpha) const
   for (unsigned int i=0; i<L.rows(); ++i) 
     for (unsigned int j=0; j<L.cols(); ++j) 
       L(i,j) *= A[i];
-  L = maxent_prec_prod(Vt(), L);
-  vector_type alpha_dSdu = -alpha*maxent_prec_prod(L, u);
-  vector_type dLdu = maxent_prec_prod(L, right_side(u));
+  L = Vt()* L;
+  vector_type alpha_dSdu = -alpha*L*u;
+  vector_type dLdu = L*right_side(u);
   vector_type diff = alpha_dSdu - dLdu;
   double denom = alpha_dSdu.norm() + dLdu.norm();
   denom = denom*denom;
@@ -148,7 +151,7 @@ double MaxEntHelper::convergence(const vector_type& u, const double alpha) const
 
 double MaxEntHelper::log_prob(const vector_type& u, const double alpha) const
 {
-  matrix_type L = maxent_prec_prod_trans(K(), K());
+  matrix_type L = K().transpose()*K();
   const vector_type A = transform_into_real_space(u);
   for (unsigned int i=0; i<L.rows(); ++i)
     for (unsigned int j=0; j<L.cols(); ++j)
@@ -172,7 +175,7 @@ double MaxEntHelper::chi_scale_factor(vector_type A, const double chi_sq, const 
   for (unsigned int i=0; i<A.size(); ++i) 
     A[i] *= delta_omega(i);
   using namespace boost::numeric;
-  matrix_type L = maxent_prec_prod_trans(K(), K());
+  matrix_type L = K().transpose()* K();
   for (unsigned int i=0; i<L.rows(); ++i)
     for (unsigned int j=0; j<L.cols(); ++j)
       L(i,j) *= sqrt(A[i])*sqrt(A[j]);
@@ -193,7 +196,7 @@ double MaxEntHelper::chi_scale_factor(vector_type A, const double chi_sq, const 
 //This function computes chi^2 as in equation D.6 in Sebastian's thesis
 double MaxEntHelper::chi2(const vector_type& A) const 
 {
-  vector_type del_G = maxent_prec_prod(K(), A) - y();
+  vector_type del_G = K()*A - y();
   
   /*std::cout<<"in computation of chi2:"<<std::endl;
    for(int i=0;i<y().size();++i){
@@ -208,8 +211,8 @@ double MaxEntHelper::chi2(const vector_type& A) const
 
 void MaxEntHelper::print_chi2(const vector_type& A, std::ostream &os) const 
 {
-  vector_type backcont=maxent_prec_prod(K(), A);
-  vector_type defaultm=maxent_prec_prod(K(), Default());
+  vector_type backcont=K()*A;
+  vector_type defaultm=K()*Default();
   os<<"#first column: index (Matsubara frequency). second column: fitted function. third: input data. fourth: default model."<<std::endl;
   for(int i=0;i<y().size();++i){
     os<<i<<" "<<backcont[i]<<" "<<y()[i]<<" "<<defaultm[i]<<std::endl;
