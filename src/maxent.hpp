@@ -30,13 +30,13 @@ struct ofstream_ : std::ofstream{
     }
 };
 
-class MaxEntHelper : private MaxEntParameters
+class MaxEntHelper : private SVDContinuation
 {
 public : 
 
   MaxEntHelper(alps::params& p);
 
-  double omega_coord(const int i) const { return MaxEntParameters::omega_coord(i); }
+  double omega_coord(const int i) const { return SVDContinuation::omega_coord(i); }
 
   ///getter function for the discretized default model
   double Default(const int i) const { return def_[i]; }  
@@ -50,7 +50,7 @@ public :
   }
 
   ///number of points for the Matsubara data
-  int ndat() const { return MaxEntParameters::ndat(); }
+  int ndat() const { return SVDContinuation::ndat(); }
 
   ///A->u
   vector_type transform_into_singular_space(vector_type A) const;

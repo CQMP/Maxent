@@ -52,7 +52,7 @@ TEST(Parameters,ContiParams){
 	p["SIGMA_2"]=0.5;
 	p["SIGMA_3"]=0.5;
 	p["SIGMA_4"]=0.5;
-	ContiParameters c(p);
+	ContinuationParameters c(p);
 
 	EXPECT_EQ(c.ndat(),5);
 	EXPECT_EQ(c.T(),0.5);
@@ -72,7 +72,7 @@ TEST(Parameters,DataInParam){
   MaxEntSimulation::define_parameters(p);
   p["NDAT"] = 4;
   
-  ContiParameters c(p);
+  ContinuationParameters c(p);
   EXPECT_EQ(c.ndat(),4);
   EXPECT_EQ(c.T(),0.5);
 
@@ -95,7 +95,7 @@ std::string pf=alps::temporary_filename("in_file.dat");
   p["DATA"]=pf;
   p["NDAT"] = 5;
 
-  ContiParameters c(p);
+  ContinuationParameters c(p);
   EXPECT_EQ(c.ndat(),5);
   EXPECT_EQ(c.T(),0.5);
 
@@ -136,7 +136,7 @@ TEST(Parameters,MaxentParams){
 	p["SIGMA_2"]=0.5;
 	p["SIGMA_3"]=0.5;
 	p["SIGMA_4"]=0.5;
-	MaxEntParameters c(p);
+	SVDContinuation c(p);
     
 	EXPECT_EQ(c.ndat(),5);
 	EXPECT_EQ(c.T(),0.5);
@@ -189,7 +189,7 @@ TEST(Parameters,HighFrequencyCheck){
     std::complex<double> G;
     for(int i=0;i<numModels;i++){
         p["DEFAULT_MODEL"] = models[i];
-        MaxEntParameters c(p);
+        SVDContinuation c(p);
         
         // G(iw_{n})=\sum_{m}K_{nm}A_{m}
         G=0;
@@ -244,7 +244,7 @@ TEST(Parameters,HDF5ContiParams){
   p.load(iar);
   iar.close();
   
-  ContiParameters c(p);
+  ContinuationParameters c(p);
 
 	EXPECT_EQ(c.ndat(),5);
 	EXPECT_EQ(c.T(),0.5);
@@ -283,7 +283,7 @@ TEST(Parameters,TZero){
   p["TAU_3"]=0.9609375;
   p["TAU_4"]=1.28125;
 
-	MaxEntParameters c(p);
+	SVDContinuation c(p);
   //this is really just to make sure
   //nothing weird happens at T=0
 

@@ -207,8 +207,8 @@ alps::params p;
   p["SIGMA_15"]=1e-6;
 
   //setup params given above data
-  MaxEntParameters param(p);
-  MaxEntParameters * pp = &param;
+  SVDContinuation param(p);
+  SVDContinuation * pp = &param;
 
   //backcontinue saved output
   vector_type A = getA();    
@@ -316,8 +316,8 @@ TEST(Backcont,FrequencyNotPHBackcont){
   p["SIGMA_31"]=1e-6;
 
   //setup params given above data
-  MaxEntParameters param(p);
-  MaxEntParameters * pp = &param;
+  SVDContinuation param(p);
+  SVDContinuation * pp = &param;
 
   //backcontinue saved output
   vector_type A = getA();    
@@ -386,8 +386,8 @@ TEST(Backcont,FrequencyBosonicBackcont){
   p["SIGMA_9"]=1e-4;
     
   //setup params given above data
-  MaxEntParameters param(p);
-  MaxEntParameters * pp = &param;
+  SVDContinuation param(p);
+  SVDContinuation * pp = &param;
 
   //backcontinue saved output
   vector_type A = getA_bose();    
@@ -504,8 +504,8 @@ alps::params p;
 
 
   //setup params given above data
-  MaxEntParameters param(p);
-  MaxEntParameters * pp = &param;
+  SVDContinuation param(p);
+  SVDContinuation * pp = &param;
 
   //backcontinue saved output
   vector_type A = getA();    

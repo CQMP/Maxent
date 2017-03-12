@@ -31,10 +31,10 @@
 //NOTE: size1= rows; size2=columns
 
 MaxEntHelper::MaxEntHelper(alps::params& p) :
-MaxEntParameters(p) , def_(nfreq()), text_output(p["TEXT_OUTPUT"])
+SVDContinuation(p) , def_(nfreq()), text_output(p["TEXT_OUTPUT"])
 {
     for (int i=0; i<nfreq(); ++i){
-      def_[i] = MaxEntParameters::Default().D(omega_coord(i))* delta_omega(i);
+      def_[i] = SVDContinuation::Default().D(omega_coord(i))* delta_omega(i);
     }
     //normalizing the default model. Note that it is possible that it is NOT normalized to one here, because of the nfreq() discretization.
     //in practice, increasing nfreq() here (NFREQ in the parameter file) will make this normalization more accurate.
@@ -254,7 +254,7 @@ vector_type MaxEntHelper::PrincipalValue(const vector_type &w,const vector_type 
 void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A_in,const double norm, const std::string name, vector_type &ext_back)
 {
     vector_type A = A_in/norm;
-    const MaxEntParameters *pp = this;
+    const SVDContinuation *pp = this;
     Backcont bc(pp);
     vector_type G = bc.backcontinue(A);
     kernel_type k_type = pp->getKernelType();

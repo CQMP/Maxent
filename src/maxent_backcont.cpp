@@ -18,7 +18,7 @@
  */
 #include "maxent_backcont.hpp"
 
-Backcont::Backcont(const MaxEntParameters *param_in) :
+Backcont::Backcont(const SVDContinuation *param_in) :
  param(param_in),k_type(param->getKernelType()){
 } 
 
@@ -29,7 +29,7 @@ vector_type Backcont::backcontinue(const vector_type &A){
   G = vector_type(ndat);
   // G(X) =\int K(X,\omega)A(\omega)d\omega
   for(int n=0;n<ndat;n++){
-    //recall that in MaxEntParameters we scaled the kernel by the 1/error
+    //recall that in SVDContinuation we scaled the kernel by the 1/error
     double err = param->sigma(n);
     G(n)=0;
     for(int i=1;i<nfreq-1;i++){

@@ -51,7 +51,7 @@ namespace bmth = boost::math;
 
 ///Read data from a text file, with filename given by p["DATA"] in the parameters.
 ///The format should be index data error
-void ContiParameters::read_data_from_text_file(const alps::params& p) {
+void ContinuationParameters::read_data_from_text_file(const alps::params& p) {
   std::string fname = p["DATA"];
   std::ifstream datstream(fname.c_str());
   if (!datstream){
@@ -121,7 +121,7 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
 ///if the parameter COVARIANCE_MATRIX is specified, then the covariance matrix is read in instead of the error.
 ///The covariance matrix is expected to be stored at /Covariance
 
-void ContiParameters::read_data_from_hdf5_file(const alps::params& p) {
+void ContinuationParameters::read_data_from_hdf5_file(const alps::params& p) {
   std::string fname = p["DATA"];
   //attempt to read from h5 archive
   alps::hdf5::archive ar(fname, alps::hdf5::archive::READ);
@@ -149,7 +149,7 @@ void ContiParameters::read_data_from_hdf5_file(const alps::params& p) {
   }
 }
 
-void ContiParameters::read_data_from_param_file(const alps::params& p) {
+void ContinuationParameters::read_data_from_param_file(const alps::params& p) {
   if (!p.defined("NORM")) {
     throw std::runtime_error("parameter NORM missing!");
   } else
@@ -174,7 +174,7 @@ void ContiParameters::read_data_from_param_file(const alps::params& p) {
   }
 }
 
-ContiParameters::ContiParameters(alps::params& p) :
+ContinuationParameters::ContinuationParameters(alps::params& p) :
 T_(1/p["BETA"].as<double>()),ndat_(p["NDAT"]), nfreq_(p["NFREQ"]),
 y_(ndat_),sigma_(ndat_),K_(),grid_(p),inputGrid_(ndat_)
 {
@@ -204,7 +204,7 @@ y_(ndat_),sigma_(ndat_),K_(),grid_(p),inputGrid_(ndat_)
   }
 }
 
-void ContiParameters::scale_data_with_error(const int ntab) {
+void ContinuationParameters::scale_data_with_error(const int ntab) {
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
   for (int i = 0; i < ndat(); i++) {
     y_[i] /= sigma_[i];
@@ -214,7 +214,7 @@ void ContiParameters::scale_data_with_error(const int ntab) {
   }
 }
 
-void ContiParameters::read_covariance_matrix_from_text_file(
+void ContinuationParameters::read_covariance_matrix_from_text_file(
     const std::string& fname) {
   cov_.resize(ndat(), ndat());
   std::cerr << "Reading covariance matrix\n";
@@ -233,7 +233,7 @@ void ContiParameters::read_covariance_matrix_from_text_file(
   }
 }
 
-void ContiParameters::decompose_covariance_matrix(const alps::params& p){
+void ContinuationParameters::decompose_covariance_matrix(const alps::params& p){
     vector_type var(ndat());
     //bindings::lapack::syev('V', bindings::upper(cov_) , var, bindings::lapack::optimal_workspace()); 
     //TODO: check if this truly implements lapack's expected overwrite of cov_
@@ -271,13 +271,13 @@ void ContiParameters::decompose_covariance_matrix(const alps::params& p){
     }
 }
 
-void MaxEntParameters::compute_minimal_chi2()const {
+void SVDContinuation::compute_minimal_chi2()const {
   vector_type y2 = U_*(U_.transpose()*y_); //y2 has dimension ndat(), which is dimension of y
   double chi = (y_ - y2).norm(); //this measures the loss of precision when transforming to singular space and back.
   std::cout << "minimal chi2: " << chi * chi / y_.size() << std::endl;
 }
 
-void MaxEntParameters::truncate_to_singular_space(const vector_type& S) {
+void SVDContinuation::truncate_to_singular_space(const vector_type& S) {
   //(truncated) U has dimension ndat() * ns_; ndat() is # of input (matsubara frequency/imag time) points
   //(truncated) Sigma has dimension ns_*ns_ (number of singular eigenvalues)
   //(truncated) V^T has dimensions ns_* nfreq(); nfreq() is number of output (real) frequencies
@@ -291,7 +291,7 @@ void MaxEntParameters::truncate_to_singular_space(const vector_type& S) {
   }
 }
 
-void MaxEntParameters::singular_value_decompose_kernel(bool verbose,
+void SVDContinuation::singular_value_decompose_kernel(bool verbose,
     vector_type& S) {
   const double threshold = std::sqrt(std::numeric_limits<double>::epsilon())
       * nfreq();
@@ -321,7 +321,7 @@ void MaxEntParameters::singular_value_decompose_kernel(bool verbose,
         std::logic_error("all singular values smaller than the precision"));
   
 }
-void MaxEntParameters::check_high_frequency_limit(const vector_type& y,const kernel_type kt){
+void SVDContinuation::check_high_frequency_limit(const vector_type& y,const kernel_type kt){
     //TODO: expand check into time/bosonic domain
     //we know that the limit of a green's function is ~ -1/iw_{n}
     //this checks that we have a good high frequency limit
@@ -364,8 +364,8 @@ void MaxEntParameters::check_high_frequency_limit(const vector_type& y,const ker
     }
 }
 
-MaxEntParameters::MaxEntParameters(alps::params& p) :
-    ContiParameters(p),
+SVDContinuation::SVDContinuation(alps::params& p) :
+    ContinuationParameters(p),
     Default_(make_default_model(p, "DEFAULT_MODEL")),
     U_(ndat(), ndat()), Vt_(ndat(), nfreq()), Sigma_(ndat(), ndat()),
     omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0)
