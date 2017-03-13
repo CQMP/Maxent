@@ -32,7 +32,6 @@ nfreq_(p["NFREQ"]),
 T_(1./static_cast<double>(p["BETA"])),
 K_(ndat_,nfreq_)
 {
-  using namespace boost::numeric;
   K_=matrix_type::Zero(ndat_,nfreq_);
   std::string dataspace_name = p["DATASPACE"];
   std::string kernel_name = p["KERNEL"];

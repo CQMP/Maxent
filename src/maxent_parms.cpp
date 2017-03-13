@@ -18,7 +18,6 @@
  */
 
 #include "maxent.hpp"
-#include "eigen_lapack.hpp"
 #include <alps/config.hpp> // needed to set up correct bindings
 #include <Eigen/SVD>
 #include <Eigen/Eigenvalues>

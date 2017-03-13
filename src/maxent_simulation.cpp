@@ -20,7 +20,6 @@
 #include "maxent.hpp"
 #include <alps/config.hpp> // needed to set up correct bindings
 #include <alps/hdf5/vector.hpp>
-#include <boost/math/special_functions/fpclassify.hpp> //needed for boost::math::isnan
 #include <Eigen/LU>
 #include "eigen_hdf5.hpp"
 #include <iomanip>
@@ -148,7 +147,6 @@ void MaxEntSimulation::evaluate(){
       chispec_file << omega_coord(i) << " " << spectra[a_chi][i]*norm << " " << def[i]*norm << std::endl;
     }
   }
-  //boost::numeric::ublas::vector<double>::const_iterator max_lprob = std::max_element(lprob.begin(), lprob.end());  
   //const int max_a = max_lprob-lprob.begin();
   int max_a,nothing; double max_lprob;
   max_lprob=lprob.maxCoeff(&max_a,&nothing);
@@ -324,7 +322,6 @@ void MaxEntSimulation::evaluate(){
 // 
 vector_type MaxEntSimulation::levenberg_marquardt(vector_type u, const double alpha) const
 {
-  using namespace boost::numeric;
   double mu = 1e-18;
   const double nu = 1.3;
   double Q1=0.;
@@ -332,7 +329,7 @@ vector_type MaxEntSimulation::levenberg_marquardt(vector_type u, const double al
   int it2 = 0;
   for (; it<max_it; it++) {
     vector_type delta;
-    if(boost::math::isnan(Q1))
+    if(std::isnan(Q1))
         throw std::logic_error("Q=NaN, something went wrong");
     for (it2=0; it2<max_it; ++it2) {
       //compute change vector delta to u
