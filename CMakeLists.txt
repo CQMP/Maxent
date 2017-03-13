@@ -62,10 +62,10 @@ add_executable(maxent
 )
 target_link_libraries(maxent libmaxent ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
-add_executable(hiroshi
-  ./src/hiroshi_method.cpp ./src/hiroshi_simulation.cpp
+add_executable(SpM
+  ./src/SpM_method.cpp ./src/SpM_simulation.cpp
 )
-target_link_libraries(hiroshi libmaxent ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(SpM libmaxent ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 #testing setup
 option(Testing "Enable testing" ON)

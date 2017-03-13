@@ -77,3 +77,21 @@
 *.app
 /Debug/
 /Debug/
+
+#various other stuff
+build/
+doc/
+pade/pade_arbitrary_degree/CMakeCache.txt
+pade/pade_arbitrary_degree/CMakeFiles/
+pade/pade_arbitrary_degree/Makefile
+pade/pade_arbitrary_degree/cmake_install.cmake
+pade/pade_arbitrary_degree/pade
+pade/pade_arbitrary_degree/pade_demo
+pade/pade_arbitrary_degree/pade_gmp
+pade/pade_arbitrary_degree/pade_lu
+src/.cproject
+src/.project
+src/.settings/
+submission.zip
+submission/
+
