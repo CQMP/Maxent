@@ -24,6 +24,9 @@
 class grid{
 public:
   grid(const alps::params &p);
+  ///define parameter defaults
+  static void define_parameters(alps::params &p);
+
   const std::vector<double> &t_array() const{return t_array_;}
   double operator()(int i)const{return t_array_[i];}
 private:

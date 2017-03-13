@@ -46,6 +46,18 @@ t_array_(nfreq_+1){
   else
     boost::throw_exception(std::invalid_argument("No valid frequency grid specified"));
 }
+///define parameter defaults
+void grid::define_parameters(alps::params &p){
+  //---------------------------------
+  //    Grid
+  //---------------------------------
+  p.define<double>("CUT",0.01,"cut for lorentzian grids");
+  p.define<double>("SPREAD",4,"spread for quadratic grid");
+  p.define<double>("LOG_MIN",1.0e-4,"log_min for log grid");
+  p.define<std::string>("FREQUENCY_GRID","Lorentzian","Type of frequency grid");
+  p.define<int>("NFREQ",1000,"Number of A(omega) real frequencies");
+}
+
 void grid::initialize_linear_grid() {
   for (int i = 0; i < nfreq_+1; ++i)
     t_array_[i] = double(i) / (nfreq_);

@@ -32,6 +32,8 @@ public:
   
   ///constructs the kernel and grid from the parameters p. Also reads in the data.
   KernelAndGrid(alps::params& p);
+  ///define parameter defaults
+  static void define_parameters(alps::params &p);
   
   ///value of the Matsubara data at index i
   double y(const int i) const { return y_[i]; }
@@ -99,6 +101,8 @@ class SVDContinuation : public KernelAndGrid
 public:
   ///constructs and singular value decomposes the kernel
   SVDContinuation(alps::params& p);
+  ///define parameter defaults
+  static void define_parameters(alps::params &p);
   
   ///SVD decomposes the kernel into U*S*V^T. This is U
   const matrix_type& U() const { return U_; }

@@ -45,6 +45,8 @@ enum kernel_type{
 class kernel{
 public:
   kernel(alps::params &p, const vector_type& freq, vector_type &inputGrid);
+  ///define parameter defaults
+  static void define_parameters(alps::params &p);
 
   ///getter function for the kernel matrix
   const matrix_type &operator()()const{return K_;}

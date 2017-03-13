@@ -305,3 +305,16 @@ void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& fre
     gsl_integration_workspace_free (w);
 }
 
+///define parameter defaults
+void kernel::define_parameters(alps::params &p){
+  p.define<double>("BETA","beta, inverse temperature");
+  p.define<int>("NDAT","# of input points");
+
+  p.define<std::string>("DATASPACE","time","Time or Frequency space");
+  p.define<std::string>("KERNEL","fermionic","Type of kernel: \nFermionic,Bosonic,TZero,Legendre");
+  p.define<bool>("PARTICLE_HOLE_SYMMETRY",false,"Set =1 if particle hole symmetric");
+
+  p.define<double>("X_0","G input for param file entry");
+  p.define<double>("SIGMA_0","G error input for param file entry");
+  p.define<double>("TAU_0","Used for input tau points");
+}

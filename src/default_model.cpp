@@ -201,5 +201,29 @@ boost::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, st
   }
 }
 
+///define parameter defaults
+void DefaultModel::define_parameters(alps::params &p){
+  //---------------------------------
+  //      Default Model
+  //---------------------------------
+  p.define<double>("OMEGA_MAX",10,"Maximum frequency for A(omega) grid");
+  p.define<double>("OMEGA_MIN","Minimum frequency, or =-OMEGA_MAX");
+  p.define<std::string>("DEFAULT_MODEL","flat","Default model for entropy");
+  p.define<double>("NORM1",0.5,"for Two Gaussians model");
+  p.define<double>("SHIFT",0.0,"shift of a model");
+  p.define<double>("SHIFT1",0.0,"for Two Gaussians model");
+  p.define<double>("SHIFT2","for Two Gaussians model");
+  p.define<double>("SIGMA1","for Two Gaussians model");
+  p.define<double>("SIGMA2","for Two Gaussians model");
+  p.define<double>("SIGMA","stddev - For Gaussian models");
+  p.define<double>("GAMMA","width of Lorentzian model");
+  p.define<double>("GAMMA1","for Two Lorentzian models");
+  p.define<double>("GAMMA2","for Two Lorentzian models");
+
+  p.define<double>("LAMBDA","for ___ExpDecay models");
+  p.define<double>("BOSE_NORM","General Double Gaussian Norm");
+  p.define<int>("NTAB",5001,"Discretization points of the Default model");
+
+}
 
 

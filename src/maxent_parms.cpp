@@ -175,7 +175,7 @@ void KernelAndGrid::read_data_from_param_file(const alps::params& p) {
 }
 
 KernelAndGrid::KernelAndGrid(alps::params& p) :
-T_(1/p["BETA"].as<double>()),ndat_(p["NDAT"]), nfreq_(p["NFREQ"]),
+T_(1./p["BETA"].as<double>()),ndat_(p["NDAT"]), nfreq_(p["NFREQ"]),
 y_(ndat_),sigma_(ndat_),K_(),grid_(p),inputGrid_(ndat_)
 {
   //note: T_=1/beta now taken care of elsewhere
@@ -203,6 +203,12 @@ y_(ndat_),sigma_(ndat_),K_(),grid_(p),inputGrid_(ndat_)
     read_data_from_param_file(p);
   }
 }
+void KernelAndGrid::define_parameters(alps::params &p){
+  kernel::define_parameters(p);
+  grid::define_parameters(p);
+  DefaultModel::define_parameters(p);
+}
+
 
 void KernelAndGrid::scale_data_with_error(const int ntab) {
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
@@ -404,6 +410,13 @@ SVDContinuation::SVDContinuation(alps::params& p) :
   compute_minimal_chi2();
 }
 
-
+void SVDContinuation::define_parameters(alps::params &p){
+  KernelAndGrid::define_parameters(p);
+  p.define<bool>("DATA_IN_HDF5",false,"1 if data is in HDF5 format");
+  //TODO: revisit covariance matrix handling.
+  //p.define<bool>("COVARIANCE_MATRIX",false,"1 if covariance matrix needs to be diagonalized");
+  p.define<std::string>("DATA","","data file input");
+  p.define<double>("NORM",1.0,"NORM");
+}
 
 

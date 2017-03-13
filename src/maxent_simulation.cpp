@@ -37,6 +37,7 @@ MaxEntSimulation::MaxEntSimulation(alps::params &parms)
 , gen_err(parms["GENERATE_ERR"])
 , qvec((int)parms["N_ALPHA"])
 , nfreq(parms["NFREQ"].as<int>())
+, postprobdef(0)
 {
   std::string bn=parms["BASENAME"]; name=bn+'.';
 
@@ -49,70 +50,27 @@ MaxEntSimulation::MaxEntSimulation(alps::params &parms)
 }
 ///define parameter defaults
 void MaxEntSimulation::define_parameters(alps::params &p){
+  MaxEntHelper::define_parameters(p);
   p.description("Maxent - a utility for " 
     "performing analytic continuation \n \t using the method of Maximum Entropy\n");
   //---------------------------------
-  //    General
+  //    General/continuation specific
   //---------------------------------
-  p.define<bool>("DATA_IN_HDF5",false,"1 if data is in HDF5 format");
   p.define<bool>("TEXT_OUTPUT",true,"1 if results should be output to text files");
   p.define<bool>("VERBOSE",false,"1 to print verbose output");
   p.define<bool>("SELF",false,"input is a self energy");
+  p.define<bool>("BACKCONTINUE",true,"Output A(omega) back to imaginary axis");
+  p.define<std::string>("BASENAME","","Specified output name \n(generated if not given)");
+  //---------------------------------
+  //    General/maxent specific
+  //---------------------------------
   p.define<int>("MAX_IT",1000,"Maximum Iterations for the fitting routine");
   p.define<int>("N_ALPHA",60,"Number of alpha samples");
   p.define<double>("ALPHA_MIN",0.01,"Minimum alpha");
   p.define<double>("ALPHA_MAX",20,"Maximum alpha");
-  p.define<double>("NORM",1.0,"NORM");
-  p.define<bool>("BACKCONTINUE",true,"Output A(omega) back to imaginary axis");
   p.define<bool>("GENERATE_ERR",false,"Generate a bootstrap approximation for error bars");
-  //*********************************
-  p.define<double>("BETA","beta, inverse temperature");
-  p.define<int>("NDAT","# of input points");
-  p.define<std::string>("DATA","","data file input");
-  p.define<std::string>("BASENAME","","Specified output name \n(generated if not given)");
   p.define<int>("MODEL_RUNS","How many default model runs");
-  p.define<double>("X_0","G input for param file entry");
-  p.define<double>("SIGMA_0","G error input for param file entry");
-  p.define<double>("TAU_0","Used for input tau points");
-
-
-  //---------------------------------
-  //      Default Model
-  //---------------------------------
-  p.define<double>("OMEGA_MAX",10,"Maximum frequency for A(omega) grid");
-  p.define<double>("OMEGA_MIN","Minimum frequency, or =-OMEGA_MAX");
-  p.define<std::string>("DEFAULT_MODEL","flat","Default model for entropy");
-  p.define<double>("NORM1",0.5,"for Two Gaussians model");
-  p.define<double>("SHIFT",0.0,"shift of a model");
-  p.define<double>("SHIFT1",0.0,"for Two Gaussians model");
-  p.define<double>("SHIFT2","for Two Gaussians model");
-  p.define<double>("SIGMA1","for Two Gaussians model");
-  p.define<double>("SIGMA2","for Two Gaussians model");
-  p.define<double>("SIGMA","stddev - For Gaussian models");
-  p.define<double>("GAMMA","width of Lorentzian model"); 
-  p.define<double>("GAMMA1","for Two Lorentzian models");
-  p.define<double>("GAMMA2","for Two Lorentzian models");
-
-  p.define<double>("LAMBDA","for ___ExpDecay models");
-  p.define<double>("BOSE_NORM","General Double Gaussian Norm");
-  
-
-  //---------------------------------
-  //    Grid
-  //---------------------------------
-  p.define<double>("CUT",0.01,"cut for lorentzian grids");
-  p.define<double>("SPREAD",4,"spread for quadratic grid");
-  p.define<double>("LOG_MIN",1.0e-4,"log_min for log grid");
-  p.define<int>("NFREQ",1000,"Number of A(omega) frequencies");
-  p.define<int>("NTAB",5001,"Discretization points of the Default model");
-  p.define<std::string>("FREQUENCY_GRID","Lorentzian","Type of frequency grid");
-
-  //---------------------------------
-  //    Kernel
-  //---------------------------------
-  p.define<std::string>("DATASPACE","time","Time or Frequency space");
-  p.define<std::string>("KERNEL","fermionic","Type of kernel: \nFermionic,Bosonic,TZero,Legendre"); 
-  p.define<bool>("PARTICLE_HOLE_SYMMETRY",false,"Set =1 if particle hole symmetric"); 
+  //*********************************
 }
 void MaxEntSimulation::run()
 {

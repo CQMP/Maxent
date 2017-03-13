@@ -54,6 +54,8 @@ public:
     omega_max(p["OMEGA_MAX"]),
     omega_min( p.exists("OMEGA_MIN") ? p["OMEGA_MIN"] : -omega_max){ //we had a 0 here in the bosonic case. That's not a good idea if you're continuing symmetric functions like chi(omega)/omega. Change omega_min to zero manually if you need it.
   }
+  ///define parameter defaults
+  static void define_parameters(alps::params &p);
 
   virtual ~DefaultModel(){}
 

@@ -42,6 +42,9 @@ SVDContinuation(p) , def_(nfreq()), text_output(p["TEXT_OUTPUT"])
     checkDefaultModel(def_);
 }
 
+void MaxEntHelper::define_parameters(alps::params &p){
+  SVDContinuation::define_parameters(p);
+}
 /// check that the default model is non-zero
 /// this is needed for transform_into_singular_space
 /// to work safely

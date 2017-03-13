@@ -36,6 +36,8 @@ class MaxEntHelper : private SVDContinuation
 public : 
 
   MaxEntHelper(alps::params& p);
+  ///define parameter defaults
+  static void define_parameters(alps::params &p);
 
   double omega_coord(const int i) const { return SVDContinuation::omega_coord(i); }
 
