@@ -59,8 +59,13 @@ set_target_properties(libmaxent PROPERTIES PREFIX "")
 #executable
 add_executable(maxent 
   ./src/maxent.cpp
-  )
+)
 target_link_libraries(maxent libmaxent ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+
+add_executable(hiroshi
+  ./src/hiroshi_method.cpp ./src/hiroshi_simulation.cpp
+)
+target_link_libraries(hiroshi libmaxent ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 #testing setup
 option(Testing "Enable testing" ON)

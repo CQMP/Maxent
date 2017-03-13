@@ -21,6 +21,7 @@
 #pragma once
 
 #include <math.h>
+#include<iomanip>
 #include <alps/params.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -56,6 +57,7 @@ public:
   }
   ///define parameter defaults
   static void define_parameters(alps::params &p);
+  static void print_help();
 
   virtual ~DefaultModel(){}
 

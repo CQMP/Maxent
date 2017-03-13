@@ -57,6 +57,17 @@ void grid::define_parameters(alps::params &p){
   p.define<std::string>("FREQUENCY_GRID","Lorentzian","Type of frequency grid");
   p.define<int>("NFREQ",1000,"Number of A(omega) real frequencies");
 }
+void grid::print_help(){
+  std::cout << "Grid help - real frequency omega grid choices for A(omega)" << std::endl;
+  std::cout << "For more information see examples/grids.pdf\n"              << std::endl;
+  std::cout <<std::left << std::setw(15)<< "Grid Name"      <<'\t' << "option=default" << std::endl;
+  std::cout <<std::left << std::setw(15)<< "========="      <<'\t' << "==============" << std::endl;
+  std::cout <<std::left << std::setw(15)<< "lorentzian"     <<'\t' << "CUT=0.1" << "\n"
+            <<std::left << std::setw(15)<< "half-lorentzian"<<'\t' << "CUT=0.1" << "\n"
+            <<std::left << std::setw(15)<< "quadratic"      <<'\t' << "SPREAD=4" << "\n"
+            <<std::left << std::setw(15)<< "log"            <<'\t' << "LOG_MIN=0.0001" << "\n"
+            <<std::left << std::setw(15)<< "linear"         <<'\t' << "---" << std::endl;
+}
 
 void grid::initialize_linear_grid() {
   for (int i = 0; i < nfreq_+1; ++i)

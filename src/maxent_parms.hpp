@@ -18,7 +18,6 @@
  */
 
 #pragma once
-
 #include "default_model.hpp"
 #include "maxent_grid.hpp"
 #include "maxent_kernel.hpp"
