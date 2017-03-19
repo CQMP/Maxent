@@ -20,84 +20,94 @@
 #include "../src/SpM_Lasso.hpp"
 #include "gtest.h"
 #include <fstream>
-#include "boost/random.hpp"
 
 class lassoTest:public ::testing::Test{
 public:
-  typedef boost::variate_generator< boost::mt19937&, boost::normal_distribution<> > dist_n;
-  typedef boost::variate_generator< boost::mt19937&, boost::uniform_real<> > dist_u;
 protected:
   virtual void SetUp() {
-    int n=40; //number of columns of A
-    int m=20; //number of rows of A
-    double p=1./n;
+    int cols=40; //number of columns of A
+    int rows=20; //number of rows of A
     
-    //boost random crap
-    boost::mt19937 rng;
-    boost::normal_distribution<> nd(0.0, 1.0);
-    boost::uniform_real<> ud(0.0, 1.0);
-    dist_n var_nor(rng, nd);
-    dist_u var_uni(rng, ud);
-    rng.seed(0);
-    
-    //initialization as in LASSO sample
-    initialize_A(var_nor, n, m);
-    initialize_b(var_nor, var_uni, n, m, p);
-
-    L=new Lasso(A, b);
+    A.resize(rows, cols);
+    b.resize(rows);
   }
   virtual void TearDown() {
-    delete L;
   }
   lassoTest(){}
   Eigen::MatrixXd A;
   Eigen::VectorXd b;
-  Lasso *L;
-private:
-  boost::mt19937 rng;
-  void initialize_A(dist_n &var_nor, int n, int m);
-  void initialize_b(dist_n &var_nor, dist_u &var_uni, int n, int m, double p);
+
+  void load_A(std::string &filename, int rows, int cols);
+  void load_b(std::string &filename, int cold);
 };
 
-void lassoTest::initialize_A(dist_n &var_nor, int n, int m){
-/*  A = randn(m,n);
-    A = A*spdiags(1./sqrt(sum(A.^2))',0,n,n); % normalize columns
- */ 
-  A.resize(m,n);
-  for(int i=0;i<A.cols();++i){
-    for(int j=0;j<A.rows();++j){
-      A(j,i)=var_nor();
+void lassoTest::load_A(std::string &filename, int rows, int cols){
+  std::ifstream A_file(filename);
+  if(!A_file.good()) throw std::runtime_error("problem opening file: "+filename);
+  A.resize(rows, cols);
+  for(int i=0;i<rows;++i){
+    for(int j=0;j<cols;++j){
+      A_file>>A(i,j);
     }
   }
-  //now normalize columns
-  for(int j=0;j<A.cols();++j){
-    double csum=0;
-    for(int i=0;i<A.rows();++i){
-      csum+=A(i,j)*A(i,j);
-    }
-    for(int i=0;i<A.rows();++i){
-      A(i,j)=A(i,j)/std::sqrt(csum);
-    }
-  }
+  std::cout<<A<<std::endl;
 }
-void lassoTest::initialize_b(dist_n &var_nor, dist_u &var_uni, int n, int m, double p){
-  /*x0 = sprandn(n,1,p);
-  b = A*x0 + sqrt(0.001)*randn(m,1);*/
-  b.resize(m);
-  Eigen::VectorXd x0(n);
-  for(int i=0;i<n;++i){
-    if(var_uni()<p){
-      x0[i]=var_nor();
-    }else{
-      x0[i]=0.;
-    }
-  }
-  b=A*x0;
-  for(int i=0;i<m;++i){
-    b[i]+=std::sqrt(0.001)*var_nor();
+void lassoTest::load_b(std::string &filename, int rows){
+  std::ifstream b_file(filename);
+  if(!b_file.good()) throw std::runtime_error("problem opening file: "+filename);
+  b.resize(rows);
+    for(int j=0;j<rows;++j){
+      b_file>>b(j);
   }
 }
 
 TEST_F(lassoTest, Init) {
-  ;//do nothing
+  double rho=1.;
+  Lasso L(A, b, rho);
 }
+TEST_F(lassoTest, FileIO) {
+  int rows=3;
+  int cols=4;
+  std::string filename_A="../test/TestFiles/AFile_3_4.txt";
+  std::string filename_b="../test/TestFiles/bFile_3.txt";
+  load_A(filename_A, rows, cols);
+  load_b(filename_b, rows);
+  double rho=1.;
+  double alpha=1.2;
+  double lambda=1.;
+  
+  EXPECT_NEAR(1.69935438625108, Lasso::matrix_norm(A), 1.e-10);
+  EXPECT_NEAR(1.70480451723583, b.norm(), 1.e-10);
+}
+/*TEST_F(lassoTest, LassoSolve_15_50) {
+  int rows=15;
+  int cols=50;
+  std::string filename_A="../test/TestFiles/AFile_15_50.txt";
+  std::string filename_b="../test/TestFiles/bFile_15.txt";
+  load_A(filename_A, rows, cols);
+  load_b(filename_b, rows);
+  double rho=1.;
+  double alpha=1.2;
+  double lambda=1.;
+  Lasso L(A, b, rho);
+
+  Eigen::VectorXd x;
+  L.lasso_solve(lambda, alpha, x);
+}*/
+TEST_F(lassoTest, LassoSolve_3_4) {
+  int rows=3;
+  int cols=4;
+  std::string filename_A="../test/TestFiles/AFile_3_4.txt";
+  std::string filename_b="../test/TestFiles/bFile_3.txt";
+  load_A(filename_A, rows, cols);
+  load_b(filename_b, rows);
+  double rho=1.;
+  double alpha=1;
+  Lasso L(A, b, rho);
+  EXPECT_NEAR(1.70451721668332, L.find_lambda_max(), 1.e-10);
+  double lambda=L.find_lambda_max()/10.;
+
+  Eigen::VectorXd x;
+  L.lasso_solve(lambda, alpha, x);
+}
+
