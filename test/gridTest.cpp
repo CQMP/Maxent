@@ -18,7 +18,7 @@
  */
 
 #include "../src/maxent.hpp"
-#include "../src/maxent_grid.hpp"
+#include "../src/maxent_maptozerooneinterval.hpp"
 #include "gtest.h"
 #include <fstream>
 
@@ -32,7 +32,7 @@ TEST(Grid,LorentzianOdd){
     p["FREQUENCY_GRID"] = "Lorentzian";
     p["NFREQ"] = NFREQ;
     
-    grid g(p);
+    map_to_zeroone_interval g(p);
     EXPECT_EQ(g(0),0);
     EXPECT_EQ(g(NFREQ),1);
 }
@@ -44,7 +44,7 @@ TEST(Grid,HalfLorentzianOdd){
     p["FREQUENCY_GRID"] = "half lorentzian";
     p["NFREQ"] = NFREQ;
     
-    grid g(p);
+    map_to_zeroone_interval g(p);
     EXPECT_EQ(g(0),0);
     EXPECT_EQ(g(NFREQ),1);
 }
@@ -56,7 +56,7 @@ TEST(Grid,QuadraticOdd){
     p["FREQUENCY_GRID"] = "Quadratic";
     p["NFREQ"] = NFREQ;
     
-    grid g(p);
+    map_to_zeroone_interval g(p);
     EXPECT_EQ(g(0),0);
     EXPECT_EQ(g(NFREQ),1);
 }
@@ -68,7 +68,7 @@ TEST(Grid,LogOdd){
     p["FREQUENCY_GRID"] = "log";
     p["NFREQ"] = NFREQ;
     
-    grid g(p);
+    map_to_zeroone_interval g(p);
     EXPECT_NEAR(g(0),0,1e-10);
     //log overshoots the default value by ~0.001
     EXPECT_NEAR(g(NFREQ),1,0.01);
@@ -81,7 +81,7 @@ TEST(Grid,LinearOdd){
     p["FREQUENCY_GRID"] = "linear";
     p["NFREQ"] = NFREQ;
     
-    grid g(p);
+    map_to_zeroone_interval g(p);
     EXPECT_EQ(g(0),0);
     EXPECT_EQ(g(NFREQ),1);
 }
@@ -96,7 +96,7 @@ TEST(Grid,LorentzianEven){
     p["FREQUENCY_GRID"] = "Lorentzian";
     p["NFREQ"] = NFREQ;
     
-    grid g(p);
+    map_to_zeroone_interval g(p);
     EXPECT_EQ(g(0),0);
     EXPECT_EQ(g(NFREQ/2), 0.5);
     EXPECT_EQ(g(NFREQ),1);
@@ -110,7 +110,7 @@ TEST(Grid,HalfLorentzianEven){
     p["FREQUENCY_GRID"] = "half lorentzian";
     p["NFREQ"] = NFREQ;
     
-    grid g(p);
+    map_to_zeroone_interval g(p);
     EXPECT_EQ(g(0),0);
     EXPECT_EQ(g(NFREQ),1);
 }
@@ -122,7 +122,7 @@ TEST(Grid,QuadraticEven){
     p["FREQUENCY_GRID"] = "Quadratic";
     p["NFREQ"] = NFREQ;
     
-    grid g(p);
+    map_to_zeroone_interval g(p);
     EXPECT_EQ(g(0),0);
     EXPECT_NEAR(g(NFREQ/2), 0.5,1e-10);
     EXPECT_EQ(g(NFREQ),1);
@@ -135,7 +135,7 @@ TEST(Grid,LogEven){
     p["FREQUENCY_GRID"] = "log";
     p["NFREQ"] = NFREQ;
     
-    grid g(p);
+    map_to_zeroone_interval g(p);
     EXPECT_NEAR(g(0),0,1e-10);
     EXPECT_EQ(g(NFREQ/2), 0.5);
     //log overshoots the default value by ~0.001
@@ -148,7 +148,7 @@ TEST(Grid,LinearEven){
     p["FREQUENCY_GRID"] = "linear";
     p["NFREQ"] = NFREQ;
     
-    grid g(p);
+    map_to_zeroone_interval g(p);
     EXPECT_EQ(g(0),0);
     EXPECT_EQ(g(NFREQ/2), 0.5);
     EXPECT_EQ(g(NFREQ),1);

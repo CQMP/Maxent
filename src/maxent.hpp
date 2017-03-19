@@ -110,7 +110,7 @@ public:
 
 private:
 
-  ///grid of alpha values
+  ///map_to_zeroone_interval of alpha values
   vector_type alpha;
   ///overall normalization
   const double norm;
@@ -132,7 +132,7 @@ private:
   vector_type maxspec;
   ///historic MaxEnt
   vector_type chispec;
-  ///grid of Omega points
+  ///map_to_zeroone_interval of Omega points
   vector_type omegaGrid;
   ///averaged spectrum back-continued
   vector_type avspec_back;
@@ -140,7 +140,7 @@ private:
   vector_type maxspec_back;
   ///historic MaxEnt back-continued
   vector_type chispec_back;
-  ///grid of Omega points
+  ///map_to_zeroone_interval of Omega points
   //posterior probability of the default model
   double postprobdef;
   ///vector of calculated Q values for each alpha iteration
@@ -160,7 +160,7 @@ public:
   const vector_type getMaxspecBack() const{return maxspec_back;}
    ///getter for chispec_back, the spectrum chispec back-contonued
   const vector_type getChispecBack() const{return chispec_back;} 
-  ///getter for the grid of omega points used in determining 
+  ///getter for the map_to_zeroone_interval of omega points used in determining 
   ///the spectral function A(omega)
   const vector_type getOmegaGrid() const{return omegaGrid;}
   ///getter for the posterior probability of the default model

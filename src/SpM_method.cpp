@@ -19,7 +19,7 @@ int main(int argc,const char** argv)
   //currently ALPSCore doesn't have a good way
   //to show multilple error messages
   //This is a temp hack, so we can have
-  //inline grid and default model
+  //inline map_to_zeroone_interval and default model
   //descriptions
 
   bool exitEarly = false;
@@ -31,7 +31,7 @@ int main(int argc,const char** argv)
   if(parms["help.grids"]){
     if(exitEarly) //display both messages
       std::cout << std::endl;
-    grid::print_help();
+    map_to_zeroone_interval::print_help();
     exitEarly = true;
   }
 

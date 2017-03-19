@@ -16,11 +16,11 @@
  *     Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * For use in publications, see ACKNOWLEDGE.TXT
  */
-#include "maxent_grid.hpp"
 #include<cmath>
 #include <boost/algorithm/string.hpp>    
+#include "maxent_maptozerooneinterval.hpp"
 
-grid::grid(const alps::params &p):
+map_to_zeroone_interval::map_to_zeroone_interval(const alps::params &p):
 nfreq_(p["NFREQ"]),
 t_array_(nfreq_+1){
   std::string p_f_grid = p["FREQUENCY_GRID"];
@@ -34,20 +34,20 @@ t_array_(nfreq_+1){
   }
   else if (p_f_grid=="quadratic") {
     double s = p["SPREAD"];
-    initialize_quadratic_grid(s);
+    initialize_quadratic_map(s);
   }
   else if (p_f_grid=="log") {
     double t_min = p["LOG_MIN"];
-    initialize_logarithmic_grid(t_min);
+    initialize_logarithmic_map(t_min);
   }
   else if (p_f_grid=="linear") {
-    initialize_linear_grid();
+    initialize_linear_map();
   }
   else
     boost::throw_exception(std::invalid_argument("No valid frequency grid specified"));
 }
 ///define parameter defaults
-void grid::define_parameters(alps::params &p){
+void map_to_zeroone_interval::define_parameters(alps::params &p){
   //---------------------------------
   //    Grid
   //---------------------------------
@@ -57,7 +57,7 @@ void grid::define_parameters(alps::params &p){
   p.define<std::string>("FREQUENCY_GRID","Lorentzian","Type of frequency grid");
   p.define<int>("NFREQ",1000,"Number of A(omega) real frequencies");
 }
-void grid::print_help(){
+void map_to_zeroone_interval::print_help(){
   std::cout << "Grid help - real frequency omega grid choices for A(omega)" << std::endl;
   std::cout << "For more information see examples/grids.pdf\n"              << std::endl;
   std::cout <<std::left << std::setw(15)<< "Grid Name"      <<'\t' << "option=default" << std::endl;
@@ -69,12 +69,12 @@ void grid::print_help(){
             <<std::left << std::setw(15)<< "linear"         <<'\t' << "---" << std::endl;
 }
 
-void grid::initialize_linear_grid() {
+void map_to_zeroone_interval::initialize_linear_map() {
   for (int i = 0; i < nfreq_+1; ++i)
     t_array_[i] = double(i) / (nfreq_);
 }
 
-void grid::initialize_logarithmic_grid(double t_min) {
+void map_to_zeroone_interval::initialize_logarithmic_map(double t_min) {
   double  t_max = 0.5;
   double scale = std::log(t_max / t_min) / ((float) ((nfreq_ / 2 - 1)));
   t_array_[nfreq_ / 2] = 0.5;
@@ -90,7 +90,7 @@ void grid::initialize_logarithmic_grid(double t_min) {
     + t_min * std::exp(((float) (nfreq_) / 2) * scale);
 }
 
-void grid::initialize_quadratic_grid(double spread) {
+void map_to_zeroone_interval::initialize_quadratic_map(double spread) {
   if (spread < 1)
     boost::throw_exception(
         std::invalid_argument("the parameter SPREAD must be greater than 1"));
@@ -111,7 +111,7 @@ void grid::initialize_quadratic_grid(double spread) {
     t_array_[i] = temp[i - 1] / temp[temp.size() - 1];
 }
 
-void grid::initialize_half_lorentzian_grid(double cut) {
+void map_to_zeroone_interval::initialize_half_lorentzian_grid(double cut) {
   std::vector<double> temp(nfreq_ + 1);
   for (int i = 0; i < nfreq_ + 1; ++i)
     temp[i] = tan(
@@ -122,7 +122,7 @@ void grid::initialize_half_lorentzian_grid(double cut) {
     t_array_[i] = (temp[i] - temp[0]) / (temp[temp.size() - 1] - temp[0]);
 }
 
-void grid::initialize_lorentzian_grid(double cut) {
+void map_to_zeroone_interval::initialize_lorentzian_grid(double cut) {
   std::vector<double> temp(nfreq_ + 1);
   for (int i = 0; i < nfreq_ + 1; ++i)
     temp[i] = tan(M_PI * (double(i) / (nfreq_) * (1. - 2 * cut) + cut - 0.5));

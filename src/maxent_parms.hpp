@@ -20,8 +20,8 @@
 #pragma once
 #include "maxent_matrix_def.hpp"
 #include "default_model.hpp"
-#include "maxent_grid.hpp"
 #include "maxent_kernel.hpp"
+#include "maxent_maptozerooneinterval.hpp"
 #include "maxent_matrix_def.hpp"
 
 ///This class has all the information about general, non-SVD specific analytic continuation things.
@@ -30,7 +30,7 @@ class KernelAndGrid {
 
 public:
   
-  ///constructs the kernel and grid from the parameters p. Also reads in the data.
+  ///constructs the kernel and map_to_zeroone_interval from the parameters p. Also reads in the data.
   KernelAndGrid(alps::params& p);
   ///define parameter defaults
   static void define_parameters(alps::params &p);
@@ -83,8 +83,8 @@ protected:
   matrix_type K_;
   ///covariance matrix
   matrix_type cov_;
-  ///real frequency grid
-  grid grid_;
+  ///real frequency map_to_zeroone_interval
+  map_to_zeroone_interval grid_;
   ///vector containing input matsubara or tau data
   vector_type inputGrid_;
   ///type of kernel used

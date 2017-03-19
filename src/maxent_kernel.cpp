@@ -67,7 +67,7 @@ K_(ndat_,nfreq_)
     }
     else{
       if(p.exists("X_2")){
-        //using data file entry so there is no input grid
+        //using data file entry so there is no input map_to_zeroone_interval
         throw std::runtime_error("Missing input tau points! Define them with TAU_0=....");
       }
       std::cout<<"Using data file tau points"<<std::endl;

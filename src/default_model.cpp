@@ -51,7 +51,7 @@ TabFunction::TabFunction(const alps::params& p, std::string const& name){
 
 //return value of default model. If INSIDE interval we have data in: return linearly interpolated data. Otherwise: return zero.
 double TabFunction::operator()(const double omega) {
-  //for values outside the grid point: return zero:
+  //for values outside the map_to_zeroone_interval point: return zero:
   if(omega < Omega_[0] || omega > Omega_.back())
     return 0.;
   //if we happen to exactly hit the first or last point
@@ -118,7 +118,7 @@ double GeneralDefaultModel::x(const double t) const {
 void GeneralDefaultModel::tabulate_integral() {
   double sum = 0;
   xtab[0] = 0.;
-  //this is an evaluation on an equidistant grid; sum integrated by trapezoidal rule
+  //this is an evaluation on an equidistant map_to_zeroone_interval; sum integrated by trapezoidal rule
   double delta_omega = (omega_max - omega_min) / (ntab - 1);
   for (int o = 1; o < ntab; ++o) {
     double omega1 = omega_min + (o - 1) * delta_omega;

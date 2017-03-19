@@ -18,10 +18,6 @@
  */
 
 #include "maxent.hpp"
-#include <alps/config.hpp> // needed to set up correct bindings
-#include <Eigen/SVD>
-#include <Eigen/Eigenvalues>
-#include <alps/hdf5/vector.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/math/special_functions/legendre.hpp> //needed for Legendre transform
@@ -150,9 +146,9 @@ SVDContinuation::SVDContinuation(alps::params& p) :
     omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0)
 {
   for (int i=0; i<nfreq(); ++i) {
-    //set the omega_coord into the middle of two grid points
+    //set the omega_coord into the middle of two map_to_zeroone_interval points
     omega_coord_[i] = (Default().omega_of_t(grid_(i)) + Default().omega_of_t(grid_(i+1)))/2.;
-    //and set delta_omega to the distance between the two neighboring grid points
+    //and set delta_omega to the distance between the two neighboring map_to_zeroone_interval points
     delta_omega_[i] = Default().omega_of_t(grid_(i+1)) - Default().omega_of_t(grid_(i));
   }
   //build a kernel matrix

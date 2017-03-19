@@ -77,9 +77,9 @@ public:
   double t_of_omega(const double omega) const { return (omega-omega_min)/(omega_max-omega_min); }
 
 protected:
-  ///highest frequency of grid
+  ///highest frequency of map_to_zeroone_interval
   const double omega_max;
-  ///lowest frequency of grid
+  ///lowest frequency of map_to_zeroone_interval
   const double omega_min;
 };
 
@@ -324,7 +324,7 @@ public:
   double operator()(const double omega);
 
 private:
-  ///private variable to store the frequency grid
+  ///private variable to store the frequency map_to_zeroone_interval
   std::vector<double> Omega_;
   ///private variable to store the tabulated value of the default model at a frequency belonging to Omega_
   std::vector<double> Def_;
