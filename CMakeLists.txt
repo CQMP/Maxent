@@ -44,11 +44,13 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 set(LIB_FILES 
   ./src/maxent_helper.cpp
   ./src/maxent_parms.cpp
+  ./src/maxent_svd.cpp
   ./src/maxent_grid.cpp
   ./src/maxent_kernel.cpp
   ./src/maxent_simulation.cpp
   ./src/maxent_backcont.cpp
   ./src/default_model.cpp
+  ./src/eigen_hdf5.cpp
   )
 
 ADD_LIBRARY(libmaxent ${LIB_FILES})

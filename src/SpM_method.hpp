@@ -21,7 +21,7 @@
 
 #include <fstream>
 #include "maxent_matrix_def.hpp"
-#include "maxent_parms.hpp"
+#include "maxent_svd.hpp"
 #include <boost/random/mersenne_twister.hpp>
 
 class SpMSimulation{

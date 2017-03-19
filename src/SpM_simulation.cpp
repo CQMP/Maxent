@@ -17,12 +17,9 @@
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
-#include <alps/config.hpp> // needed to set up correct bindings
-#include <alps/hdf5/vector.hpp>
-#include <Eigen/LU>
-#include "eigen_hdf5.hpp"
 #include <iomanip>
 #include "SpM_method.hpp"
+#include <alps/hdf5/vector.hpp>
 
 SpMSimulation::SpMSimulation(alps::params &parms):
  norm(parms["NORM"])                                             //The integral is normalized to NORM (use e.g. for self-energies

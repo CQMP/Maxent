@@ -22,6 +22,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/exception/diagnostic_information.hpp> 
+#include <alps/hdf5/vector.hpp>
 
 
 int main(int argc,const char** argv)

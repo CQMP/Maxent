@@ -19,9 +19,12 @@
 
 #pragma once
 
-#include <alps/config.hpp> // needed to set up correct bindings
 #include "maxent_config.hpp"
 #include <Eigen/Core>
+#include <Eigen/SVD>
+#include <Eigen/LU>
+#include <Eigen/Eigenvalues>
+#include "eigen_hdf5.hpp"
 
 typedef Eigen::MatrixXd matrix_type;
 typedef Eigen::MatrixXcd complex_matrix_type;

@@ -22,11 +22,13 @@
 #include<alps/params.hpp>
 #include "maxent_matrix_def.hpp"
 
+///this class is responsible for creating real frequency grids. TODO: replace some of this functionality with the ALPSCore grids and eliminate it.
 class grid{
 public:
   grid(const alps::params &p);
   ///define parameter defaults
   static void define_parameters(alps::params &p);
+  ///output a help function for the parameters that initialize this grid.
   static void print_help();
 
   const std::vector<double> &t_array() const{return t_array_;}

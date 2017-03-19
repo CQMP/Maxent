@@ -23,7 +23,7 @@
 #include <Eigen/Core>
 #include <algorithm>
 
-//TODO: make a complete implementation of Eigen::vector and Eigen::Matrix
+//TODO: this really should be in ALPS, not here.
 namespace alps {
     namespace hdf5 {
         template<> struct is_continuous<Eigen::VectorXd>
@@ -61,21 +61,6 @@ namespace alps {
           , std::vector<std::size_t> size = std::vector<std::size_t>()
           , std::vector<std::size_t> chunk =std::vector<std::size_t>()
           , std::vector<std::size_t> offset = std::vector<std::size_t>()
-       ) {
-            using alps::cast;
-            if (ar.is_group(path))
-                ar.delete_group(path);
-            if (is_continuous<Eigen::VectorXd>::value && value.size() == 0)
-                ar.write(path, static_cast<Eigen::VectorXd::Scalar const *>(NULL), std::vector<std::size_t>());
-            else if (is_continuous<Eigen::VectorXd>::value) {
-                std::vector<std::size_t> extent(get_extent(value));
-                std::copy(extent.begin(), extent.end(), std::back_inserter(size));
-                std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));
-                std::fill_n(std::back_inserter(offset), extent.size(), 0);
-                ar.write(path, value.data(), size, chunk, offset);
-
-            } else if (value.size() == 0)
-                ar.write(path, static_cast<int const *>(NULL), std::vector<std::size_t>());
-        }
+       );
     }
 }
