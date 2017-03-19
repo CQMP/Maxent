@@ -44,7 +44,7 @@ MaxEntSimulation::MaxEntSimulation(alps::params &parms)
   const double alpha_min = parms["ALPHA_MIN"];                                          //Smallest value of \alpha that is tried
   const double alpha_max = parms["ALPHA_MAX"];                                          //Largest  value of \alpha that is tried
   alpha[0] = alpha_max;
-  for (std::size_t a=1; a<alpha.size(); ++a)                                            //These are all the alpa values on a log map_to_zeroone_interval
+  for (std::size_t a=1; a<alpha.size(); ++a)                                            //These are all the alpa values on a log grid
     alpha[a] =  alpha[a-1] * std::pow(alpha_min/alpha_max, 1./double(alpha.size()-1));
 }
 ///define parameter defaults

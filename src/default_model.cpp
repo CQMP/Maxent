@@ -51,7 +51,7 @@ TabFunction::TabFunction(const alps::params& p, std::string const& name){
 
 //return value of default model. If INSIDE interval we have data in: return linearly interpolated data. Otherwise: return zero.
 double TabFunction::operator()(const double omega) {
-  //for values outside the map_to_zeroone_interval point: return zero:
+  //for values outside the grid point: return zero:
   if(omega < Omega_[0] || omega > Omega_.back())
     return 0.;
   //if we happen to exactly hit the first or last point
@@ -72,8 +72,8 @@ double TabFunction::operator()(const double omega) {
 }
 
 
-GeneralDefaultModel::GeneralDefaultModel(const alps::params& p, boost::shared_ptr<Model> mod)
-: DefaultModel(p)
+GeneralDefaultModel::GeneralDefaultModel(const alps::params& p, boost::shared_ptr<Model> mod, double omega_min, double omega_max)
+: DefaultModel(p, omega_min, omega_max)
 , Mod(mod)
 , ntab(p["NTAB"])
 , xtab(ntab) {
@@ -90,8 +90,8 @@ double GeneralDefaultModel::omega(const double x) const {
   int omega_index = ub - xtab.begin();
   if (ub==xtab.end())
     omega_index = xtab.end() - xtab.begin() - 1;
-  double om1 = omega_min + (omega_index-1)*(omega_max-omega_min)/(ntab-1);
-  double om2 = omega_min + omega_index*(omega_max-omega_min)/(ntab-1);
+  double om1 = omega_min_ + (omega_index-1)*(omega_max_-omega_min_)/(ntab-1);
+  double om2 = omega_min_ + omega_index*(omega_max_-omega_min_)/(ntab-1);
   double x1 = xtab[omega_index-1];
   double x2 = xtab[omega_index];
   //linear interpolation
@@ -118,11 +118,11 @@ double GeneralDefaultModel::x(const double t) const {
 void GeneralDefaultModel::tabulate_integral() {
   double sum = 0;
   xtab[0] = 0.;
-  //this is an evaluation on an equidistant map_to_zeroone_interval; sum integrated by trapezoidal rule
-  double delta_omega = (omega_max - omega_min) / (ntab - 1);
+  //this is an evaluation on an equidistant grid; sum integrated by trapezoidal rule
+  double delta_omega = (omega_max_ - omega_min_) / (ntab - 1);
   for (int o = 1; o < ntab; ++o) {
-    double omega1 = omega_min + (o - 1) * delta_omega;
-    double omega2 = omega_min + o * delta_omega;
+    double omega1 = omega_min_ + (o - 1) * delta_omega;
+    double omega2 = omega_min_ + o * delta_omega;
     sum += ((*Mod)(omega1) + (*Mod)(omega2)) / 2. * delta_omega;
     xtab[o] = sum;
   }
@@ -132,72 +132,72 @@ void GeneralDefaultModel::tabulate_integral() {
   }
 }
 
-boost::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, std::string const& name){
+boost::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, std::string const& name, double omega_min, double omega_max){
   std::string p_name = parms[name].as<std::string>();
   boost::to_lower(p_name);
   if (p_name == "flat") {
     std::cout << "Using flat default model" << std::endl;
-    return boost::shared_ptr<DefaultModel>(new FlatDefaultModel(parms));
+    return boost::shared_ptr<DefaultModel>(new FlatDefaultModel(parms, omega_min, omega_max));
   }
   else if (p_name == "gaussian") {
     std::cout << "Using Gaussian default model" << std::endl;
     boost::shared_ptr<Model> Mod(new Gaussian(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod, omega_min, omega_max));
   }
   else if (p_name == "twogaussians" || p_name == "two gaussians") {
     std::cout << "Using sum of two Gaussians default model" << std::endl;
     boost::shared_ptr<Model> Mod(new TwoGaussians(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod, omega_min, omega_max));
   }
   else if (p_name == "shifted gaussian" || p_name == "shiftedgaussian") {
     std::cout << "Using shifted Gaussian default model" << std::endl;
     boost::shared_ptr<Model> Mod(new ShiftedGaussian(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod, omega_min, omega_max));
   }
   else if (p_name == "double gaussian" || p_name == "doublegaussian") {
     std::cout << "Using double Gaussian default model" << std::endl;
     boost::shared_ptr<Model> Mod(new DoubleGaussian(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod, omega_min, omega_max));
   }
   else if (p_name == "general double gaussian" || p_name == "generaldoublegaussian") {
     std::cout << "Using general double Gaussian default model" << std::endl;
     boost::shared_ptr<Model> Mod(new GeneralDoubleGaussian(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod, omega_min, omega_max));
   }
   else if (p_name == "linear rise exp decay" || p_name == "linearriseexpdecay") {
     std::cout << "Using linear rise exponential decay default model" << std::endl;
     boost::shared_ptr<Model> Mod(new LinearRiseExpDecay(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod, omega_min, omega_max));
   }
   else if (p_name == "quadratic rise exp decay" || p_name == "quadraticriseexpdecay") {
     std::cout << "Using quadratic rise exponential decay default model" << std::endl;
     boost::shared_ptr<Model> Mod(new QuadraticRiseExpDecay(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod, omega_min, omega_max));
   }
   else if (p_name == "lorentzian") {
     std::cout << "Using Lorentzian default model" << std::endl;
     boost::shared_ptr<Model> Mod(new Lorentzian(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod, omega_min, omega_max));
   }
   else if (p_name == "twolorentzians" || p_name == "two lorentzians") {
     std::cout << "Using sum of two Lorentzians default model" << std::endl;
     boost::shared_ptr<Model> Mod(new TwoLorentzians(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod, omega_min, omega_max));
   }
   else if (p_name == "shifted lorentzian" || p_name == "shiftedlorentzian") {
     std::cout << "Using shifted Lorentzian default model" << std::endl;
     boost::shared_ptr<Model> Mod(new ShiftedLorentzian(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod, omega_min, omega_max));
   }
   else if (p_name == "double lorentzian" || p_name == "doublelorentzian") {
     std::cout << "Using double Lorentzian default model" << std::endl;
     boost::shared_ptr<Model> Mod(new DoubleLorentzian(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod, omega_min, omega_max));
   }
   else { 
     std::cout << "Using tabulated default model" << std::endl;
     boost::shared_ptr<Model> Mod(new TabFunction(parms, name));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod, omega_min, omega_max));
   }
 }
 
@@ -206,8 +206,6 @@ void DefaultModel::define_parameters(alps::params &p){
   //---------------------------------
   //      Default Model
   //---------------------------------
-  p.define<double>("OMEGA_MAX",10,"Maximum frequency for A(omega) grid");
-  p.define<double>("OMEGA_MIN","Minimum frequency, or =-OMEGA_MAX");
   p.define<std::string>("DEFAULT_MODEL","flat","Default model for entropy");
   p.define<double>("NORM1",0.5,"for Two Gaussians model");
   p.define<double>("SHIFT",0.0,"shift of a model");

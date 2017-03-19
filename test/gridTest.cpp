@@ -18,7 +18,7 @@
  */
 
 #include "../src/maxent.hpp"
-#include "../src/maxent_maptozerooneinterval.hpp"
+#include "../src/maxent_grid.hpp"
 #include "gtest.h"
 #include <fstream>
 
@@ -29,10 +29,11 @@ TEST(Grid,LorentzianOdd){
     alps::params p;
     MaxEntSimulation::define_parameters(p);
     const int NFREQ=2001;
+    p["OMEGA_MAX"] = 6.0;
     p["FREQUENCY_GRID"] = "Lorentzian";
     p["NFREQ"] = NFREQ;
     
-    map_to_zeroone_interval g(p);
+    grid g(p);
     EXPECT_EQ(g(0),0);
     EXPECT_EQ(g(NFREQ),1);
 }
@@ -42,9 +43,10 @@ TEST(Grid,HalfLorentzianOdd){
     
     const int NFREQ=2001;
     p["FREQUENCY_GRID"] = "half lorentzian";
+    p["OMEGA_MAX"] = 6.0;
     p["NFREQ"] = NFREQ;
     
-    map_to_zeroone_interval g(p);
+    grid g(p);
     EXPECT_EQ(g(0),0);
     EXPECT_EQ(g(NFREQ),1);
 }
@@ -54,9 +56,10 @@ TEST(Grid,QuadraticOdd){
 
     const int NFREQ=2001;
     p["FREQUENCY_GRID"] = "Quadratic";
+    p["OMEGA_MAX"] = 6.0;
     p["NFREQ"] = NFREQ;
     
-    map_to_zeroone_interval g(p);
+    grid g(p);
     EXPECT_EQ(g(0),0);
     EXPECT_EQ(g(NFREQ),1);
 }
@@ -66,9 +69,10 @@ TEST(Grid,LogOdd){
 
     const int NFREQ=2001;
     p["FREQUENCY_GRID"] = "log";
+    p["OMEGA_MAX"] = 6.0;
     p["NFREQ"] = NFREQ;
     
-    map_to_zeroone_interval g(p);
+    grid g(p);
     EXPECT_NEAR(g(0),0,1e-10);
     //log overshoots the default value by ~0.001
     EXPECT_NEAR(g(NFREQ),1,0.01);
@@ -79,9 +83,10 @@ TEST(Grid,LinearOdd){
 
     const int NFREQ=2001;
     p["FREQUENCY_GRID"] = "linear";
+    p["OMEGA_MAX"] = 6.0;
     p["NFREQ"] = NFREQ;
     
-    map_to_zeroone_interval g(p);
+    grid g(p);
     EXPECT_EQ(g(0),0);
     EXPECT_EQ(g(NFREQ),1);
 }
@@ -94,9 +99,10 @@ TEST(Grid,LorentzianEven){
 
     const int NFREQ=2000;
     p["FREQUENCY_GRID"] = "Lorentzian";
+    p["OMEGA_MAX"] = 6.0;
     p["NFREQ"] = NFREQ;
     
-    map_to_zeroone_interval g(p);
+    grid g(p);
     EXPECT_EQ(g(0),0);
     EXPECT_EQ(g(NFREQ/2), 0.5);
     EXPECT_EQ(g(NFREQ),1);
@@ -108,9 +114,10 @@ TEST(Grid,HalfLorentzianEven){
 
     const int NFREQ=2000;
     p["FREQUENCY_GRID"] = "half lorentzian";
+    p["OMEGA_MAX"] = 6.0;
     p["NFREQ"] = NFREQ;
     
-    map_to_zeroone_interval g(p);
+    grid g(p);
     EXPECT_EQ(g(0),0);
     EXPECT_EQ(g(NFREQ),1);
 }
@@ -120,9 +127,10 @@ TEST(Grid,QuadraticEven){
 
     const int NFREQ=2000;
     p["FREQUENCY_GRID"] = "Quadratic";
+    p["OMEGA_MAX"] = 6.0;
     p["NFREQ"] = NFREQ;
     
-    map_to_zeroone_interval g(p);
+    grid g(p);
     EXPECT_EQ(g(0),0);
     EXPECT_NEAR(g(NFREQ/2), 0.5,1e-10);
     EXPECT_EQ(g(NFREQ),1);
@@ -133,9 +141,10 @@ TEST(Grid,LogEven){
     
     const int NFREQ=2000;
     p["FREQUENCY_GRID"] = "log";
+    p["OMEGA_MAX"] = 6.0;
     p["NFREQ"] = NFREQ;
     
-    map_to_zeroone_interval g(p);
+    grid g(p);
     EXPECT_NEAR(g(0),0,1e-10);
     EXPECT_EQ(g(NFREQ/2), 0.5);
     //log overshoots the default value by ~0.001
@@ -146,13 +155,26 @@ TEST(Grid,LinearEven){
     MaxEntSimulation::define_parameters(p);
     const int NFREQ=2000;
     p["FREQUENCY_GRID"] = "linear";
+    p["OMEGA_MAX"] = 6.0;
     p["NFREQ"] = NFREQ;
     
-    map_to_zeroone_interval g(p);
+    grid g(p);
     EXPECT_EQ(g(0),0);
     EXPECT_EQ(g(NFREQ/2), 0.5);
     EXPECT_EQ(g(NFREQ),1);
 }
 
+TEST(Grid,MinMaxFreq){
+    alps::params p;
+    MaxEntSimulation::define_parameters(p);
+    const int NFREQ=2000;
+    p["FREQUENCY_GRID"] = "linear";
+    p["OMEGA_MAX"] = 6.0;
+    p["NFREQ"] = NFREQ;
 
+    grid g(p);
+    //test flat model is setup
+    EXPECT_NEAR(g.omega_min(),-6,1e-10);
+    EXPECT_NEAR(g.omega_max(), 6,1e-10);
+}
 

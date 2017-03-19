@@ -44,16 +44,12 @@ public:
   double delta_omega(const int i) const { return delta_omega_[i]; }
   ///getter function for the number of singular values
   int ns() const { return ns_; }
-  ///getter function for the default model
-  const DefaultModel& Default() const { return *Default_; }
-  ///getter function for input data map_to_zeroone_interval
+  ///getter function for input data grid
   const vector_type& inputGrid() const { return inputGrid_; }
-  ///getter function for input data map_to_zeroone_interval values
+  ///getter function for input data grid values
   double inputGrid(const int i) const { return inputGrid_(i); }
 
 private:
-  ///The default model
-  boost::shared_ptr<DefaultModel> Default_;
   matrix_type U_;
   matrix_type Vt_;
   matrix_type Sigma_;

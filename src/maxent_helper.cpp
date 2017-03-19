@@ -23,6 +23,7 @@
 #include <Eigen/Eigenvalues>
 #include <Eigen/Cholesky>
 #include "maxent_backcont.hpp"
+#include "default_model.hpp"
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/normal_distribution.hpp>
@@ -31,10 +32,14 @@
 //NOTE: size1= rows; size2=columns
 
 MaxEntHelper::MaxEntHelper(alps::params& p) :
-SVDContinuation(p) , def_(nfreq()), text_output(p["TEXT_OUTPUT"])
+SVDContinuation(p) ,
+def_(nfreq()), text_output(p["TEXT_OUTPUT"])
 {
+  ///The default model
+  boost::shared_ptr<DefaultModel> DM=make_default_model(p, "DEFAULT_MODEL", grid_.omega_min(), grid_.omega_max());
+
     for (int i=0; i<nfreq(); ++i){
-      def_[i] = SVDContinuation::Default().D(omega_coord(i))* delta_omega(i);
+      def_[i] = DM->D(omega_coord(i))* delta_omega(i);
     }
     //normalizing the default model. Note that it is possible that it is NOT normalized to one here, because of the nfreq() discretization.
     //in practice, increasing nfreq() here (NFREQ in the parameter file) will make this normalization more accurate.
@@ -44,12 +49,13 @@ SVDContinuation(p) , def_(nfreq()), text_output(p["TEXT_OUTPUT"])
 
 void MaxEntHelper::define_parameters(alps::params &p){
   SVDContinuation::define_parameters(p);
+  DefaultModel::define_parameters(p);
 }
 /// check that the default model is non-zero
 /// this is needed for transform_into_singular_space
 /// to work safely
 void MaxEntHelper::checkDefaultModel(const vector_type &D) const{
-    for(int i=0;i<D.size();i++){
+    for(std::size_t i=0;i<D.size();i++){
         double Di=D(i);
         if(Di==0 || boost::math::isnan(Di))
           throw std::logic_error("Error: Default model point = 0 at omega="

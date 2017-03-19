@@ -201,7 +201,7 @@ y_(ndat_),sigma_(ndat_),K_(),grid_(p),inputGrid_(ndat_)
 }
 void KernelAndGrid::define_parameters(alps::params &p){
   kernel::define_parameters(p);
-  map_to_zeroone_interval::define_parameters(p);
+  grid::define_parameters(p);
 }
 
 

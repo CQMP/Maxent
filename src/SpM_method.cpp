@@ -10,7 +10,6 @@ int main(int argc,const char** argv)
   alps::params parms(argc,argv);
   SpMSimulation::define_parameters(parms);
   //other help messages
-  parms.define("help.models","show help for default model");
   parms.define("help.grids","show help for grids");
 
   if (parms.help_requested(std::cout)) {
@@ -19,19 +18,15 @@ int main(int argc,const char** argv)
   //currently ALPSCore doesn't have a good way
   //to show multilple error messages
   //This is a temp hack, so we can have
-  //inline map_to_zeroone_interval and default model
+  //inline grid and default model
   //descriptions
 
   bool exitEarly = false;
 
-  if(parms["help.models"]){
-    DefaultModel::print_help();
-    exitEarly = true;
-  }
   if(parms["help.grids"]){
     if(exitEarly) //display both messages
       std::cout << std::endl;
-    map_to_zeroone_interval::print_help();
+    grid::print_help();
     exitEarly = true;
   }
 

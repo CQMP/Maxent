@@ -51,10 +51,9 @@
 class DefaultModel 
 {
 public:
-  DefaultModel(const alps::params& p) :
-    omega_max(p["OMEGA_MAX"]),
-    omega_min( p.exists("OMEGA_MIN") ? p["OMEGA_MIN"] : -omega_max){ //we had a 0 here in the bosonic case. That's not a good idea if you're continuing symmetric functions like chi(omega)/omega. Change omega_min to zero manually if you need it.
-  }
+  DefaultModel(const alps::params& p, double omega_min, double omega_max) :
+    omega_min_(omega_min),
+    omega_max_(omega_max){}
   ///define parameter defaults
   static void define_parameters(alps::params &p);
   static void print_help();
@@ -62,25 +61,19 @@ public:
   virtual ~DefaultModel(){}
 
   ///omega maps the t in the interval [0,1] to a frequency between omega_min and omega_max.
-  virtual double omega(const double t) const = 0;
+  virtual double omega(const double t) const {throw std::logic_error("please instantiate a subclass of the default model");}
 
   ///D value of the default model at frequency omega
-  virtual double D(const double omega) const = 0;
+  virtual double D(const double omega) const{ throw std::logic_error("please instantiate a subclass of the default model");}
 
   ///returns the integrated default model
-  virtual double x(const double t=0) const = 0;
-
-  ///equidistant mapping from [0,1] to [omega_min, omega_max]
-  double omega_of_t(const double t) const { return omega_min + (omega_max-omega_min)*t; }
-
-  ///equidistant mapping from [omega_min, omega_max] to [0,1]
-  double t_of_omega(const double omega) const { return (omega-omega_min)/(omega_max-omega_min); }
+  virtual double x(const double t=0) const{throw std::logic_error("please instantiate a subclass of the default model");}
 
 protected:
-  ///highest frequency of map_to_zeroone_interval
-  const double omega_max;
-  ///lowest frequency of map_to_zeroone_interval
-  const double omega_min;
+  ///highest frequency of grid
+  const double omega_max_;
+  ///lowest frequency of grid
+  const double omega_min_;
 };
 
 
@@ -92,14 +85,14 @@ class FlatDefaultModel : public DefaultModel
 public:
 
   ///construct a default model that is constant (value 1/(omega_max-omega_min) ) everywhere
-  FlatDefaultModel(const alps::params& p) : DefaultModel(p) {}
+  FlatDefaultModel(const alps::params& p, double omega_min, double omega_max) : DefaultModel(p, omega_min, omega_max) {}
 
   double omega(const double x) const {
-    return x*(omega_max-omega_min) + omega_min;
+    return x*(omega_max_-omega_min_) + omega_min_;
   }
 
   double D(const double) const {
-    return 1./(omega_max-omega_min);
+    return 1./(omega_max_-omega_min_);
   }
 
   double x(const double t) const {
@@ -324,7 +317,7 @@ public:
   double operator()(const double omega);
 
 private:
-  ///private variable to store the frequency map_to_zeroone_interval
+  ///private variable to store the frequency grid
   std::vector<double> Omega_;
   ///private variable to store the tabulated value of the default model at a frequency belonging to Omega_
   std::vector<double> Def_;
@@ -336,7 +329,7 @@ class GeneralDefaultModel : public DefaultModel
 {
 public:
 
-  GeneralDefaultModel(const alps::params& p, boost::shared_ptr<Model> mod);
+  GeneralDefaultModel(const alps::params& p, boost::shared_ptr<Model> mod, double omega_min, double omega_max);
 
   ///given a number x between 0 and 1, find the frequency omega belonging to x.
   double omega(const double x) const;
@@ -358,4 +351,4 @@ private:
 
 
 
-boost::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, std::string const& name);
+boost::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, std::string const& name, double omega_min, double omega_max);

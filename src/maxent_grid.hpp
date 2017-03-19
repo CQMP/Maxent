@@ -28,23 +28,37 @@
 ///and are evenly (in the case of uniform grids) or unevenly (in the case of general grids)
 ///spaced. OMEGA_MIN will be mapped to zero, OMEGA_MAX will be mapped to one.
 ///Note that in the actual code, when we evaluate points we use some sort of trapezoidal rule that
-///evaluates nfreq_ map_to_zeroone_interval points where point n of, say, a spectral function is located between point
-///n and n+1 of this map_to_zeroone_interval.
-class map_to_zeroone_interval{
+///evaluates nfreq_ grid points where point n of, say, a spectral function is located between point
+///n and n+1 of this grid.
+class grid{
 public:
-  map_to_zeroone_interval(const alps::params &p);
+  grid(const alps::params &p);
   ///define parameter defaults
   static void define_parameters(alps::params &p);
-  ///output a help function for the parameters that initialize this map_to_zeroone_interval.
+  ///output a help function for the parameters that initialize this grid.
   static void print_help();
   ///raw data for the array mapping the interval [0,1] to a non-uniform grid.
   const std::vector<double> &t_array() const{return t_array_;}
   ///get an integer between 0 and (including) nfreq_. Get back a double between 0 and one corresponding to the grid.
   double operator()(int i)const{return t_array_[i];}
+
+  ///equidistant mapping from [0,1] to [omega_min, omega_max]
+  double omega_of_t(const double t) const { return omega_min_ + (omega_max_-omega_min_)*t; }
+  ///equidistant mapping from [omega_min, omega_max] to [0,1]
+  double t_of_omega(const double omega) const { return (omega-omega_min_)/(omega_max_-omega_min_); }
+  ///get the minimum value of the grid
+  double omega_min() const{return omega_min_;}
+  ///get the maximum value fo the grid
+  double omega_max() const{return omega_max_;}
+
 private:
-  ///the number of (real) frequency point for this map_to_zeroone_interval.
+  ///the number of (real) frequency point for this grid.
   int nfreq_;
   std::vector<double> t_array_;
+  ///maximum value of grid
+  double omega_max_;
+  ///minimum value fo grid
+  double omega_min_;
 
   ///this is for an equidistantly spaced grid
   void initialize_linear_map();

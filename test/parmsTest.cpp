@@ -18,6 +18,7 @@
  */
 
 #include "../src/maxent.hpp"
+#include "../src/default_model.hpp"
 #include "gtest.h"
 #include <alps/utilities/temporary_filename.hpp>
 #include <iostream>
@@ -146,10 +147,6 @@ TEST(Parameters,MaxentParams){
         EXPECT_NEAR(c.y(i),(i+1)*.1/0.5,1e-10);
         EXPECT_EQ(c.sigma(i),0.5);
     }
-    
-	//test flat model is setup
-    EXPECT_NEAR(c.Default().omega(0),-6,1e-10);
-	EXPECT_NEAR(c.Default().omega(1.0),6,1e-10);
 }
 TEST(Parameters,HighFrequencyCheck){
     alps::params p;
@@ -189,13 +186,14 @@ TEST(Parameters,HighFrequencyCheck){
     std::complex<double> G;
     for(int i=0;i<numModels;i++){
         p["DEFAULT_MODEL"] = models[i];
+        boost::shared_ptr<DefaultModel> DM=make_default_model(p, "DEFAULT_MODEL", -6,6);
         SVDContinuation c(p);
         
         // G(iw_{n})=\sum_{m}K_{nm}A_{m}
         G=0;
         std::complex<double> iwn(0,(2*2024+1)*M_PI*c.T());
         for(int j=0;j<c.nfreq();j++){
-            G+= 1.0/(iwn-c.omega_coord(j))*c.Default().D(c.omega_coord(j)) * c.delta_omega(j);
+            G+= 1.0/(iwn-c.omega_coord(j))*DM->D(c.omega_coord(j)) * c.delta_omega(j);
         }
         std::cout<<c.delta_omega(0)<<" " << c.delta_omega(c.nfreq()-1) << std::endl;
         double limit = G.imag()*iwn.imag();

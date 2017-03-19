@@ -112,44 +112,31 @@ void SVDContinuation::check_high_frequency_limit(const vector_type& y,const kern
         //limit = G(iwn)*iwn
         std::complex<double> iwn(0,(2*n+1)*M_PI*T());
         double limit = y(ndat()-1)*iwn.imag();
-        if(std::abs(1+limit)>sigma(ndat()-1)){
-            std::cerr<<"The high frequency limit is not 1!: " << std::abs(limit)
-            <<" Check norm?"<< std:: endl;
-        }
-        //now backcontinue default model and check high frequency limit
-        // G(iw_{n})=\sum_{m}K_{nm}A_{m}
-        std::complex<double> G;
-        iwn = std::complex<double>(iwn.real(), (2*2000+1)*M_PI*T());
-        for(int j=0;j<nfreq();j++){
-            G+= 1.0/(iwn-omega_coord(j))*Default().D(omega_coord(j)) * delta_omega(j);
-        }
-        limit = G.imag()*iwn.imag();
-        if(std::abs(1+limit)>.01){
-            std::cerr<<"The high frequency limit of the default model is not 1!: "
-            << std::abs(limit) <<" Check norm?"<< std:: endl;
+        if(std::abs(1+limit)>3*sigma(ndat()-1)){
+            std::cerr<<"The high frequency behavior of your input data is not normalized to 1 within 3 sigma!: " << std::abs(limit)<<" Check norm?"<< std:: endl;
+            std::cerr<<"last known data point: "<<limit<<" sigma x 3: "<<3*sigma(ndat()-1)<<std::endl;
         }
     }
     //time space=> tail_1 = -G(0)-G(beta) = 1
-    if(kt==time_fermionic_kernel){
+    else if(kt==time_fermionic_kernel){
         double err = sqrt(sigma(0)*sigma(0)+sigma(ndat()-1)*sigma(ndat()-1));
         double limit = -y(0)-y(ndat()-1);
-        if(std::abs(limit-1)>err)
-            std::cerr<<"The high frequency limit is not +1!: " << limit
+        if(std::abs(limit-1)>3*err)
+            std::cerr<<"The high frequency limit is not within 3 sigma!: " << limit<<" 3 sigma: "<<3*err
             <<" Check norm?"<< std:: endl;
-    }
+    }else std::cout<<"skipping high frequency limit test."<<std::endl;
 }
 
 SVDContinuation::SVDContinuation(alps::params& p) :
     KernelAndGrid(p),
-    Default_(make_default_model(p, "DEFAULT_MODEL")),
     U_(ndat(), ndat()), Vt_(ndat(), nfreq()), Sigma_(ndat(), ndat()),
     omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0)
 {
   for (int i=0; i<nfreq(); ++i) {
-    //set the omega_coord into the middle of two map_to_zeroone_interval points
-    omega_coord_[i] = (Default().omega_of_t(grid_(i)) + Default().omega_of_t(grid_(i+1)))/2.;
-    //and set delta_omega to the distance between the two neighboring map_to_zeroone_interval points
-    delta_omega_[i] = Default().omega_of_t(grid_(i+1)) - Default().omega_of_t(grid_(i));
+    //set the omega_coord into the middle of two grid points
+    omega_coord_[i] = (grid_.omega_of_t(grid_(i)) + grid_.omega_of_t(grid_(i+1)))/2.;
+    //and set delta_omega to the distance between the two neighboring grid points
+    delta_omega_[i] = grid_.omega_of_t(grid_(i+1)) - grid_.omega_of_t(grid_(i));
   }
   //build a kernel matrix
   kernel ker(p,omega_coord_,inputGrid_);
@@ -181,7 +168,6 @@ SVDContinuation::SVDContinuation(alps::params& p) :
 
 void SVDContinuation::define_parameters(alps::params &p){
   KernelAndGrid::define_parameters(p);
-  DefaultModel::define_parameters(p);
 
   p.define<bool>("DATA_IN_HDF5",false,"1 if data is in HDF5 format");
   //TODO: revisit covariance matrix handling.

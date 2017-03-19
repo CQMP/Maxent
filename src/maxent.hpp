@@ -78,6 +78,7 @@ public :
   void backcontinue(ofstream_ &os, const vector_type &A, const double norm, const std::string name,vector_type &ext_back);
   matrix_type constructGamma(const vector_type& A, const double alpha);
   void generateCovariantErr(const vector_type& A_in, const double alpha, ofstream_ &os);
+  ///getter function for the default model
 
 private:
   ///discretized and normalized version of the default model.
@@ -110,7 +111,7 @@ public:
 
 private:
 
-  ///map_to_zeroone_interval of alpha values
+  ///grid of alpha values
   vector_type alpha;
   ///overall normalization
   const double norm;
@@ -132,7 +133,7 @@ private:
   vector_type maxspec;
   ///historic MaxEnt
   vector_type chispec;
-  ///map_to_zeroone_interval of Omega points
+  ///grid of Omega points
   vector_type omegaGrid;
   ///averaged spectrum back-continued
   vector_type avspec_back;
@@ -140,7 +141,7 @@ private:
   vector_type maxspec_back;
   ///historic MaxEnt back-continued
   vector_type chispec_back;
-  ///map_to_zeroone_interval of Omega points
+  ///grid of Omega points
   //posterior probability of the default model
   double postprobdef;
   ///vector of calculated Q values for each alpha iteration
@@ -160,7 +161,7 @@ public:
   const vector_type getMaxspecBack() const{return maxspec_back;}
    ///getter for chispec_back, the spectrum chispec back-contonued
   const vector_type getChispecBack() const{return chispec_back;} 
-  ///getter for the map_to_zeroone_interval of omega points used in determining 
+  ///getter for the grid of omega points used in determining 
   ///the spectral function A(omega)
   const vector_type getOmegaGrid() const{return omegaGrid;}
   ///getter for the posterior probability of the default model
