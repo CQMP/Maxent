@@ -174,6 +174,7 @@ void SVDContinuation::define_parameters(alps::params &p){
   //p.define<bool>("COVARIANCE_MATRIX",false,"1 if covariance matrix needs to be diagonalized");
   p.define<std::string>("DATA","","data file input");
   p.define<double>("NORM",1.0,"NORM");
+  p.define<bool>("VERBOSE",true,"1 to print verbose output");
 }
 
 

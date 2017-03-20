@@ -24,7 +24,7 @@
 #include "maxent_svd.hpp"
 #include <boost/random/mersenne_twister.hpp>
 
-class SpMSimulation{
+class SpMSimulation:protected SVDContinuation{
 public:
   ///setup of parameters
   SpMSimulation(alps::params& parms);

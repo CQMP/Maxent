@@ -22,7 +22,8 @@
 #include <alps/hdf5/vector.hpp>
 
 SpMSimulation::SpMSimulation(alps::params &parms):
- norm(parms["NORM"])                                             //The integral is normalized to NORM (use e.g. for self-energies
+ SVDContinuation(parms)
+, norm(parms["NORM"])                                             //The integral is normalized to NORM (use e.g. for self-energies
 , Kernel_type(parms["KERNEL"].as<std::string>())
 , nfreq(parms["NFREQ"].as<int>())
 {
@@ -39,5 +40,10 @@ void SpMSimulation::define_parameters(alps::params &p){
   p.define<std::string>("BASENAME","","Specified output name \n(generated if not given)");
 }
 
-void SpMSimulation::run(){}
+void SpMSimulation::run(){
+  std::cout<<"This is an SpM run. "<<std::endl;
+  std::cout<<"the Kernel has eigenvalues: "<<Sigma()<<std::endl;
+  //std::cout<<"the transformation matrix U is: "<<U()<<std::endl;
+  //std::cout<<"the transformation matrix Vt is: "<<Vt()<<std::endl;
+}
 void SpMSimulation::evaluate(){}

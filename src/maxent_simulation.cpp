@@ -56,7 +56,6 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   //    General/continuation specific
   //---------------------------------
   p.define<bool>("TEXT_OUTPUT",true,"1 if results should be output to text files");
-  p.define<bool>("VERBOSE",false,"1 to print verbose output");
   p.define<bool>("SELF",false,"input is a self energy");
   p.define<bool>("BACKCONTINUE",true,"Output A(omega) back to imaginary axis");
   p.define<std::string>("BASENAME","","Specified output name \n(generated if not given)");
