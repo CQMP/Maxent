@@ -128,7 +128,7 @@ void SVDContinuation::check_high_frequency_limit(const vector_type& y,const kern
 }
 
 SVDContinuation::SVDContinuation(alps::params& p) :
-    KernelAndGrid(p),
+    KernelAndGridIO(p),
     U_(ndat(), ndat()), Vt_(ndat(), nfreq()), Sigma_(ndat(), ndat()),
     omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0)
 {
@@ -167,7 +167,7 @@ SVDContinuation::SVDContinuation(alps::params& p) :
 }
 
 void SVDContinuation::define_parameters(alps::params &p){
-  KernelAndGrid::define_parameters(p);
+  KernelAndGridIO::define_parameters(p);
 
   p.define<bool>("DATA_IN_HDF5",false,"1 if data is in HDF5 format");
   //TODO: revisit covariance matrix handling.

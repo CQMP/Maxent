@@ -31,7 +31,7 @@ if(SUPPORTS_FLAG)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-return-type-c-linkage")
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -DNDEBUG")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fno-omit-frame-pointer")
 
 #let gcc take advantage of Eigen3 vectorization
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -51,7 +51,7 @@ set(LIB_FILES
   ./src/maxent_backcont.cpp
   ./src/default_model.cpp
   ./src/eigen_hdf5.cpp
-  ./src/SpM_Lasso.cpp
+  ./src/SpM_ADMM.cpp
   )
 
 ADD_LIBRARY(libmaxent ${LIB_FILES})

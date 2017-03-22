@@ -25,12 +25,12 @@
 
 ///This class has all the information about general, non-SVD specific analytic continuation things.
 ///It constructs kernels, grids, etc.
-class KernelAndGrid {
+class KernelAndGridIO {
 
 public:
   
   ///constructs the kernel and grid from the parameters p. Also reads in the data.
-  KernelAndGrid(alps::params& p);
+  KernelAndGridIO(alps::params& p);
   ///define parameter defaults
   static void define_parameters(alps::params &p);
   
@@ -58,6 +58,8 @@ public:
 private:
   ///temperature
   const double T_;
+  ///this switches off error handling, in case of methods that do not need errors for, say, self-consistent partial summation methods
+  bool no_errors_;
 
   void read_data_from_text_file(const alps::params& p);
   void read_data_from_hdf5_file(const alps::params& p);

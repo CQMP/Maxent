@@ -40,12 +40,12 @@ MaxEntSimulation::MaxEntSimulation(alps::params &parms)
 {
   std::string bn=parms["BASENAME"]; name=bn+'.';
 
-  if(norm != 1.) std::cerr<<"WARNING: Redefinition of parameter NORM: Input (and output) data are assumed to be normalized to NORM."<<std::endl;
   const double alpha_min = parms["ALPHA_MIN"];                                          //Smallest value of \alpha that is tried
   const double alpha_max = parms["ALPHA_MAX"];                                          //Largest  value of \alpha that is tried
   alpha[0] = alpha_max;
   for (std::size_t a=1; a<alpha.size(); ++a)                                            //These are all the alpa values on a log grid
     alpha[a] =  alpha[a-1] * std::pow(alpha_min/alpha_max, 1./double(alpha.size()-1));
+  if(parms["NO_ERRORS"]) throw std::runtime_error("the Maxent code needs error estimates to be defined.");
 }
 ///define parameter defaults
 void MaxEntSimulation::define_parameters(alps::params &p){

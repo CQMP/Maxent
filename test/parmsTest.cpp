@@ -53,7 +53,7 @@ TEST(Parameters,ContiParams){
 	p["SIGMA_2"]=0.5;
 	p["SIGMA_3"]=0.5;
 	p["SIGMA_4"]=0.5;
-	KernelAndGrid c(p);
+	KernelAndGridIO c(p);
 
 	EXPECT_EQ(c.ndat(),5);
 	EXPECT_EQ(c.T(),0.5);
@@ -73,7 +73,7 @@ TEST(Parameters,DataInParam){
   MaxEntSimulation::define_parameters(p);
   p["NDAT"] = 4;
   
-  KernelAndGrid c(p);
+  KernelAndGridIO c(p);
   EXPECT_EQ(c.ndat(),4);
   EXPECT_EQ(c.T(),0.5);
 
@@ -96,7 +96,7 @@ std::string pf=alps::temporary_filename("in_file.dat");
   p["DATA"]=pf;
   p["NDAT"] = 5;
 
-  KernelAndGrid c(p);
+  KernelAndGridIO c(p);
   EXPECT_EQ(c.ndat(),5);
   EXPECT_EQ(c.T(),0.5);
 
@@ -242,7 +242,7 @@ TEST(Parameters,HDF5ContiParams){
   p.load(iar);
   iar.close();
   
-  KernelAndGrid c(p);
+  KernelAndGridIO c(p);
 
 	EXPECT_EQ(c.ndat(),5);
 	EXPECT_EQ(c.T(),0.5);

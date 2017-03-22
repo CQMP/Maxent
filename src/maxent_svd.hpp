@@ -23,9 +23,9 @@
 
 
 ///This class contains all of the information about singular value decompositions.
-///It inherits from the KernelAndGrid class that was responsible for building
+///It inherits from the KernelAndGridIO class that was responsible for building
 ///the kernel.
-class SVDContinuation : public KernelAndGrid
+class SVDContinuation : public KernelAndGridIO
 {
 public:
   ///constructs and singular value decomposes the kernel

@@ -24,30 +24,30 @@
 #include <boost/math/special_functions/legendre.hpp> //needed for Legendre transform
 namespace bmth = boost::math;
 
-  // We provide a file with data points and error bars, the latter are used only if
-  // COVARIANCE_MATRIX is not set. The format is
-  //
-  // index data error
-  // OR
-  // index data error data error
-  //
-  // index is stored. If tau points are not specified in another location
-  // they must be used as the index.
-  // Note: for the second option ndat = 2*number of points
-  //
-  // In case we provide data in a HDF5 file (DATA_IN_HDF5 = 1) we use
-  // the following convention:
-  // The data are consecutively contained in directory /Data. If we have complex
-  // data, we expect the sequence real1 imag1 real2 imag2 ...
-  // If we do not provide the covariance matrix, error bars will be read from directory
-  // /Error, otherwise the covariance matrix will be read from directory /Covariance
-  // as a ndat*ndat field, i.e. it should have been stored according to i*ndat+j
-  // As with the data, we adopt the convention that for complex data the sequence
-  // will be real imag.
+// We provide a file with data points and error bars, the latter are used only if
+// COVARIANCE_MATRIX is not set. The format is
+//
+// index data error
+// OR
+// index data error data error
+//
+// index is stored. If tau points are not specified in another location
+// they must be used as the index.
+// Note: for the second option ndat = 2*number of points
+//
+// In case we provide data in a HDF5 file (DATA_IN_HDF5 = 1) we use
+// the following convention:
+// The data are consecutively contained in directory /Data. If we have complex
+// data, we expect the sequence real1 imag1 real2 imag2 ...
+// If we do not provide the covariance matrix, error bars will be read from directory
+// /Error, otherwise the covariance matrix will be read from directory /Covariance
+// as a ndat*ndat field, i.e. it should have been stored according to i*ndat+j
+// As with the data, we adopt the convention that for complex data the sequence
+// will be real imag.
 
 ///Read data from a text file, with filename given by p["DATA"] in the parameters.
 ///The format should be index data error
-void KernelAndGrid::read_data_from_text_file(const alps::params& p) {
+void KernelAndGridIO::read_data_from_text_file(const alps::params& p) {
   std::string fname = p["DATA"];
   std::ifstream datstream(fname.c_str());
   if (!datstream){
@@ -56,16 +56,18 @@ void KernelAndGrid::read_data_from_text_file(const alps::params& p) {
   }
   int datIn =0; //counts up to ndat
   int expectedDatIn = 0;
+  double norm=p["NORM"];
   std::string dataspace = p["DATASPACE"].as<std::string>();
   boost::to_lower(dataspace);
   if(dataspace == "time" || dataspace == "legendre" || p["PARTICLE_HOLE_SYMMETRY"]==1){
     while (datstream) {
       double index, X_i, dX_i;
-      datstream >> index >> X_i >> dX_i;
+      datstream >> index >> X_i;
+      if(!no_errors_) datstream >> dX_i;
       if (datIn < ndat()) {
         inputGrid_(datIn) = index;
-        y_(datIn) = X_i / static_cast<double>(p["NORM"]);
-        sigma_(datIn) = dX_i / static_cast<double>(p["NORM"]);
+        y_(datIn) = X_i / norm;
+        if(!no_errors_)  sigma_(datIn) = dX_i / norm;
         datIn++;
       }
       expectedDatIn++;
@@ -74,21 +76,26 @@ void KernelAndGrid::read_data_from_text_file(const alps::params& p) {
   }
   else{
     if(ndat()%2 != 0){
-        std::cerr << "WARNING: frequency data without particle-hole symmetry"
-                  << " requires an even amount of input data. Fix parameter file" 
-                  << std::endl;
-        throw std::runtime_error("Your NDAT is odd!");\
+      std::cerr << "WARNING: frequency data without particle-hole symmetry"
+          << " requires an even amount of input data. Fix parameter file"
+          << std::endl;
+      throw std::runtime_error("Your NDAT is odd!");\
     }
     while (datstream) {
       double index, X_i_re, dX_i_re, X_i_im, dX_i_im;
-      datstream >> index >> X_i_re >> dX_i_re >> X_i_im >> dX_i_im;
+      datstream >> index >> X_i_re;
+      if(!no_errors_) datstream >> dX_i_re;
+      datstream >> X_i_im;
+      if(!no_errors_) datstream>> dX_i_im;
       if (datIn < ndat()) {
         inputGrid_(datIn) = index;
         inputGrid_(datIn+1) = index; 
-        y_(datIn) = X_i_re / static_cast<double>(p["NORM"]);
-        y_(datIn+1) = X_i_im / static_cast<double>(p["NORM"]);
-        sigma_(datIn) = dX_i_re / static_cast<double>(p["NORM"]);
-        sigma_(datIn+1) = dX_i_im / static_cast<double>(p["NORM"]);
+        y_(datIn) = X_i_re / norm;
+        y_(datIn+1) = X_i_im / norm;
+        if(!no_errors_){
+          sigma_(datIn) = dX_i_re / norm;
+          sigma_(datIn+1) = dX_i_im / norm;
+        }
         datIn+=2;
       }
       expectedDatIn++;
@@ -106,8 +113,8 @@ void KernelAndGrid::read_data_from_text_file(const alps::params& p) {
   if(expectedDatIn<ndat()){
     throw std::runtime_error(
         std::string("The NDAT value ("+boost::lexical_cast<std::string>(ndat_) 
-                    +") is not <= the elements in your input file ("
-                    +p["DATA"].as<std::string>()+")"));
+            +") is not <= the elements in your input file ("
+            +p["DATA"].as<std::string>()+")"));
   }
 }
 
@@ -117,7 +124,7 @@ void KernelAndGrid::read_data_from_text_file(const alps::params& p) {
 ///if the parameter COVARIANCE_MATRIX is specified, then the covariance matrix is read in instead of the error.
 ///The covariance matrix is expected to be stored at /Covariance
 
-void KernelAndGrid::read_data_from_hdf5_file(const alps::params& p) {
+void KernelAndGridIO::read_data_from_hdf5_file(const alps::params& p) {
   std::string fname = p["DATA"];
   //attempt to read from h5 archive
   alps::hdf5::archive ar(fname, alps::hdf5::archive::READ);
@@ -126,58 +133,59 @@ void KernelAndGrid::read_data_from_hdf5_file(const alps::params& p) {
   path << "/Data";
   ar >> alps::make_pvp(path.str(), tmp);
   for (std::size_t i = 0; i < ndat(); i++)
-    y_(i) = tmp[i] / static_cast<double>(p["NORM"]);
+    y_(i) = tmp[i] / p["NORM"].as<double>();
   path.str("");
-  if (!p.defined("COVARIANCE_MATRIX")) {
-    path << "/Error";
-    ar >> alps::make_pvp(path.str(), tmp);
-    for (std::size_t i = 0; i < ndat(); i++)
-      sigma_(i) = tmp[i] / static_cast<double>(p["NORM"]);
-  } else {
-    path << "/Covariance";
-    cov_.resize(ndat(), ndat());
-    tmp.clear();
-    tmp.resize(ndat() * ndat());
-    ar >> alps::make_pvp(path.str(), tmp);
-    for (std::size_t i = 0; i < ndat(); i++)
-      for (std::size_t j = 0; j < ndat(); j++)
-        cov_(i, j) = tmp[i * ndat() + j];
+  if(!no_errors_){
+    if (!p.defined("COVARIANCE_MATRIX")) {
+      path << "/Error";
+      ar >> alps::make_pvp(path.str(), tmp);
+      for (std::size_t i = 0; i < ndat(); i++){
+        sigma_(i) = tmp[i] / p["NORM"].as<double>();
+      }
+    } else {
+      path << "/Covariance";
+      cov_.resize(ndat(), ndat());
+      tmp.clear();
+      tmp.resize(ndat() * ndat());
+      ar >> alps::make_pvp(path.str(), tmp);
+      for (std::size_t i = 0; i < ndat(); i++)
+        for (std::size_t j = 0; j < ndat(); j++)
+          cov_(i, j) = tmp[i * ndat() + j];
+    }
   }
 }
 
-void KernelAndGrid::read_data_from_param_file(const alps::params& p) {
+void KernelAndGridIO::read_data_from_param_file(const alps::params& p) {
   if (!p.defined("NORM")) {
     throw std::runtime_error("parameter NORM missing!");
   } else
-    std::cerr << "Data normalized to: " << static_cast<double>(p["NORM"])
-        << std::endl;
+    std::cerr << "Data normalized to: " << p["NORM"].as<double>()<< std::endl;
 
   for (int i = 0; i < ndat(); ++i) {
     if (!p.exists("X_" + boost::lexical_cast<std::string>(i))) {
       throw std::runtime_error("parameter X_"+ boost::lexical_cast<std::string>(i)+ " missing!");
     }
-    y_(i) = static_cast<double>(p["X_" + boost::lexical_cast<std::string>(i)])
-        / static_cast<double>(p["NORM"]);
-    if (!p.defined("COVARIANCE_MATRIX")) {
-      if (!p.exists("SIGMA_" + boost::lexical_cast<std::string>(i))) {
-        throw std::runtime_error(
-            std::string("parameter SIGMA_"+boost::lexical_cast<std::string>(i)+ " missing! "));
+    y_(i) = p["X_" + boost::lexical_cast<std::string>(i)].as<double>()/ p["NORM"].as<double>();
+    if(!no_errors_){
+      if (!p.defined("COVARIANCE_MATRIX")) {
+        if (!p.exists("SIGMA_" + boost::lexical_cast<std::string>(i))) {
+          throw std::runtime_error(
+              std::string("parameter SIGMA_"+boost::lexical_cast<std::string>(i)+ " missing! "));
+        }
+        sigma_(i) = p["SIGMA_"+ boost::lexical_cast<std::string>(i)].as<double>()/p["NORM"].as<double>();
+      }else{
+        throw std::runtime_error("parameter COVARIANCE_MATRIX is defined but there is no way for reading it from a parameter file. Please use a text file instead.");
       }
-      sigma_(i) = static_cast<double>(p["SIGMA_"
-          + boost::lexical_cast<std::string>(i)])
-          / static_cast<double>(p["NORM"]);
     }
   }
 }
 
-KernelAndGrid::KernelAndGrid(alps::params& p) :
-T_(1./p["BETA"].as<double>()),ndat_(p["NDAT"]), nfreq_(p["NFREQ"]),
-y_(ndat_),sigma_(ndat_),K_(),grid_(p),inputGrid_(ndat_)
+KernelAndGridIO::KernelAndGridIO(alps::params& p) :
+    T_(1./p["BETA"].as<double>()),ndat_(p["NDAT"]), nfreq_(p["NFREQ"]),
+    y_(ndat_),sigma_(vector_type::Ones(ndat_)),K_(),grid_(p),inputGrid_(ndat_),no_errors_(p["NO_ERRORS"])
 {
-  //note: T_=1/beta now taken care of elsewhere
   if (ndat_<4) 
     boost::throw_exception(std::invalid_argument("NDAT too small"));
-
 
   if (p.defined("DATA") && p["DATA"].as<std::string>() != "") {
     if(p.defined("DATA_IN_HDF5") && (p["DATA_IN_HDF5"])) {
@@ -187,25 +195,26 @@ y_(ndat_),sigma_(ndat_),K_(),grid_(p),inputGrid_(ndat_)
       read_data_from_text_file(p);
     }
   } else {
-      //if using input file with X_i, need to define them first
-      for (int i = 1; i < ndat(); ++i) {
-        //first check for explictly assigned
-        std::string x_str = "X_"+boost::lexical_cast<std::string>(i);
-        if(!p.defined(x_str)){
-          p.define<double>(x_str,"");
-          p.define<double>("SIGMA_"+boost::lexical_cast<std::string>(i),"");
-        }
+    //if using input file with X_i, need to define them first
+    for (int i = 1; i < ndat(); ++i) {
+      //first check for explictly assigned
+      std::string x_str = "X_"+boost::lexical_cast<std::string>(i);
+      if(!p.defined(x_str)){
+        p.define<double>(x_str,"");
+        p.define<double>("SIGMA_"+boost::lexical_cast<std::string>(i),"");
       }
+    }
     read_data_from_param_file(p);
   }
 }
-void KernelAndGrid::define_parameters(alps::params &p){
+void KernelAndGridIO::define_parameters(alps::params &p){
+  p.define<bool>("NO_ERRORS",false,"Set =1 if no error estimates are provided, e.g. for continuation of semi-analytical data");
   kernel::define_parameters(p);
   grid::define_parameters(p);
 }
 
 
-void KernelAndGrid::scale_data_with_error(const int ntab) {
+void KernelAndGridIO::scale_data_with_error(const int ntab) {
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
   for (int i = 0; i < ndat(); i++) {
     y_[i] /= sigma_[i];
@@ -215,8 +224,9 @@ void KernelAndGrid::scale_data_with_error(const int ntab) {
   }
 }
 
-void KernelAndGrid::read_covariance_matrix_from_text_file(
+void KernelAndGridIO::read_covariance_matrix_from_text_file(
     const std::string& fname) {
+  if(no_errors_) throw std::runtime_error("if you specify no-errors, you should not try to read a covariance matrix.");
   cov_.resize(ndat(), ndat());
   std::cerr << "Reading covariance matrix\n";
   std::ifstream covstream(fname.c_str());
@@ -234,41 +244,41 @@ void KernelAndGrid::read_covariance_matrix_from_text_file(
   }
 }
 
-void KernelAndGrid::decompose_covariance_matrix(const alps::params& p){
-    vector_type var(ndat());
-    //bindings::lapack::syev('V', bindings::upper(cov_) , var, bindings::lapack::optimal_workspace()); 
-    //TODO: check if this truly implements lapack's expected overwrite of cov_
-    Eigen::SelfAdjointEigenSolver<matrix_type> es(cov_);
-    var=es.eigenvalues();
-    cov_=es.eigenvectors();
-    matrix_type K_loc = cov_.transpose()*K_;
-    vector_type y_loc = cov_.transpose()*y_;
+void KernelAndGridIO::decompose_covariance_matrix(const alps::params& p){
+  vector_type var(ndat());
+  //bindings::lapack::syev('V', bindings::upper(cov_) , var, bindings::lapack::optimal_workspace());
+  //TODO: check if this truly implements lapack's expected overwrite of cov_
+  Eigen::SelfAdjointEigenSolver<matrix_type> es(cov_);
+  var=es.eigenvalues();
+  cov_=es.eigenvectors();
+  matrix_type K_loc = cov_.transpose()*K_;
+  vector_type y_loc = cov_.transpose()*y_;
+  if (p["VERBOSE"])
+    std::cout << "# Eigenvalues of the covariance matrix:\n";
+  // We drop eigenvalues of the covariance matrix which are smaller than 1e-10
+  // as they represent bad data directions (usually there is a steep drop
+  // below that value)
+  int new_ndat_,old_ndat_=ndat();
+  for (new_ndat_ =0;new_ndat_<ndat();new_ndat_++)
+    if (var[new_ndat_]>1e-10) break;
+  // This is the number of good data
+  ndat_ = old_ndat_ - new_ndat_;
+  std::cout << "# Ignoring singular eigenvalues (0-" << new_ndat_-1 << " out of " << old_ndat_ << ")\n";
+  // Now resize kernel and data matrix and fill it with the values for the
+  // good data directions
+  K_.resize(ndat_,nfreq_);
+  y_.resize(ndat_);
+  sigma_.resize(ndat_);
+  for (int i=0; i<ndat(); i++) {
+    y_(i) = y_loc(new_ndat_+i);
+    for (int j=0; j<nfreq_; j++) {
+      K_(i,j)=K_loc(new_ndat_+i,j);
+    }
+  }
+  for (int i=0; i<ndat(); ++i) {
+    sigma_[i] = std::abs(var(new_ndat_+i))/static_cast<double>(p["NORM"]);
     if (p["VERBOSE"])
-      std::cout << "# Eigenvalues of the covariance matrix:\n";
-    // We drop eigenvalues of the covariance matrix which are smaller than 1e-10
-    // as they represent bad data directions (usually there is a steep drop
-    // below that value)
-    int new_ndat_,old_ndat_=ndat();
-    for (new_ndat_ =0;new_ndat_<ndat();new_ndat_++)
-      if (var[new_ndat_]>1e-10) break;
-    // This is the number of good data
-    ndat_ = old_ndat_ - new_ndat_;
-    std::cout << "# Ignoring singular eigenvalues (0-" << new_ndat_-1 << " out of " << old_ndat_ << ")\n";
-    // Now resize kernel and data matrix and fill it with the values for the
-    // good data directions
-    K_.resize(ndat_,nfreq_);
-    y_.resize(ndat_);
-    sigma_.resize(ndat_);
-    for (int i=0; i<ndat(); i++) {
-      y_(i) = y_loc(new_ndat_+i);
-      for (int j=0; j<nfreq_; j++) {
-        K_(i,j)=K_loc(new_ndat_+i,j);
-      }
-    }
-    for (int i=0; i<ndat(); ++i) {
-      sigma_[i] = std::abs(var(new_ndat_+i))/static_cast<double>(p["NORM"]);
-      if (p["VERBOSE"])
-        std::cout << "# " << var(new_ndat_+i) << "\n";
-    }
+      std::cout << "# " << var(new_ndat_+i) << "\n";
+  }
 }
 

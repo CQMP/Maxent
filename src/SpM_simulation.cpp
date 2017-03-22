@@ -19,6 +19,7 @@
 
 #include <iomanip>
 #include "SpM_method.hpp"
+#include "SpM_ADMM.hpp"
 #include <alps/hdf5/vector.hpp>
 
 SpMSimulation::SpMSimulation(alps::params &parms):
@@ -42,8 +43,17 @@ void SpMSimulation::define_parameters(alps::params &p){
 
 void SpMSimulation::run(){
   std::cout<<"This is an SpM run. "<<std::endl;
-  std::cout<<"the Kernel has eigenvalues: "<<Sigma()<<std::endl;
+  std::cout<<"the Kernel has eigenvalues: "<<Sigma().diagonal()<<std::endl;
   //std::cout<<"the transformation matrix U is: "<<U()<<std::endl;
   //std::cout<<"the transformation matrix Vt is: "<<Vt()<<std::endl;
+  double muprime=20;
+  double mu=20;
+  double lambda=0.02;
+
+  ADMM admm(Vt(), U().transpose()*y(), Sigma().diagonal(), muprime, mu, lambda);
+  for(int i=0;i<2000;++i){
+    admm.iterate();
+    //admm.print_info(std::cout); std::cout<<std::endl;
+  }
 }
 void SpMSimulation::evaluate(){}

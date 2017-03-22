@@ -7,7 +7,6 @@ set(test_src
   parmsTest
   simulationTest
   paramFailureTest
-  SpM_LassoTest
 )
 foreach(test ${test_src})
   add_gtest(${test})
