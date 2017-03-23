@@ -54,8 +54,7 @@ void KernelAndGridIO::read_data_from_text_file(const alps::params& p) {
     boost::throw_exception(
         std::invalid_argument("could not open data text file: " + fname+". data should be specified in parameter DATA"));
   }
-  int datIn =0; //counts up to ndat
-  int expectedDatIn = 0;
+  int datIn=0; //counts up to ndat
   double norm=p["NORM"];
   std::string dataspace = p["DATASPACE"].as<std::string>();
   boost::to_lower(dataspace);
@@ -65,21 +64,24 @@ void KernelAndGridIO::read_data_from_text_file(const alps::params& p) {
       datstream >> index >> X_i;
       if(!no_errors_) datstream >> dX_i;
       if (datIn < ndat()) {
-        inputGrid_(datIn) = index;
-        y_(datIn) = X_i / norm;
-        if(!no_errors_)  sigma_(datIn) = dX_i / norm;
+        inputGrid_[datIn] = index;
+        y_[datIn] = X_i / norm;
+        if(!no_errors_)  sigma_[datIn] = dX_i / norm;
         datIn++;
       }
-      expectedDatIn++;
     }
-    expectedDatIn-=1;
+    if(ndat()!=datIn){
+      throw std::invalid_argument(std::string("The NDAT value ("+boost::lexical_cast<std::string>(ndat_)
+          +") is not <= the elements in your input file ("
+          +p["DATA"].as<std::string>()+")"));
+    }
   }
   else{
     if(ndat()%2 != 0){
       std::cerr << "WARNING: frequency data without particle-hole symmetry"
           << " requires an even amount of input data. Fix parameter file"
           << std::endl;
-      throw std::runtime_error("Your NDAT is odd!");\
+      throw std::invalid_argument("Your NDAT is odd!");\
     }
     while (datstream) {
       double index, X_i_re, dX_i_re, X_i_im, dX_i_im;
@@ -98,11 +100,12 @@ void KernelAndGridIO::read_data_from_text_file(const alps::params& p) {
         }
         datIn+=2;
       }
-      expectedDatIn++;
     }
-    //fix for matsubara length
-    expectedDatIn*=2;
-    expectedDatIn-=1;
+    if(ndat()!=datIn){
+      throw std::invalid_argument(std::string("The NDAT value ("+boost::lexical_cast<std::string>(ndat_)
+          +") is not <= the elements in your input file ("
+          +p["DATA"].as<std::string>()+")"));
+    }
   }
   if(p.defined("COVARIANCE_MATRIX")) {
     std::string fname = p["COVARIANCE_MATRIX"];
@@ -110,12 +113,12 @@ void KernelAndGridIO::read_data_from_text_file(const alps::params& p) {
   }
 
   //check for user error
-  if(expectedDatIn<ndat()){
+  /*if(expectedDatIn<ndat()){
     throw std::runtime_error(
         std::string("The NDAT value ("+boost::lexical_cast<std::string>(ndat_) 
             +") is not <= the elements in your input file ("
             +p["DATA"].as<std::string>()+")"));
-  }
+  }*/
 }
 
 ///Read data from a hdf5 file, with filename given by p["DATA"] in the parameters.
