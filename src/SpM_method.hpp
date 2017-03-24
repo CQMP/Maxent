@@ -23,6 +23,7 @@
 #include "maxent_matrix_def.hpp"
 #include "maxent_svd.hpp"
 #include <boost/random/mersenne_twister.hpp>
+#include "SpM_ADMM.hpp"
 
 class SpMSimulation:protected SVDContinuation{
 public:
@@ -43,4 +44,11 @@ private:
   std::string Kernel_type;
   ///number of real frequency points
   const int nfreq;
+  ///relaxation parameters
+  double muprime_;
+  double mu_;
+  ///l1 norm parameter
+  double lambda_;
+  ///the solver
+  ADMM admm_;
 };

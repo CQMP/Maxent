@@ -4,10 +4,11 @@
 
 class ADMM{
 public:
-  ADMM(const Eigen::MatrixXd &Vt, const Eigen::VectorXd &yprime, const Eigen::VectorXd &S, double muprime, double mu, double lambda):
+  ADMM(const Eigen::MatrixXd &Vt, const Eigen::VectorXd &yprime, const Eigen::VectorXd &domega, const Eigen::VectorXd &S, double muprime, double mu, double lambda):
   S_(S)
 , Vt_(Vt)
 , yprime_(yprime)
+, domega_(domega)
 , ns_(S.size())
 , nw_(Vt.cols())
 , muprime_(muprime)
@@ -57,6 +58,8 @@ public:
   ///this returns the current objective (Eq. S1)
   double objective_functional() const;
 
+  ///this transforms the continued spectral function back from singular to real space
+  Eigen::VectorXd spectral_function() const;
 private:
   ///the first line of Eq. S5a
   void compute_denominator();
@@ -72,6 +75,8 @@ private:
   const Eigen::MatrixXd Vt_;
   ///vector of data values
   const Eigen::VectorXd yprime_;
+  ///vector of frequency grid discretizations
+  const Eigen::VectorXd domega_;
 
   ///number of singular values
   const int ns_;

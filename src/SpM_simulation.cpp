@@ -19,7 +19,6 @@
 
 #include <iomanip>
 #include "SpM_method.hpp"
-#include "SpM_ADMM.hpp"
 #include <alps/hdf5/vector.hpp>
 
 SpMSimulation::SpMSimulation(alps::params &parms):
@@ -27,10 +26,15 @@ SpMSimulation::SpMSimulation(alps::params &parms):
 , norm(parms["NORM"])                                             //The integral is normalized to NORM (use e.g. for self-energies
 , Kernel_type(parms["KERNEL"].as<std::string>())
 , nfreq(parms["NFREQ"].as<int>())
+, muprime_(parms["MUPRIME"])
+, mu_(parms["MU"])
+, lambda_(parms["LAMBDA"])
+, admm_(Vt(), U().transpose()*y(), delta_omega(), Sigma().diagonal(), muprime_, mu_, lambda_)
 {
   std::string bn=parms["BASENAME"]; name=bn+'.';
 
   if(norm != 1.) std::cout<<"Data is assumed to be normalized to: "<<norm<<std::endl;
+
 }
 ///define parameter defaults
 void SpMSimulation::define_parameters(alps::params &p){
@@ -39,21 +43,27 @@ void SpMSimulation::define_parameters(alps::params &p){
     "performing analytic continuation \n \t a la SpM. Experimental, do not use.\n");
 
   p.define<std::string>("BASENAME","","Specified output name \n(generated if not given)");
+  p.define<double>("MU",20,"Relaxation Parameter");
+  p.define<double>("MUPRIME",20,"Relaxation Parameter");
+  p.define<double>("LAMBDA","L1 fit norm");
 }
 
 void SpMSimulation::run(){
   std::cout<<"This is an SpM run. "<<std::endl;
   std::cout<<"the Kernel has eigenvalues: "<<Sigma().diagonal()<<std::endl;
-  //std::cout<<"the transformation matrix U is: "<<U()<<std::endl;
-  //std::cout<<"the transformation matrix Vt is: "<<Vt()<<std::endl;
-  double muprime=20;
-  double mu=20;
-  double lambda=0.02;
 
-  ADMM admm(Vt(), U().transpose()*y(), Sigma().diagonal(), muprime, mu, lambda);
-  for(int i=0;i<2000;++i){
-    admm.iterate();
-    //admm.print_info(std::cout); std::cout<<std::endl;
+  for(int j=0;j<100;++j){
+    for(int i=0;i<100;++i){
+      admm_.iterate();
+    }
+    admm_.print_info(std::cout); std::cout<<std::endl;
   }
 }
-void SpMSimulation::evaluate(){}
+void SpMSimulation::evaluate(){
+  Eigen::VectorXd omega=omega_coord();
+  Eigen::VectorXd spectrum=admm_.spectral_function();
+  std::cout<<"spectrum: "<<std::endl;
+  for(int i=0;i<nfreq;++i){
+    std::cout<<omega[i]<<" "<<spectrum[i]<<" "<<delta_omega(i)<<std::endl;
+  }
+}

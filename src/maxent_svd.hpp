@@ -42,6 +42,7 @@ public:
   double omega_coord(const int i) const { return omega_coord_[i]; }
   const vector_type& omega_coord() const { return omega_coord_; }
   double delta_omega(const int i) const { return delta_omega_[i]; }
+  const vector_type& delta_omega() const { return delta_omega_; }
   ///getter function for the number of singular values
   int ns() const { return ns_; }
   ///getter function for input data grid

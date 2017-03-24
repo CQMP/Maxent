@@ -10,9 +10,9 @@ void ADMM::compute_denominator(){
 }
 
 void ADMM::solve_for_xi1(Eigen::VectorXd &xi1) const{
-  Eigen::VectorXd rhs=1./lambda_*S_.cwiseProduct(yprime_)+muprime_*(zprime_-uprime_)+mu_*Vt_*(z_-u_);
-  std::cout<<"mu Vt (z-u) norm: "<<(mu_*Vt_*(z_-u_)).norm()<<" cwise prod: "<<(x1_update_denominator_.cwiseProduct(mu_*Vt_*(z_-u_))).norm()<<std::endl;
-  std::cout<<"x1 denom: "<<x1_update_denominator_<<std::endl;
+  Eigen::VectorXd rhs=1./lambda_*S_.cwiseProduct(yprime_)
+      +muprime_*(zprime_-uprime_)+
+      mu_*Vt_*(z_-u_);
   xi1=x1_update_denominator_.cwiseProduct(rhs);
 }
 void ADMM::solve_for_xi2(Eigen::VectorXd &xi2) const{
@@ -23,7 +23,6 @@ void ADMM::update_xprime(Eigen::VectorXd &xprime)const {
    xprime=xi1_+nu_*xi2_;
 }
 void ADMM::update_zprime(Eigen::VectorXd &zprime)const{
-  //std::cout<<"st with alpha: "<<1./muprime_<<" sum: "<<xprime_+uprime_<<std::endl;
   soft_threshold(1./muprime_, xprime_+uprime_, zprime);
 }
 void ADMM::soft_threshold(double alpha, const Eigen::VectorXd &x, Eigen::VectorXd &z) const{
@@ -58,22 +57,14 @@ void ADMM::iterate(){
   solve_for_xi1(xi1_);
   solve_for_xi2(xi2_);
   nu_=update_nu();
-  //std::cout<<"old xprime: "<<xprime_<<std::endl;
   update_xprime(xprime_);
-  //std::cout<<" new xprime: "<<xprime_<<std::endl;
-  //std::cout<<" old zprime: "<<zprime_<<std::endl;
   update_zprime(zprime_);
-  //std::cout<<" new zprime: "<<zprime_<<std::endl;
-  //std::cout<<" old uprime: "<<uprime_<<std::endl;
   update_uprime(uprime_);
-  //std::cout<<" new uprime: "<<uprime_<<std::endl;
   update_z(z_);
   update_u(u_);
-  std::cout<<" xprime: "<<xprime_.norm()<<" zprime: "<<zprime_.norm()<<" uprime: "<<uprime_.norm()<<" z: "<<z_.norm()<<" u: "<<u_.norm()<<std::endl;
 }
 
 void ADMM::print_info(std::ostream &os) const{
-  //os<<Vt_.transpose()*xprime_<<std::endl;
   os<<"constraint violations: z'-x': "
       <<constraint_violation_zprime_xprime()
       <<" z-Vx': "
@@ -93,7 +84,7 @@ double ADMM::constraint_violation_z_Vxprime() const{
   return (z_-Vt_.transpose()*xprime_).norm();
 }
 double ADMM::constraint_violation_norm() const{
-  return std::abs((Vt_.transpose()*xprime_).sum()-1);
+  return std::abs(domega_.dot((Vt_.transpose()*xprime_))-1);
 }
 double ADMM::constraint_violation_positivity() const{
   Eigen::VectorXd x=Vt_.transpose()*xprime_;
@@ -102,4 +93,7 @@ double ADMM::constraint_violation_positivity() const{
 }
 double ADMM::objective_functional() const{
   return 0.5*(yprime_-S_.cwiseProduct(xprime_)).squaredNorm()+lambda_*xprime_.lpNorm<1>();
+}
+Eigen::VectorXd ADMM::spectral_function() const{
+  return (Vt_.transpose()*xprime_).cwiseQuotient(domega_);
 }
