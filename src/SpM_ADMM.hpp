@@ -1,12 +1,13 @@
 #include"maxent_matrix_def.hpp"
-
+#include<iostream>
 ///Class for performing  ADMM fit as described in paper, Eq. S5
 
 class ADMM{
 public:
-  ADMM(const Eigen::MatrixXd &Vt, const Eigen::VectorXd &yprime, const Eigen::VectorXd &domega, const Eigen::VectorXd &S, double muprime, double mu, double lambda):
+  ADMM(const Eigen::MatrixXd &Vt,const Eigen::VectorXd &yprime, const Eigen::VectorXd &domega, const Eigen::VectorXd &S, double muprime, double mu, double lambda):
   S_(S)
-, Vt_(Vt)
+, Vt_scaled_(Vt)
+, V_scaled_(Vt.transpose())
 , yprime_(yprime)
 , domega_(domega)
 , ns_(S.size())
@@ -24,8 +25,18 @@ public:
 , u_(Eigen::VectorXd::Zero(nw_))
 , x1_update_denominator_(Eigen::VectorXd::Zero(ns_))
 {
-    if(Vt_.rows()!=ns_) throw std::runtime_error("Vt should have ns rows");
+    std::cout<<"entering ADMM constructor."<<std::endl;
+    if(Vt_scaled_.rows()!=ns_) throw std::runtime_error("Vt should have ns rows");
+    if(Vt_scaled_.cols()!=nw_) throw std::runtime_error("Vt should have nw rows");
+    if(domega_.size()!=nw_) throw std::runtime_error("domega should have nw rows");
     if(yprime_.size()!=ns_) throw std::runtime_error("yprime_ should have size ns");
+    ///rescale the V matrix
+    for(int i=0;i<ns_;++i){
+      for(int j=0;j<nw_;++j){
+        Vt_scaled_(i,j)*=domega_(j);
+        V_scaled_(j,i)/=domega_(j);
+      }
+    }
     compute_denominator();
   }
   ///solve for the first part of Eq. S5a
@@ -56,7 +67,13 @@ public:
   ///this checks the positivity of the solution
   double constraint_violation_positivity() const;
   ///this returns the current objective (Eq. S1)
-  double objective_functional() const;
+  double global_objective_functional() const;
+  ///this returns the current objective (Eq. S3)
+  double admm_objective_functional() const;
+  ///this returns the chi2 part of the objective
+  double chisquare_term() const;
+  ///this returns the chi2 part of the objective
+  double l1_of_xprime() const;
 
   ///this transforms the continued spectral function back from singular to real space
   Eigen::VectorXd spectral_function() const;
@@ -69,10 +86,14 @@ private:
   void positive_projection(const Eigen::VectorXd &v, Eigen::VectorXd &z) const;
   ///compute the value of nu, Eq. S6
   double update_nu() const;
+  ///helper debug function
+  void check_regular(const Eigen::VectorXd &v, const std::string &msg) const;
   ///vector of singular values
   const Eigen::VectorXd S_;
-  ///transformation matrix Vt
-  const Eigen::MatrixXd Vt_;
+  ///transformation matrix Vt, scaled by domega
+  Eigen::MatrixXd Vt_scaled_;
+  ///transformation matrix V, scaled by 1./domega
+  Eigen::MatrixXd V_scaled_;
   ///vector of data values
   const Eigen::VectorXd yprime_;
   ///vector of frequency grid discretizations

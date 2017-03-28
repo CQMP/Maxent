@@ -52,18 +52,23 @@ void SpMSimulation::run(){
   std::cout<<"This is an SpM run. "<<std::endl;
   std::cout<<"the Kernel has eigenvalues: "<<Sigma().diagonal()<<std::endl;
 
+  admm_.print_info(std::cout); std::cout<<std::endl;
   for(int j=0;j<100;++j){
     for(int i=0;i<100;++i){
       admm_.iterate();
     }
     admm_.print_info(std::cout); std::cout<<std::endl;
+    std::cout<<"chi2 admm: "<<admm_.chisquare_term()<<" direct: "<<0.5*(y_-K_*(admm_.spectral_function().cwiseProduct(delta_omega()))).squaredNorm()
+        <<" trans: "<<0.5*(U().transpose()*y_-Sigma()*Vt()*(admm_.spectral_function().cwiseProduct(delta_omega()))).squaredNorm();
   }
+  std::cout<<(Vt()*(Vt().transpose()))<<std::endl;
 }
 void SpMSimulation::evaluate(){
   Eigen::VectorXd omega=omega_coord();
   Eigen::VectorXd spectrum=admm_.spectral_function();
-  std::cout<<"spectrum: "<<std::endl;
+  std::string filename="spectrum.dat";
+  std::ofstream spec_file(filename);
   for(int i=0;i<nfreq;++i){
-    std::cout<<omega[i]<<" "<<spectrum[i]<<" "<<delta_omega(i)<<std::endl;
+    spec_file<<omega[i]<<" "<<spectrum[i]<<" "<<delta_omega(i)<<std::endl;
   }
 }

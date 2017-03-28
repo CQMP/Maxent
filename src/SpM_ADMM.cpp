@@ -12,11 +12,11 @@ void ADMM::compute_denominator(){
 void ADMM::solve_for_xi1(Eigen::VectorXd &xi1) const{
   Eigen::VectorXd rhs=1./lambda_*S_.cwiseProduct(yprime_)
       +muprime_*(zprime_-uprime_)+
-      mu_*Vt_*(z_-u_);
+      mu_*Vt_scaled_*(z_-u_);
   xi1=x1_update_denominator_.cwiseProduct(rhs);
 }
 void ADMM::solve_for_xi2(Eigen::VectorXd &xi2) const{
-  Eigen::VectorXd rhs=Vt_*Eigen::VectorXd::Ones(nw_);
+  Eigen::VectorXd rhs=Vt_scaled_*Eigen::VectorXd::Ones(nw_);
   xi2=x1_update_denominator_.cwiseProduct(rhs);
 }
 void ADMM::update_xprime(Eigen::VectorXd &xprime)const {
@@ -39,7 +39,7 @@ void ADMM::update_uprime(Eigen::VectorXd &uprime) const{
   uprime+=xprime_-zprime_;
 }
 void ADMM::update_z(Eigen::VectorXd &z) const{
-  positive_projection(Vt_.transpose()*xprime_+u_, z);
+  positive_projection(spectral_function()+u_, z);
 }
 void ADMM::positive_projection(const Eigen::VectorXd &v, Eigen::VectorXd &z) const{
   for(int i=0;i<v.size();++i){
@@ -47,10 +47,10 @@ void ADMM::positive_projection(const Eigen::VectorXd &v, Eigen::VectorXd &z) con
   }
 }
 void ADMM::update_u(Eigen::VectorXd &u) const{
-  u+=Vt_.transpose()*xprime_-z_;
+  u+=spectral_function()-z_;
 }
 double ADMM::update_nu() const{
-  return (1.-(Vt_.transpose()*xi1_).sum())/(Vt_.transpose()*xi2_).sum();
+  return (1.-(V_scaled_*xi1_).sum())/(V_scaled_*xi2_).sum();
 }
 
 void ADMM::iterate(){
@@ -73,27 +73,40 @@ void ADMM::print_info(std::ostream &os) const{
       <<constraint_violation_norm()
       <<" positivity: "
       <<constraint_violation_positivity()
+      <<" chi2 term: "
+      <<chisquare_term()
+      <<" l1 of x': "
+      <<l1_of_xprime()
       <<" objective: "
       <<objective_functional();
-
 }
 double ADMM::constraint_violation_zprime_xprime() const{
   return (zprime_-xprime_).norm();
 }
 double ADMM::constraint_violation_z_Vxprime() const{
-  return (z_-Vt_.transpose()*xprime_).norm();
+  return (z_-spectral_function()).norm();
 }
 double ADMM::constraint_violation_norm() const{
-  return std::abs(domega_.dot((Vt_.transpose()*xprime_))-1);
+  return std::abs(spectral_function().sum()-1);
 }
 double ADMM::constraint_violation_positivity() const{
-  Eigen::VectorXd x=Vt_.transpose()*xprime_;
+  Eigen::VectorXd x=spectral_function();
   for(int i=0;i<x.size();++i) if(x[i]>0) x[i]=0;
   return x.norm();
 }
 double ADMM::objective_functional() const{
-  return 0.5*(yprime_-S_.cwiseProduct(xprime_)).squaredNorm()+lambda_*xprime_.lpNorm<1>();
+  return chisquare_term()+lambda_*l1_of_xprime();
 }
+double ADMM::l1_of_xprime() const{
+  return xprime_.lpNorm<1>();
+}
+double ADMM::chisquare_term() const{
+  return 0.5*(yprime_-S_.cwiseProduct(xprime_)).squaredNorm();
+}
+
 Eigen::VectorXd ADMM::spectral_function() const{
-  return (Vt_.transpose()*xprime_).cwiseQuotient(domega_);
+  return (V_scaled_*xprime_);//.cwiseQuotient(domega_);
+}
+void ADMM::check_regular(const Eigen::VectorXd &v, const std::string &msg) const{
+  for(int i=0;i<v.size();++i) if(std::isnan(v[i])||std::isinf(v[i])) throw std::runtime_error(msg+"encountered nan or inf.");
 }
