@@ -43,7 +43,7 @@ When compiling both ALPSCore and Maxent, be careful to ensure boost was compiled
 ALPSCore needs to be properly installed, see [ALPSCore library](https://github.com/ALPSCore/ALPSCore). ALPSCore provides the location of the Boost libraries.
 
 #### Eigen3
-For our linear algebra routines we use Eigen3 version >=3.1. If not in your path, set environment variable `Eigen3_DIR` to the directory where Eigen3 is installed.
+For our linear algebra routines we use Eigen3 version >=3.1. If not in your path use `-DEIGEN3_INCLUDE_DIR=/path/to/eigen3/include`, where `/path/to/eigen3/include` is the directory containing `Eigen` subdirectory with Eigen3 header files.
 
 #### GSL
 Maxent requires the GNU Scientific Library (GSL), which can be found [here](https://www.gnu.org/software/gsl/). The choice of BLAS library (the included CBLAS or an external ATLAS/BLAS/etc) does not matter here as the only the integration library is used. If not in your path use `-GSL_ROOT_DIR=` to the path that has `bin/gsl-config`.
