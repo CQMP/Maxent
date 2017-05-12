@@ -4,72 +4,65 @@
 
 class ADMM{
 public:
-  ADMM(const Eigen::MatrixXd &Vt,const Eigen::VectorXd &yprime, const Eigen::VectorXd &domega, const Eigen::VectorXd &S, double muprime, double mu, double lambda):
+  ADMM(const Eigen::MatrixXd &Vt,const Eigen::VectorXd &yprime, const Eigen::VectorXd &domega, const Eigen::VectorXd &S, double rho, double rhoprime, double lambda):
   S_(S)
-, Vt_scaled_(Vt)
-, V_scaled_(Vt.transpose())
+, Vt_(Vt)
 , yprime_(yprime)
 , domega_(domega)
 , ns_(S.size())
 , nw_(Vt.cols())
-, muprime_(muprime)
-, mu_(mu)
+, rho_(rho)
+, rhoprime_(rhoprime)
 , lambda_(lambda)
 , nu_(0)
 , xprime_(Eigen::VectorXd::Zero(ns_))
 , zprime_(Eigen::VectorXd::Zero(ns_))
-, uprime_(Eigen::VectorXd::Zero(ns_))
-, xi1_(Eigen::VectorXd::Zero(ns_))
-, xi2_(Eigen::VectorXd::Zero(ns_))
-, z_(Eigen::VectorXd::Zero(nw_))
-, u_(Eigen::VectorXd::Zero(nw_))
-, x1_update_denominator_(Eigen::VectorXd::Zero(ns_))
+, uprime_(Eigen::VectorXd::Zero(ns_+1))
+, sprime_(Eigen::VectorXd::Zero(ns_))
+, wprime_(Eigen::VectorXd::Zero(ns_))
+, A_(Eigen::MatrixXd::Zero(ns_+1, ns_))
+, B_(Eigen::MatrixXd::Zero(ns_+1, ns_))
+, c_(Eigen::VectorXd::Zero(ns_+1))
+, q_(Eigen::VectorXd::Zero(ns_))
+, enforce_positivity_(false)
 {
     std::cout<<"entering ADMM constructor."<<std::endl;
-    if(Vt_scaled_.rows()!=ns_) throw std::runtime_error("Vt should have ns rows");
-    if(Vt_scaled_.cols()!=nw_) throw std::runtime_error("Vt should have nw rows");
+    if(Vt_.rows()!=ns_) throw std::runtime_error("Vt should have ns rows");
+    if(Vt_.cols()!=nw_) throw std::runtime_error("Vt should have nw rows");
     if(domega_.size()!=nw_) throw std::runtime_error("domega should have nw rows");
     if(yprime_.size()!=ns_) throw std::runtime_error("yprime_ should have size ns");
-    ///rescale the V matrix
-    for(int i=0;i<ns_;++i){
-      for(int j=0;j<nw_;++j){
-        Vt_scaled_(i,j)*=domega_(j);
-        V_scaled_(j,i)/=domega_(j);
-      }
-    }
-    compute_denominator();
+    compute_A();
+    compute_B();
+    compute_c();
+    std::cout<<" decomposing matrix."<<std::endl;
+    decompose_P();
+    std::cout<<"finished decomposing matrix."<<std::endl;
   }
-  ///solve for the first part of Eq. S5a
-  void solve_for_xi1(Eigen::VectorXd &xi1) const;
-  ///solve for the second part of Eq. S5a
-  void solve_for_xi2(Eigen::VectorXd &xi2) const;
-  ///update xprime as in Eq. S5a
-  void update_xprime(Eigen::VectorXd &xprime) const;
-  ///update zprime as in Eq. S5b
-  void update_zprime(Eigen::VectorXd &zprime) const;
-  ///update uprime as in Eq. S5c
-  void update_uprime(Eigen::VectorXd &uprime) const;
-  ///update z as in Eq. S5d
-  void update_z(Eigen::VectorXd &z) const;
-  ///update u as in Eq. S5e
-  void update_u(Eigen::VectorXd &u) const;
+  ///update xprime
+  void update_xprime();
+  ///update zprime
+  void update_zprime();
+  ///update uprime
+  void update_uprime();
+  ///update sprime
+  void update_sprime();
+  ///update wprime
+  void update_wprime();
 
   ///run one ADMM iteration
   void iterate();
   ///statistics output
   void print_info(std::ostream &os) const;
-  ///at convergence, xprime=zprime. This gives the norm of the difference.
+  ///at convergence, x'=z'. This gives the norm of the difference.
   double constraint_violation_zprime_xprime() const;
-  ///at convergence, z=V xprime. This gives the norm of the difference
-  double constraint_violation_z_Vxprime() const;
+  ///at convergence, s'=z'. This gives the norm of the difference
+  double constraint_violation_sprime_xprime() const;
   ///the resulting vector x should be normalized. this is the deviation from the norm.
   double constraint_violation_norm() const;
   ///this checks the positivity of the solution
   double constraint_violation_positivity() const;
   ///this returns the current objective (Eq. S1)
   double global_objective_functional() const;
-  ///this returns the current objective (Eq. S3)
-  double admm_objective_functional() const;
   ///this returns the chi2 part of the objective
   double chisquare_term() const;
   ///this returns the chi2 part of the objective
@@ -78,22 +71,28 @@ public:
   ///this transforms the continued spectral function back from singular to real space
   Eigen::VectorXd spectral_function() const;
 private:
-  ///the first line of Eq. S5a
-  void compute_denominator();
+  ///the constraint matrix Ax'+By'=c
+  void compute_A();
+  ///the constraint matrix Ax'+By'=c
+  void compute_B();
+  ///the constraint matrix Ax'+By'=c
+  void compute_c();
+  ///the q side of the matrix equation minimization x^T P x+q^T x+c=0 for the x' minimization
+  void compute_q();
+  ///the P side of the matrix equation minimization x^T P x+q^T x+c=0 for the x' minimization
+  void decompose_P();
+
   ///soft threshold function S7
   void soft_threshold(double alpha, const Eigen::VectorXd &x, Eigen::VectorXd &z) const;
   ///take a vector v, copy to z, set all negative values to zero.
-  void positive_projection(const Eigen::VectorXd &v, Eigen::VectorXd &z) const;
-  ///compute the value of nu, Eq. S6
-  double update_nu() const;
+  void positive_projection(const Eigen::VectorXd &v, Eigen::VectorXd &sprime) const;
+
   ///helper debug function
   void check_regular(const Eigen::VectorXd &v, const std::string &msg) const;
   ///vector of singular values
   const Eigen::VectorXd S_;
-  ///transformation matrix Vt, scaled by domega
-  Eigen::MatrixXd Vt_scaled_;
-  ///transformation matrix V, scaled by 1./domega
-  Eigen::MatrixXd V_scaled_;
+  ///transformation matrix Vt, the transpose of V. 'real space' on the right side, singular space on the left side, x'=V^T\rho.
+  Eigen::MatrixXd Vt_;
   ///vector of data values
   const Eigen::VectorXd yprime_;
   ///vector of frequency grid discretizations
@@ -105,26 +104,36 @@ private:
   const int nw_;
 
 
-  ///penalty parameter for z'-u'
-  const double muprime_;
-  ///penalty parameter for Vt(z-u)
-  const double mu_;
+  ///penalty parameter for the L1 norm
+  const double rho_;
+  ///penalty parameter for the positivity
+  const double rhoprime_;
   ///L1 norm parameter
   double lambda_;
 
   ///temporary doubles
   double nu_;
 
-  ///temporary vectors
+  ///singular space vector for x
   Eigen::VectorXd xprime_;
+  ///dual and running residual for L1 optimization
   Eigen::VectorXd zprime_;
   Eigen::VectorXd uprime_;
-  Eigen::VectorXd xi1_;
-  Eigen::VectorXd xi2_;
-  Eigen::VectorXd z_;
-  Eigen::VectorXd u_;
+  ///dual and running residual for positivity optimization
+  Eigen::VectorXd sprime_;
+  Eigen::VectorXd wprime_;
 
-  ///denominator vector of xprime update
-  Eigen::VectorXd x1_update_denominator_;
+  ///Constraint matrix of xprime update, Ax'+Bz'=c
+  Eigen::MatrixXd A_;
+  ///Constraint matrix of xprime update, Ax'+Bz'=c
+  Eigen::MatrixXd B_;
+  ///Constraint vector of xprime update, Ax'+Bz'=c
+  Eigen::VectorXd c_;
+  ///decomposed matrix P for the inverse
+  Eigen::LDLT<Eigen::MatrixXd > P_;
+  ///righthand side q for the inverse, for optimizing x^TPx+qx^t+c=0
+  Eigen::VectorXd q_;
+
+  const bool enforce_positivity_;
 
 };

@@ -1,0 +1,1638 @@
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+\renewcommand\[{\begin{equation}} 
+\renewcommand\]{\end{equation}} 
+\end_preamble
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+This is a 'slow' derivation of the SpM method by Shinaoka and collaborators
+\end_layout
+
+\begin_layout Section
+Analytic continuation equations
+\end_layout
+
+\begin_layout Standard
+We start with the analytic continuation problem
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+G=K\rho
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $G$
+\end_inset
+
+ denotes the input data, usually in imaginary time or frequency, 
+\begin_inset Formula $K$
+\end_inset
+
+ denotes the analytic continuation kernel, and 
+\begin_inset Formula $\rho$
+\end_inset
+
+ denotes the desired spectral function multiplied with a frequency element
+ 
+\begin_inset Formula $\Delta\omega$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $K$
+\end_inset
+
+is difficult to invert but elementary linear algebra says that we can decompose
+ it into
+\begin_inset Formula 
+\[
+K=U\Sigma V^{T}
+\]
+
+\end_inset
+
+and that the matrix 
+\begin_inset Formula $\Sigma$
+\end_inset
+
+ can be compressed suitably by removing eigenvalues that are zero to within
+ numerical precision.
+\end_layout
+
+\begin_layout Standard
+If we approximate 
+\begin_inset Formula $\rho$
+\end_inset
+
+ rather than solve it exactly, we can characterize the deviation between
+ some approximate 
+\begin_inset Formula $\rho$
+\end_inset
+
+ and the original input data as
+\begin_inset Formula 
+\[
+\chi^{2}=||G-K\rho||_{2}^{2}.
+\]
+
+\end_inset
+
+We will use this norm to characterize deviations from original data.
+\end_layout
+
+\begin_layout Standard
+The premise of many analytic continuation methods is that optimizing (or
+ solving) for 
+\begin_inset Formula $\chi^{2}=0$
+\end_inset
+
+ is not a good idea due to the bad conditioning of 
+\begin_inset Formula $K$
+\end_inset
+
+.
+ Rather, one wants to finds a solution which minimizes 
+\begin_inset Formula $\chi^{2}$
+\end_inset
+
+ under some additional constraint condition.
+ SpM is one of these methods, and the constraint is formulated based on
+ the SVD described above:
+\begin_inset Formula 
+\[
+\chi^{2}=||G-K\rho||_{2}^{2}=||U^{T}G-\Sigma V^{T}\rho||=:||y'-Sx'||_{2}^{2}
+\]
+
+\end_inset
+
+where we define 
+\begin_inset Formula $S=\Sigma,$
+\end_inset
+
+ 
+\begin_inset Formula $y'=U^{T}G$
+\end_inset
+
+, and 
+\begin_inset Formula $x'=V^{T}\rho$
+\end_inset
+
+.
+ Shinaoka and collaborators postulate that it is a good idea to minimize
+ 
+\begin_inset Formula 
+\[
+|x'|_{1}=\sum_{j}|x'_{j}|,
+\]
+
+\end_inset
+
+and therefore one should minimize
+\begin_inset Formula 
+\begin{equation}
+L_{\lambda}(x')=\frac{1}{\lambda}||y'-Sx'||_{2}^{2}+|x'|_{1},\label{eq:objective}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\lambda$
+\end_inset
+
+ is an (a priori arbitrary) parameter used to penalize larger 
+\begin_inset Formula $x'$
+\end_inset
+
+.
+ The 
+\begin_inset Formula $L_{1}$
+\end_inset
+
+norm is chosen because the minimization with that constraint is easily doable
+ using ADMM but seems to have no other justification.
+\end_layout
+
+\begin_layout Standard
+In addition, we would like to satisfy the constraint that 
+\begin_inset Formula $\rho$
+\end_inset
+
+ is a decent spectral function.
+ That means that we'd like to guarantee that it integrates to one, and that
+ it is exclusively positive.
+ Thus, the whole problem is: Minimize 
+\begin_inset Formula $L_{\lambda}(x')$
+\end_inset
+
+ under the constraints
+\begin_inset Formula 
+\begin{align*}
+\sum_{j}\rho_{j} & =\sum_{j}V_{jk}x_{k}^{'}=1
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+\rho_{j}=Vx_{j}^{'}>0\,\,\forall j
+\]
+
+\end_inset
+
+Note that the way the Maxent code was set up, 
+\begin_inset Formula $\rho$
+\end_inset
+
+already contains a multiplication by a frequency element, such that the
+ spectral function at frequency index k is given by 
+\begin_inset Formula $\rho_{k}/\Delta\omega_{k}.$
+\end_inset
+
+ The optimization problem is of the form of a constrained LASSO problem
+ with two constraints: a constraint that requires a convex optimization
+ (the positivity), and a constraint for the norm.
+ For more possible constraints see below.
+\end_layout
+
+\begin_layout Section
+Optimization without constraints
+\end_layout
+
+\begin_layout Standard
+The optimization without constraints of Eq.
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:objective"
+
+\end_inset
+
+ is fairly straightforward with ADMM: we follow section 6.4, on LASSO, and
+ minimize
+\begin_inset Formula 
+\[
+L^{\lambda}(x')=\frac{{1}}{2}||Sx'-y'||_{2}^{2}+\lambda|x'|_{1}
+\]
+
+\end_inset
+
+which we write as
+\begin_inset Formula 
+\[
+\text{{minimize}\ \ }f(x')+g(z')
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+\text{{subject\ to}\ \ }x'-z'=0
+\]
+
+\end_inset
+
+where we define 
+\begin_inset Formula $f(x')=\frac{1}{2}||Sx'-y'||_{2}^{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $g(z')=\lambda|z'|_{1}$
+\end_inset
+
+.
+ The optimization procedure then consists of three separate steps:
+\begin_inset Formula 
+\begin{equation}
+x'^{k+1}:=(S^{T}S+\rho I)^{-1}(S^{T}y'+\rho(z'^{k}-u^{k}))\label{eq:optimizex}
+\end{equation}
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+z'^{k+1}=S_{(\lambda/\rho)}(x'^{k+1}+u^{k})
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+u^{k+1}=u^{k}+x^{k+1}-z^{k+1}
+\]
+
+\end_inset
+
+where we've introduced a scalar parameter 
+\begin_inset Formula $\rho,$
+\end_inset
+
+ a vector 
+\begin_inset Formula $u$
+\end_inset
+
+, and a soft thresholding function 
+\begin_inset Formula $S.$
+\end_inset
+
+ These equations implement ADMM in the so-called scaled form, and the converged
+ solution will not depend on 
+\begin_inset Formula $\rho$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+Scaled form of ADMM
+\end_layout
+
+\begin_layout Standard
+We repeat the essentials of the derivation here, following chapter 3.
+ The ADMM algorithm solves optimization problems of the form
+\begin_inset Formula 
+\[
+\text{{minimize}\ \ }f(x)+g(z)
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+\text{{subject\ to}}\ \ Ax+Bz=c
+\]
+
+\end_inset
+
+by forming an augmented lagrangian with Lagrangian parameter 
+\begin_inset Formula $\rho$
+\end_inset
+
+
+\begin_inset Formula 
+\[
+L_{\rho}(x,z,y)=f(x)+g(z)+y^{T}(Ax+Bz-c)+\frac{{\rho}}{2}||Ax+Bz-c||_{2}^{2}
+\]
+
+\end_inset
+
+The first part would be the Lagrangian without the 'augmented' constraint.
+ The second part will be zero if the constraint is satisfied.
+ ADMM then does the iterations
+\begin_inset Formula 
+\[
+x^{k+1}=\text{argmin}_{x}L_{\rho}(x,z^{k},y^{k})
+\]
+
+\end_inset
+
+ 
+\begin_inset Formula 
+\[
+z^{k+1}=\text{argmin}_{z}L_{\rho}(x^{k+1},z,y^{k})
+\]
+
+\end_inset
+
+ 
+\begin_inset Formula 
+\[
+y^{k+1}=y^{k}+\rho(Ax^{k+1}+Bz^{k+1}-c)
+\]
+
+\end_inset
+
+This is equivalent to the so-called scaled form, which scales the dual variable
+ 
+\begin_inset Formula $y$
+\end_inset
+
+ as 
+\begin_inset Formula $u=\frac{1}{\rho}y$
+\end_inset
+
+, such that
+\begin_inset Formula 
+\[
+x^{k+1}=\text{argmin}_{x}(f(x)+\frac{\rho}{2}||Ax+Bz^{k}-c+u^{k}||_{2}^{2})
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+z^{k+1}=\text{argmin}_{z}(g(z)+\frac{\rho}{2}||Ax^{k+1}+Bz-c+u^{k}||_{2}^{2})
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+u^{k+1}=u^{k}+Ax^{k+1}+Bz^{k+1}-c
+\]
+
+\end_inset
+
+The vector 
+\begin_inset Formula $u^{k}$
+\end_inset
+
+ sums up the residuals 
+\begin_inset Formula $r^{k}=Ax^{k}+Bz^{k}-c$
+\end_inset
+
+, such that 
+\begin_inset Formula $u^{k}=u^{0}+\sum_{j=1}^{k}r^{j}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+Optimization in x
+\end_layout
+
+\begin_layout Standard
+We start with the description of the optimization in x, which is 
+\begin_inset Formula $x'^{k+1}=\text{argmin}_{x'}(f(x')+\frac{\rho}{2}||Ax'+Bz'^{k}-c+u^{k}||_{2}^{2})$
+\end_inset
+
+ using 
+\begin_inset Formula $A=I,$
+\end_inset
+
+ 
+\begin_inset Formula $B=-I,$
+\end_inset
+
+ 
+\begin_inset Formula $c=0$
+\end_inset
+
+ or, equivalently, the constraint 
+\begin_inset Formula $x'-z'=0.$
+\end_inset
+
+ This implies
+\begin_inset Formula 
+\begin{equation}
+x'^{k+1}=\text{argmin}_{x'}(\frac{1}{2}||Sx'-y'^{k}||_{2}^{2}+\frac{\rho}{2}||x'-z'^{k}+u^{k}||_{2}^{2})\label{eq:argmintofind}
+\end{equation}
+
+\end_inset
+
+Let us multiply this out:
+\begin_inset Formula 
+\[
+\frac{1}{2}[(Sx'-y'^{k})^{T}(Sx'-y'^{k})+\rho(x'-(z'^{k}-u^{k}))^{T}(x'-z'^{k}-u^{k})]=\frac{{1}}{2}x'^{T}Ax'-x'^{T}b+const
+\]
+
+\end_inset
+
+where
+\begin_inset Formula 
+\[
+A=S^{T}S+\rho I
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{equation}
+b=S^{T}(y'^{k})-\rho(z'^{k}-u^{k})\label{eq:linearterm}
+\end{equation}
+
+\end_inset
+
+which has a minimum exactly where 
+\begin_inset Formula $Ax=b$
+\end_inset
+
+, or
+\begin_inset Formula 
+\[
+(S^{T}S+\rho I)x'^{+}=S^{T}(y'^{k})-\rho(z'^{k}-u^{k}).
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $v=z'^{k}-u^{k}$
+\end_inset
+
+ (note that we don't need the constant term to minimize this).
+\end_layout
+
+\begin_layout Standard
+Plugging these expressions back into Eq.
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:argmintofind"
+
+\end_inset
+
+, and writing an explicit inverse rather than an equation solution for 
+\begin_inset Formula $x'^{k+1}$
+\end_inset
+
+ we obtain
+\begin_inset Formula 
+\[
+x'^{k+1}=(S^{T}S+\rho I)^{-1}(S^{T}(y'^{k})-\rho(z^{'k}-u^{k})).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Optimization in z
+\end_layout
+
+\begin_layout Standard
+The second optimization is the optimization for the L1 term.
+ It comes from the optimization of
+\begin_inset Formula 
+\[
+z'^{k+1}=\text{argmin}_{z'}(g(z')+\frac{\rho}{2}||x'^{k+1}-z'+u^{k}||_{2}^{2})=\text{argmin}_{z'}(\lambda|z'|+\frac{\rho}{2}||z'-(x'^{k+1}+u^{k})||_{2}^{2})
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $g(z')=\lambda|z'|_{1}$
+\end_inset
+
+ and, defining 
+\begin_inset Formula $v=x'^{k+1}+u^{k}$
+\end_inset
+
+
+\begin_inset Formula 
+\[
+z'^{k+1}=\text{argmin}_{z'}(\lambda|z'|+\frac{\rho}{2}||z'-v||_{2}^{2})
+\]
+
+\end_inset
+
+The equation above does not mix different elements of the vector 
+\begin_inset Formula $z'.$
+\end_inset
+
+ Thus we can rewrite it as an element-wise minimization and do the update
+ for every element of 
+\begin_inset Formula $z'$
+\end_inset
+
+individually, such that 
+\begin_inset Formula 
+\[
+z_{j}'^{k+1}=\text{argmin}_{z'_{j}}(\lambda|z'_{j}|+\frac{\rho}{2}(z_{j}'-v_{j})^{2})
+\]
+
+\end_inset
+
+The solution to this minimization is given by the soft thresholding operator
+\begin_inset Formula 
+\begin{equation}
+z_{j}^{'+}=S_{\lambda/\rho}(v_{j})\label{eq:SoftThreshZ}
+\end{equation}
+
+\end_inset
+
+where the soft thresholding operator 
+\begin_inset Formula $S$
+\end_inset
+
+ is given by
+\begin_inset Formula 
+\begin{equation}
+S_{\kappa}(x)=\begin{cases}
+\begin{array}{c}
+x-\kappa\\
+0\\
+x+\kappa
+\end{array} & \begin{array}{c}
+x>\kappa\\
+|x|\leq\kappa\\
+x<-\kappa
+\end{array}\end{cases}\label{eq:SoftThresh}
+\end{equation}
+
+\end_inset
+
+This is derived in detail in chapter 4.4.3.
+\end_layout
+
+\begin_layout Section
+The soft thresholding function in more detail
+\end_layout
+
+\begin_layout Standard
+Here we derive the formula for 
+\begin_inset Formula $S_{\kappa}(x)$
+\end_inset
+
+ in more detail.
+ We start by defining the problem as
+\begin_inset Formula 
+\[
+prox_{f}(x)=\text{{argmin}{}_{z}}(\frac{\rho}{2}||z-v||_{2}^{2}+\lambda|z|_{1})
+\]
+
+\end_inset
+
+which, because it is separable, we can write as
+\begin_inset Formula 
+\[
+\frac{\partial}{\partial z}(\frac{\rho}{2}(z_{j}-v_{j})^{2}+\lambda|z_{j}|)\overset{!}{=}0
+\]
+
+\end_inset
+
+which is
+\begin_inset Formula 
+\[
+z_{j}+\frac{\lambda}{\rho}\frac{\partial}{\partial z_{j}}|z_{j}|=v_{j}
+\]
+
+\end_inset
+
+if 
+\begin_inset Formula $|z_{j}|>0,$
+\end_inset
+
+ the derivative is 
+\begin_inset Formula $1,$
+\end_inset
+
+ if 
+\begin_inset Formula $|z_{j}|<0$
+\end_inset
+
+, it is 
+\begin_inset Formula $-1,$
+\end_inset
+
+ and if 
+\begin_inset Formula $|z_{j}|=0$
+\end_inset
+
+ we can't really differentiate.
+ Let's do the case 
+\begin_inset Formula $z>0$
+\end_inset
+
+ first:
+\begin_inset Formula 
+\[
+z_{j}=v-\frac{\lambda}{\rho}.
+\]
+
+\end_inset
+
+ Otherwise we pick up a 
+\begin_inset Formula $-1,$
+\end_inset
+
+ and the equation is
+\begin_inset Formula 
+\[
+z_{j}=v+\frac{\lambda}{\rho}
+\]
+
+\end_inset
+
+Finally let's examine the case of 
+\begin_inset Formula $|z_{j}|=0.$
+\end_inset
+
+ The literature works with a subdifferential and states 
+\begin_inset Formula $z_{j}+\frac{\lambda}{\rho}[-1,1]=0,$
+\end_inset
+
+ which has a solution of 
+\begin_inset Formula $0$
+\end_inset
+
+ for 
+\begin_inset Formula $z_{j}$
+\end_inset
+
+in 
+\begin_inset Formula $[-\frac{\lambda}{\rho},\frac{\lambda}{\rho}].$
+\end_inset
+
+ Putting it all together, we get
+\begin_inset Formula 
+\[
+z_{i}=\begin{cases}
+0 & |v_{i}|<\frac{\lambda}{\rho}\\
+v_{i}-\frac{\lambda}{\rho}sgn(x_{i}) & |v_{i}|>\frac{\lambda}{\rho}
+\end{cases}
+\]
+
+\end_inset
+
+This is illustrated in Fig.
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Fig:SoftThresh"
+
+\end_inset
+
+.
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename SoftThresh.pdf
+	width 5cm
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+This is the soft thresholding function applied to 
+\begin_inset Formula $x$
+\end_inset
+
+ (in blue) for a threshold of 
+\begin_inset Formula $2.$
+\end_inset
+
+ Everything moves closer to zero.
+\begin_inset CommandInset label
+LatexCommand label
+name "Fig:SoftThresh"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+The equations get mildly more interesting if we minimize
+\begin_inset Formula 
+\[
+argmin_{z}\frac{{\rho}}{2}||Ax^{k+1}+Bz-c+u^{k}||_{2}^{2}+\lambda|z|
+\]
+
+\end_inset
+
+we then define 
+\begin_inset Formula 
+\[
+w=Ax^{k+1}+u^{k}-c
+\]
+
+\end_inset
+
+and minimize
+\begin_inset Formula 
+\[
+argmin_{z}\frac{\rho}{2}||Bz+v||_{2}^{2}+\lambda|z|=argmin_{z}\frac{\rho}{2}(z^{T}B^{T}Bz+2z^{T}B^{T}w+w^{T}w)+\lambda|z|
+\]
+
+\end_inset
+
+We are only interested here in the case of 
+\begin_inset Formula $B^{T}B=1,$
+\end_inset
+
+ which allows us to redefine 
+\begin_inset Formula $v=-B^{T}w$
+\end_inset
+
+ to express the problem as the minimization problem
+\begin_inset Formula 
+\[
+argmin_{z}(\frac{\rho}{2}||z-v||+\lambda|z|_{1})
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+The modification for a positivity constraint
+\end_layout
+
+\begin_layout Standard
+We want to enforce positivity of a spectral function.
+ That means that we want to constrain the fit of 
+\begin_inset Formula $x'$
+\end_inset
+
+ or 
+\begin_inset Formula $z'$
+\end_inset
+
+ in such a way that the resulting spectral function is positive everywhere.
+ In our notation the spectral function is 
+\begin_inset Formula $\rho=Vx'.$
+\end_inset
+
+ We build in this constraint by modifying the Lagrangian from 
+\begin_inset Formula $L_{\rho}(x',z')$
+\end_inset
+
+ to
+\begin_inset Formula 
+\begin{equation}
+L_{\rho}(x',z',z)=f(x')+g(z')+h(z)\label{eq:TripleLagrangian}
+\end{equation}
+
+\end_inset
+
+i.e.
+ we introduce a third variable and alternate the optimization between the
+ three of them, subject to the constraint that 
+\begin_inset Formula $x'=z'=V^{T}z$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+In the textbook case, we just have to minimize 
+\begin_inset Formula $f(x)+h(z).$
+\end_inset
+
+ In that case, 
+\begin_inset Formula $h(z)$
+\end_inset
+
+ is constructed such that it enforces a positivity constraint such as in
+ chapter 5, first page, and we obtain
+\begin_inset Formula 
+\[
+z^{k+1}=\Pi_{+}(x^{k+1}+u^{k})
+\]
+
+\end_inset
+
+The operator 
+\begin_inset Formula $\Pi_{+}$
+\end_inset
+
+is a projection operator onto the domain 
+\begin_inset Formula $\mathcal{C}$
+\end_inset
+
+where we want to enforce the values of z, i.e.
+ here onto the positive domain.
+ To be concrete, we minimize
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+z^{k+1}=\text{argmin}_{z}(h(z)+\frac{\rho}{2}||x{}^{k+1}-z+u^{k}||_{2}^{2})
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $h(z)$
+\end_inset
+
+zero only in 
+\begin_inset Formula $\mathcal{C}$
+\end_inset
+
+ (we can model it as being infinity outside of 
+\begin_inset Formula $\mathcal{C}$
+\end_inset
+
+).
+ The solution to this is the point where the 
+\begin_inset Formula $||x^{k+1}-z+u^{k}||$
+\end_inset
+
+ is smallest with z in the domain 
+\begin_inset Formula $\mathcal{C}$
+\end_inset
+
+ .
+ In our case of a positivity constraint, the function is minimized for 
+\begin_inset Formula 
+\[
+z_{j}=\begin{cases}
+0 & (x^{k+1}+u^{k})<0\\
+x^{k+1}+u^{k} & \text{else}
+\end{cases}
+\]
+
+\end_inset
+
+This is also called an Euclidian projection.
+\end_layout
+
+\begin_layout Standard
+Back to our case: In the Lagrangian Eq.
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:TripleLagrangian"
+
+\end_inset
+
+, 
+\begin_inset Formula $h(z)$
+\end_inset
+
+ evaluates to zero if 
+\begin_inset Formula $z$
+\end_inset
+
+ is positive, and to inifinity otherwise.
+ We optimize the three constraint in alternating fashion, in two ADMM loops
+ which independently take care of the optimization of 
+\begin_inset Formula $z'$
+\end_inset
+
+ and of 
+\begin_inset Formula $z$
+\end_inset
+
+: first optimize 
+\begin_inset Formula $x'$
+\end_inset
+
+ keeping 
+\begin_inset Formula $z'$
+\end_inset
+
+ and 
+\begin_inset Formula $z$
+\end_inset
+
+constant.
+ Then optimize 
+\begin_inset Formula $z'$
+\end_inset
+
+ keeping 
+\begin_inset Formula $x'$
+\end_inset
+
+constant, and update the running sum of residual for this optimization,
+ which is called 
+\begin_inset Formula $u'.$
+\end_inset
+
+ Independently optimize 
+\begin_inset Formula $z$
+\end_inset
+
+keeping 
+\begin_inset Formula $x'$
+\end_inset
+
+constant.
+ Then update the running residual sum 
+\begin_inset Formula $u$
+\end_inset
+
+ for that optimization.
+ 
+\end_layout
+
+\begin_layout Standard
+This may become clearer if we relabel 
+\begin_inset Formula $z$
+\end_inset
+
+as 
+\begin_inset Formula $s$
+\end_inset
+
+and work with 
+\begin_inset Formula $s'=V^{T}s,$
+\end_inset
+
+
+\begin_inset Formula $s=Vs'$
+\end_inset
+
+ in singular space.
+ In that case
+\begin_inset Formula 
+\[
+L_{\rho}(x',z',s')=f(x')+g(z')+j(s')
+\]
+
+\end_inset
+
+and 
+\begin_inset Formula $j(s')=h(Vs')$
+\end_inset
+
+ is the indicator function evaluated after a transform from singular to
+ direct space.
+ The constraint then is that 
+\begin_inset Formula $x'=z'=s'.$
+\end_inset
+
+ Denoting the running residual vector of the optimization in 
+\begin_inset Formula $s'$
+\end_inset
+
+ as 
+\begin_inset Formula $w'$
+\end_inset
+
+, we obtain
+\begin_inset Formula 
+\[
+s'^{k+1}=V^{T}\Pi_{+}(Vx'^{k+1}+Vw^{'k})
+\]
+
+\end_inset
+
+which is satisfied by 
+\begin_inset Formula $s'=V^{T}s$
+\end_inset
+
+ and
+\begin_inset Formula 
+\[
+s_{j}=\begin{cases}
+0 & Vx^{'k+1}+Vw'^{k}<0\\
+Vx^{'k+1}+Vw^{k} & \text{else}
+\end{cases}
+\]
+
+\end_inset
+
+After the optimization of 
+\begin_inset Formula $s'$
+\end_inset
+
+ we need to update the residual vector as
+\begin_inset Formula 
+\[
+w'^{k+1}=w'^{k}+x'^{k+1}-s'^{k+1}
+\]
+
+\end_inset
+
+which, because it is linear, we can also write in direct space as
+\begin_inset Formula 
+\[
+w^{k+1}=w^{k}+x^{k+1}-s^{k+1}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Formulating this constraint in direct space rather than in singular space
+ makes the equations look easier, which is why they probably did it in the
+ paper.
+ The only consequence of optimizing multiple constraints is having multiple
+ residuals in the equation for 
+\begin_inset Formula $x':$
+\end_inset
+
+
+\begin_inset Formula 
+\[
+x'^{k+1}=\text{argmin}_{x}(\frac{1}{2}||Sx'-y'^{k}||_{2}^{2}+\frac{\rho}{2}||x'-z'^{k}+u^{k}||_{2}^{2}+\frac{\rho'}{2}||x'-s'^{k}+w'^{k}||)
+\]
+
+\end_inset
+
+multiplying all of this out will lead to additional terms with 
+\begin_inset Formula $s'$
+\end_inset
+
+and 
+\begin_inset Formula $w'$
+\end_inset
+
+ wherever we had terms with 
+\begin_inset Formula $z'$
+\end_inset
+
+ and 
+\begin_inset Formula $u$
+\end_inset
+
+, such that the linear term in the equation for the optimization get modified
+ to
+\begin_inset Formula 
+\[
+b=S^{T}(y'^{k})-\rho(z'^{k}-u^{k})-\rho'(w'^{k}-s'^{k})
+\]
+
+\end_inset
+
+The quadratic terms picks up a 
+\begin_inset Formula $I(\rho+\rho')$
+\end_inset
+
+ where we had an 
+\begin_inset Formula $I\rho$
+\end_inset
+
+, and the constant term is irrelevant for the optimization.
+\end_layout
+
+\begin_layout Section
+The modification for a norm constraint
+\end_layout
+
+\begin_layout Standard
+DEPRECATED.
+ I THINK THIS IS CLUMSY.
+\end_layout
+
+\begin_layout Standard
+In order to have spectral functions with a fixed norm of one, we need to
+ optimize under the constraint
+\begin_inset Formula 
+\[
+\sum_{j}V_{ji}x'_{i}=1
+\]
+
+\end_inset
+
+We do this in just the same way: modify the Lagrangian to 
+\begin_inset Formula 
+\[
+L_{\rho}(x',z',s',t')=f(x')+g(z')+j(s')+k(t')
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $k(t')=\nu(\langle Vt'\rangle-1)$
+\end_inset
+
+ and, as in the paper, 
+\begin_inset Formula $\langle\cdot\rangle$
+\end_inset
+
+denotes the integral over the spectral function, which we can also write
+ as 
+\begin_inset Formula $\langle x\rangle=e\cdot x$
+\end_inset
+
+, where the vector 
+\begin_inset Formula $e$
+\end_inset
+
+is a unit vector chosen such that 
+\begin_inset Formula $\int d\omega A(\omega)\approx\sum_{j}x_{j}$
+\end_inset
+
+.
+ As a consequence, we pick up yet another optimization step and yet another
+ vector of residuals 
+\begin_inset Formula $v',$
+\end_inset
+
+ such that
+\begin_inset Formula 
+\[
+x'^{k+1}=\text{argmin}_{x}(\frac{1}{2}||Sx'-y'^{k}||_{2}^{2}+\frac{\rho}{2}||x'-z'^{k}+u^{k}||_{2}^{2}+\frac{\rho'}{2}||x'-s'^{k}+w'^{k}||+\frac{\rho''}{2}||x'-t'^{k}+v'^{k}||)
+\]
+
+\end_inset
+
+this will modify the quadratic part of the optimization to
+\begin_inset Formula 
+\begin{equation}
+A=S^{T}S+(\rho+\rho'+\rho'')I\label{eq:AWithTwoConstraints}
+\end{equation}
+
+\end_inset
+
+and change the linear part to 
+\begin_inset Formula 
+\[
+b=S^{T}(y'^{k})-\rho(z'^{k}-u^{k})-\rho'(w'^{k}-s'^{k})-\rho''(v'^{k}-t'^{k})
+\]
+
+\end_inset
+
+and it will require an additional step for the optimization of 
+\begin_inset Formula $t$
+\end_inset
+
+ and an update of the residuals 
+\begin_inset Formula $v.$
+\end_inset
+
+ The 
+\begin_inset Formula $t$
+\end_inset
+
+ update is given as
+\begin_inset Formula 
+\[
+t'^{k+1}=\text{argmin}_{t'}(k(t')-\frac{\rho''}{2}||x'{}^{k+1}-t'+v'^{k}||_{2}^{2})
+\]
+
+\end_inset
+
+and we can write this as the optmization of a quadratic equation, similar
+ to the optimization of 
+\begin_inset Formula $x'$
+\end_inset
+
+, and obtain the quadratic and linear terms
+\begin_inset Formula 
+\[
+t'^{k+1}=\text{argmin}_{t'}\frac{-\rho''}{2}t'^{T}t'-(\rho''(x'^{k+1}+v^{'k})^{T}+\nu eV)t'+const
+\]
+
+\end_inset
+
+which results in
+\begin_inset Formula 
+\begin{equation}
+t'^{k+1}=(x'+v'^{k})+\frac{\nu}{\rho''}eV\label{eq:normeq}
+\end{equation}
+
+\end_inset
+
+this needs to be followed by an update of the running residuals,
+\begin_inset Formula 
+\begin{equation}
+v'^{k+1}=v'^{k}+x'^{k+1}-t'^{k}\label{eq:normrunres}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+The modification for high frequency constraints
+\end_layout
+
+\begin_layout Standard
+This is not in the paper, but it is a straightforward extension of the constrain
+ts in the paper.
+ We have additional constraints for the spectral functions, which are
+\begin_inset Formula 
+\[
+c_{2}=\int\omega A(\omega)
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+c_{3}=\int\omega^{2}A(\omega)
+\]
+
+\end_inset
+
+These constraints come straight out of the series expansion of 
+\begin_inset Formula $G(i\omega_{n})=\frac{{1}}{i\omega_{n}}+\frac{c_{2}}{(i\omega_{n})^{2}}+\frac{c_{3}}{(i\omega_{n})^{3}}+...$
+\end_inset
+
+ and the evaluation of the kernel.
+\begin_inset Formula 
+\[
+n=\int A(\omega)f_{\beta}(\omega-\mu)
+\]
+
+\end_inset
+
+This is just the expression for the particle number.
+ Frequently we know these terms analytically, or we at least know then to
+ much higher precision than the spectral function.
+ They can be enforced using a constraint just as the norm constraint.
+\end_layout
+
+\begin_layout Section
+Building in norm and integral constraints exactly
+\end_layout
+
+\begin_layout Standard
+ADMM has a straightforward way of building in constraints: currently we
+ use 
+\begin_inset Formula $x'=z'$
+\end_inset
+
+, or 
+\begin_inset Formula $Ax'+Bz'-c=0$
+\end_inset
+
+ with 
+\begin_inset Formula $A=I$
+\end_inset
+
+ and 
+\begin_inset Formula $B=-I$
+\end_inset
+
+ and 
+\begin_inset Formula $c=0.$
+\end_inset
+
+ A, B, and c do not need to be 
+\begin_inset Formula $n_{s}\times n_{s}$
+\end_inset
+
+ matrices and it should be easy to extend 
+\begin_inset Formula $A$
+\end_inset
+
+, 
+\begin_inset Formula $B$
+\end_inset
+
+, and 
+\begin_inset Formula $c$
+\end_inset
+
+ by a row each, such that 
+\begin_inset Formula 
+\begin{equation}
+A=\left(\begin{array}{c}
+I_{n_{s}}\\
+\sum_{j}V_{jk}
+\end{array}\right)\label{eq:AWithNorm}
+\end{equation}
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+B=\left(\begin{array}{c}
+-I_{n_{s}}\\
+0
+\end{array}\right)
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+c=\left(\begin{array}{c}
+0\\
+1
+\end{array}\right)
+\]
+
+\end_inset
+
+such that the last line enforces 
+\begin_inset Formula 
+\[
+\sum_{j}V_{jk}x'_{k}=1
+\]
+
+\end_inset
+
+which is the condition for the norm.
+ This will leave the L1 optimization of 
+\begin_inset Formula $z'$
+\end_inset
+
+ invariant but will change the optimization for 
+\begin_inset Formula $x'$
+\end_inset
+
+ to
+\begin_inset Formula 
+\[
+x'^{k+1}=\text{argmin}_{x'}(\frac{1}{2}||Sx'-y'^{k}||_{2}^{2}+\frac{\rho}{2}||Ax'+Bz'^{k}-c+u^{k}||_{2}^{2})
+\]
+
+\end_inset
+
+Multiplying this out, we get a quadratic equation of the form 
+\begin_inset Formula $\frac{1}{2}x^{T}Px+q^{T}x+c=0$
+\end_inset
+
+ , with a solution at 
+\begin_inset Formula $Px=q$
+\end_inset
+
+, for
+\begin_inset Formula 
+\begin{equation}
+P=S^{T}S+\rho A^{T}A\label{eq:PofQuadEqWithNorm}
+\end{equation}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{equation}
+q=y'^{T}S+\rho(Bz'^{k}-c+u^{k})^{T}A\label{eq:qofQuadEqWithNorm}
+\end{equation}
+
+\end_inset
+
+Additional constraints for 
+\begin_inset Formula $\int d\omega\omega A(\omega)$
+\end_inset
+
+ and 
+\begin_inset Formula $\int d\omega\omega^{2}A(\omega)$
+\end_inset
+
+ result in additional lines with 
+\begin_inset Formula $\sum_{j}\omega_{j}V_{jk}$
+\end_inset
+
+ and 
+\begin_inset Formula $\sum_{j}\omega_{j}^{2}V_{jk}$
+\end_inset
+
+ for 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $c_{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $c_{3}$
+\end_inset
+
+ for 
+\begin_inset Formula $c.$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Summary of Equations
+\end_layout
+
+\begin_layout Standard
+This section summarizes the equations needed to solve the ADMM problem.
+ We start with the calculation of 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+ as in 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:AWithNorm"
+
+\end_inset
+
+ and the optimization of 
+\begin_inset Formula $x^{k+1}$
+\end_inset
+
+ according to Eq.
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:PofQuadEqWithNorm"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:qofQuadEqWithNorm"
+
+\end_inset
+
+.
+\begin_inset Formula 
+\begin{align}
+P & =S^{T}S+\rho A^{T}A\\
+q & =y'^{T}S+\rho(Bz'^{k}-c+u^{k})^{T}A-\rho'(w'^{k}-s'^{k})-\rho''(v'^{k}-t'^{k})\\
+Ax'^{k+1} & =b
+\end{align}
+
+\end_inset
+
+As the matrix 
+\begin_inset Formula $A$
+\end_inset
+
+ is diagonal, we can replace the last equation by an element-wise division
+ of 
+\begin_inset Formula $b$
+\end_inset
+
+ by 
+\begin_inset Formula $A.$
+\end_inset
+
+ We then update the L1 norm and its dual variable according to Eq.
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:SoftThreshZ"
+
+\end_inset
+
+ and Eq.
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:SoftThresh"
+
+\end_inset
+
+.
+ This will take care of 
+\begin_inset Formula $z'$
+\end_inset
+
+and its running residual 
+\begin_inset Formula $u$
+\end_inset
+
+.
+\begin_inset Formula 
+\begin{align}
+z^{'k+1} & =S_{\lambda/\rho}(x'^{k}+u^{k})\\
+u^{k+1} & =u^{k}+Ax'^{k+1}+Bz'^{k+1}-c
+\end{align}
+
+\end_inset
+
+We then satisfy all other constraints, starting with the positivity, variables
+ 
+\begin_inset Formula $s'$
+\end_inset
+
+ and 
+\begin_inset Formula $w'$
+\end_inset
+
+:
+\begin_inset Formula 
+\begin{align}
+s'^{k+1} & =V^{T}\Pi_{+}(Vx'^{k+1}+Vw^{'k})\\
+w'^{k+1} & =w'^{k}+x'^{k+1}-s'^{k+1}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

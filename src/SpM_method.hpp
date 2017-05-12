@@ -45,8 +45,9 @@ private:
   ///number of real frequency points
   const int nfreq;
   ///relaxation parameters
-  double muprime_;
-  double mu_;
+  double rho_;
+  ///relaxation parameters
+  double rhoprime_;
   ///l1 norm parameter
   double lambda_;
   ///the solver

@@ -26,10 +26,10 @@ SpMSimulation::SpMSimulation(alps::params &parms):
 , norm(parms["NORM"])                                             //The integral is normalized to NORM (use e.g. for self-energies
 , Kernel_type(parms["KERNEL"].as<std::string>())
 , nfreq(parms["NFREQ"].as<int>())
-, muprime_(parms["MUPRIME"])
-, mu_(parms["MU"])
+, rho_(parms["RHO"])
+, rhoprime_(parms["RHOPRIME"])
 , lambda_(parms["LAMBDA"])
-, admm_(Vt(), U().transpose()*y(), delta_omega(), Sigma().diagonal(), muprime_, mu_, lambda_)
+, admm_(Vt(), U().transpose()*y(), delta_omega(), Sigma().diagonal(), rho_, rhoprime_, lambda_)
 {
   std::string bn=parms["BASENAME"]; name=bn+'.';
 
@@ -43,8 +43,8 @@ void SpMSimulation::define_parameters(alps::params &p){
     "performing analytic continuation \n \t a la SpM. Experimental, do not use.\n");
 
   p.define<std::string>("BASENAME","","Specified output name \n(generated if not given)");
-  p.define<double>("MU",20,"Relaxation Parameter");
-  p.define<double>("MUPRIME",20,"Relaxation Parameter");
+  p.define<double>("RHO",20,"ADMM Relaxation Parameter for L1 norm");
+  p.define<double>("RHOPRIME",20,"ADMM Relaxation Parameter for positivity");
   p.define<double>("LAMBDA","L1 fit norm");
 }
 
@@ -58,10 +58,9 @@ void SpMSimulation::run(){
       admm_.iterate();
     }
     admm_.print_info(std::cout); std::cout<<std::endl;
-    std::cout<<"chi2 admm: "<<admm_.chisquare_term()<<" direct: "<<0.5*(y_-K_*(admm_.spectral_function().cwiseProduct(delta_omega()))).squaredNorm()
-        <<" trans: "<<0.5*(U().transpose()*y_-Sigma()*Vt()*(admm_.spectral_function().cwiseProduct(delta_omega()))).squaredNorm();
+    //std::cout<<"chi2 admm: "<<admm_.chisquare_term()<<" direct: "<<0.5*(y_-K_*(admm_.spectral_function().cwiseProduct(delta_omega()))).squaredNorm()
+    //    <<" trans: "<<0.5*(U().transpose()*y_-Sigma()*Vt()*(admm_.spectral_function().cwiseProduct(delta_omega()))).squaredNorm();
   }
-  std::cout<<(Vt()*(Vt().transpose()))<<std::endl;
 }
 void SpMSimulation::evaluate(){
   Eigen::VectorXd omega=omega_coord();
@@ -71,4 +70,9 @@ void SpMSimulation::evaluate(){
   for(int i=0;i<nfreq;++i){
     spec_file<<omega[i]<<" "<<spectrum[i]<<" "<<delta_omega(i)<<std::endl;
   }
+
+  /*std::string filename="backcont.dat";
+  for(int i=0;i<ndat_;++i){
+    spec_file<<inputGrid_[i]<<" "<<y_[i]<<" "<<back(i)<<std::endl;
+  }*/
 }
