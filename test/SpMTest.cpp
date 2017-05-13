@@ -155,7 +155,7 @@ TEST(SpM,KernelCanDealWithTripleGaussian){
   }
 
 }
-TEST(SpM,ADMMHasSmallChiForExactSolution){
+TEST(SpM,ADMMTestChiSquarePositivityNormForExactSolution){
     alps::params p;
     SVDContinuation::define_parameters(p);
 
@@ -197,5 +197,53 @@ TEST(SpM,ADMMHasSmallChiForExactSolution){
   EXPECT_NEAR(0, A.constraint_violation_positivity(), 1.e-4);
   std::cout<<"integral is: "<< ((A.spectral_function()).cwiseProduct(C.delta_omega())).sum()<<std::endl;
   EXPECT_NEAR(0, A.constraint_violation_norm(), 1.e-4);
+}
+TEST(SpM,ADMMSpectralFunctionAccuracy){
+    alps::params p;
+    SVDContinuation::define_parameters(p);
+
+    double beta=200;
+    int ndat=5000;
+    p["BETA"]=beta;
+    p["NDAT"]=ndat;
+    p["NO_ERRORS"]=true;
+    p["DATASPACE"]="frequency";
+    p["KERNEL"]="fermionic";
+    p["PARTICLE_HOLE_SYMMETRY"]=true;
+    p["VERBOSE"]=false;
+
+    //grid
+    p["OMEGA_MAX"]=10;
+    p["OMEGA_MIN"]=-10;
+    p["CUT"]=0.1;
+    p["FREQUENCY_GRID"]="Lorentzian";
+    p["NFREQ"]=1000;
+
+  matsubara_gf_to_param(p, beta, ndat, &imag_backcont_triple_gaussian);
+
+  SVDContinuation C(p);
+
+  double rho=1, rhoprime=1., lambda=1.;
+  ADMM A(C.Vt(), C.U().transpose()*C.y(), C.delta_omega(), C.Sigma().diagonal(), rho, rhoprime, lambda);
+
+  //find the correct spectral function
+  Eigen::VectorXd real_comparison_data=C.delta_omega();
+  for(int i=0;i<real_comparison_data.size();++i){
+    real_comparison_data[i]*=triple_gaussian(C.omega_coord(i));
+  }
+
+  std::cout<<"difference between spectral function reconstructed from singular space and direct calc:"<<std::endl;
+  Eigen::VectorXd diff=(real_comparison_data-A.spectral_function());
+  std::cout<<"diff norm: "<<diff.norm()<<std::endl;
+  std::cout<<" integral: "<<diff.cwiseProduct(C.delta_omega()).sum()<<std::endl;
+  std::cout<<" integral abs: "<<(diff.cwiseProduct(C.delta_omega())).lpNorm<1>()<<std::endl;
+  
+  //plug in the correct spectral function
+  A.externally_set_xprime(C.Vt()*real_comparison_data);
+  Eigen::VectorXd spectral_function=A.spectral_function();
+  for(int i=0;i<spectral_function.size();++i){
+    std::cout<<C.omega_coord(i)<<" "<<triple_gaussian(C.omega_coord(i))<<" "<<spectral_function[i]<<std::endl;
+    EXPECT_NEAR(triple_gaussian(C.omega_coord(i)), spectral_function[i], 1.e-4);
+  }
 }
 
