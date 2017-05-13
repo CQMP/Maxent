@@ -14,7 +14,7 @@ public:
 , rho_(rho)
 , rhoprime_(rhoprime)
 , lambda_(lambda)
-, nu_(0)
+//, nu_(0)
 , xprime_(Eigen::VectorXd::Zero(ns_))
 , zprime_(Eigen::VectorXd::Zero(ns_))
 , uprime_(Eigen::VectorXd::Zero(ns_+1))
@@ -112,7 +112,7 @@ private:
   double lambda_;
 
   ///temporary doubles
-  double nu_;
+  //double nu_;
 
   ///singular space vector for x
   Eigen::VectorXd xprime_;

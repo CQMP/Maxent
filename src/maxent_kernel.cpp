@@ -109,15 +109,6 @@ K_(ndat_,nfreq_)
         }
       }
     }
-    else if(ktype_==time_fermionic_kernel){
-        for (int i=0; i<ndat_; ++i) {
-						double tau=tau_points_[i];
-            for (int j=0; j<nfreq_; ++j) {
-                double omega = freq[j];
-                K_(i,j) =  -1.;
-            }
-        }
-    }
     else if(ktype_==frequency_fermionic_ph_kernel) {
     for (int i=0; i<ndat_; ++i) {
       double omegan = (2*i+1)*M_PI*T_;
@@ -268,26 +259,22 @@ void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& fre
     if(lmax>boost::math::max_factorial<double>::value)
         throw std::runtime_error("lmax is greater than boost factorial precision");
     
-    const double PI = std::acos(-1);
     const std::complex<double> CONE(0,1);
     //recall that ndat()=lmax
 
-    int N = 20000/2;
     gsl_integration_workspace *w = gsl_integration_workspace_alloc (1000);
     
     for(int l=0;l<lmax;l++){
         for(int j=0;j<nfreq_;j++){
-            double I=1;
             double I1=0;
             double omega =freq[j];
-            double h = (1/T_-0)/(2*N);
             
             double a = 0;
             double b = 1/T_;
             double epsabs=1.49e-08; //python default resolution
             double epsrel=1.49e-08;
             double result,err;
-            size_t nval,limit=500;
+            size_t limit=500;
             
             gsl_function F;
             F.function = &legendre_kernel_integrand;

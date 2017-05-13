@@ -52,8 +52,8 @@ class DefaultModel
 {
 public:
   DefaultModel(const alps::params& p, double omega_min, double omega_max) :
-    omega_min_(omega_min),
-    omega_max_(omega_max){}
+    omega_max_(omega_max),
+    omega_min_(omega_min){}
   ///define parameter defaults
   static void define_parameters(alps::params &p);
   static void print_help();
