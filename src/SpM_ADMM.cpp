@@ -114,7 +114,7 @@ double ADMM::constraint_violation_norm() const{
   return std::abs((Vt_.transpose()*xprime_).sum()-1);
 }
 double ADMM::constraint_violation_positivity() const{
-  Eigen::VectorXd x=spectral_function();
+  Eigen::VectorXd x=spectral_function().cwiseProduct(domega_);
   for(int i=0;i<x.size();++i) if(x[i]>0) x[i]=0;
   return x.norm();
 }

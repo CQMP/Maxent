@@ -193,5 +193,9 @@ TEST(SpM,ADMMHasSmallChiForExactSolution){
   A.externally_set_xprime(C.Vt()*real_comparison_data);
   std::cout<<"chi square is: "<< A.chisquare_term()<<std::endl;
   EXPECT_NEAR(0, A.chisquare_term(), 1.e-8);
+  std::cout<<"positivity constraint is: "<< A.constraint_violation_positivity()<<std::endl;
+  EXPECT_NEAR(0, A.constraint_violation_positivity(), 1.e-4);
+  std::cout<<"integral is: "<< ((A.spectral_function()).cwiseProduct(C.delta_omega())).sum()<<std::endl;
+  EXPECT_NEAR(0, A.constraint_violation_norm(), 1.e-4);
 }
 
