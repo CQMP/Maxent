@@ -68,8 +68,7 @@ void SVDContinuation::truncate_to_singular_space(const vector_type& S) {
 
 void SVDContinuation::singular_value_decompose_kernel(bool verbose,
     vector_type& S) {
-  const double threshold = std::sqrt(std::numeric_limits<double>::epsilon())
-      * nfreq();
+
   Eigen::JacobiSVD<matrix_type> svd(K_,Eigen::ComputeThinU | Eigen::ComputeThinV);
   //svd.setThreshold(threshold);
   S=svd.singularValues();
@@ -79,21 +78,18 @@ void SVDContinuation::singular_value_decompose_kernel(bool verbose,
   if (verbose)
     std::cout << "# Singular values of the Kernel:\n";
 
-  const double prec = std::sqrt(std::numeric_limits<double>::epsilon())
-      * nfreq() * S[0];
   if (verbose)
-    std::cout << "# eps = " << sqrt(std::numeric_limits<double>::epsilon())
-        << std::endl << "# prec = " << prec << std::endl;
+    std::cout << "truncation precison: " << prec_ << std::endl;
 
   for (unsigned int s = 0; s < S.size(); ++s) {
     if (verbose)
       std::cout << "# " << s << "\t" << S[s] << "\n";
 
-    ns_ = (S[s] >= prec) ? s + 1 : ns_;
+    ns_ = (S[s] >= prec_) ? s + 1 : ns_;
   }
-  if (ns() == 0)
+  if (ns() < 5)
     boost::throw_exception(
-        std::logic_error("all singular values smaller than the precision"));
+        std::logic_error("There are very few singular values. Aborting."));
   
 }
 void SVDContinuation::check_high_frequency_limit(const vector_type& y,const kernel_type kt){
@@ -130,7 +126,7 @@ void SVDContinuation::check_high_frequency_limit(const vector_type& y,const kern
 SVDContinuation::SVDContinuation(alps::params& p) :
     KernelAndGridIO(p),
     U_(ndat(), ndat()), Vt_(ndat(), nfreq()), Sigma_(ndat(), ndat()),
-    omega_coord_(nfreq()), delta_omega_(nfreq()), ns_(0)
+    omega_coord_(nfreq()), delta_omega_(nfreq()), prec_(1.e-12), ns_(0)
 {
   for (int i=0; i<nfreq(); ++i) {
     //set the omega_coord into the middle of two grid points

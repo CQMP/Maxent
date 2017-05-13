@@ -28,7 +28,7 @@ double getNorm(const vector_type &omega, const vector_type &y){
     norm+=(omega[size-1]-omega[size-2])*y[size-1];
     return norm;
 }
-TEST(Simulation,FrequencySimulation){
+TEST(Simulation,DISABLED_FrequencySimulation){
     alps::params p;
     MaxEntSimulation::define_parameters(p);
     p["BETA"]=8;
@@ -115,7 +115,7 @@ TEST(Simulation,FrequencySimulation){
     EXPECT_NEAR(chi_norm,1,1e-2);
     SUCCEED();
 }
-TEST(Simulation,FrequencyBosonicSimulation){
+TEST(Simulation,DISABLED_FrequencyBosonicSimulation){
     alps::params p;
     MaxEntSimulation::define_parameters(p);
     p["BETA"]=2;
@@ -195,7 +195,7 @@ TEST(Simulation,FrequencyBosonicSimulation){
     EXPECT_NEAR(chi_norm,1,1e-1);
     SUCCEED();
 }
-TEST(Simulation,TauSimulation){
+TEST(Simulation,DISABLED_TauSimulation){
     alps::params p;
     MaxEntSimulation::define_parameters(p);
     p["BETA"]=8;
@@ -332,7 +332,7 @@ TEST(Simulation,TauSimulation){
 }
 
 
-TEST(Simulation,LegendreSimulation){
+TEST(Simulation,DISABLED_LegendreSimulation){
     alps::params p;
     MaxEntSimulation::define_parameters(p);
     p["BETA"]=8;

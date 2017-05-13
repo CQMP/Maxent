@@ -52,6 +52,7 @@ set(LIB_FILES
   ./src/default_model.cpp
   ./src/eigen_hdf5.cpp
   ./src/SpM_ADMM.cpp
+  ./src/SpM_simulation.cpp
   )
 
 ADD_LIBRARY(libmaxent ${LIB_FILES})
@@ -66,7 +67,7 @@ add_executable(maxent
 target_link_libraries(maxent libmaxent ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 add_executable(SpM
-  ./src/SpM_method.cpp ./src/SpM_simulation.cpp 
+  ./src/SpM_method.cpp
 )
 target_link_libraries(SpM libmaxent ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 

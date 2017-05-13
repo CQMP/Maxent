@@ -56,6 +56,8 @@ private:
   matrix_type Sigma_;
   vector_type omega_coord_;
   vector_type delta_omega_;
+  ///truncation precision of the SVD
+  double prec_;
   ///the number of singular values
   int ns_;
   ///compute the minimal chi2 that is possible given the SVD of the kernel

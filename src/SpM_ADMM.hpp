@@ -26,7 +26,6 @@ public:
 , q_(Eigen::VectorXd::Zero(ns_))
 , enforce_positivity_(false)
 {
-    std::cout<<"entering ADMM constructor."<<std::endl;
     if(Vt_.rows()!=ns_) throw std::runtime_error("Vt should have ns rows");
     if(Vt_.cols()!=nw_) throw std::runtime_error("Vt should have nw rows");
     if(domega_.size()!=nw_) throw std::runtime_error("domega should have nw rows");
@@ -34,9 +33,7 @@ public:
     compute_A();
     compute_B();
     compute_c();
-    std::cout<<" decomposing matrix."<<std::endl;
     decompose_P();
-    std::cout<<"finished decomposing matrix."<<std::endl;
   }
   ///update xprime
   void update_xprime();
