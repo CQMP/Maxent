@@ -46,6 +46,8 @@ public:
   ///update wprime
   void update_wprime();
 
+  void externally_set_xprime(const Eigen::VectorXd &xprime){xprime_=xprime;}
+
   ///run one ADMM iteration
   void iterate();
   ///statistics output

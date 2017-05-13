@@ -123,7 +123,6 @@ TEST(SpM,KernelCanDealWithTripleGaussian){
     p["DATASPACE"]="frequency";
     p["KERNEL"]="fermionic";
     p["PARTICLE_HOLE_SYMMETRY"]=true;
-    p["TEXT_OUTPUT"]=false;
     p["VERBOSE"]=false;
 
     //grid
@@ -131,7 +130,7 @@ TEST(SpM,KernelCanDealWithTripleGaussian){
     p["OMEGA_MIN"]=-10;
     p["CUT"]=0.1;
     p["FREQUENCY_GRID"]="Lorentzian";
-    p["NFREQ"]=10000;
+    p["NFREQ"]=1000;
 
   matsubara_gf_to_param(p, beta, ndat, &imag_backcont_triple_gaussian);
 
@@ -152,7 +151,47 @@ TEST(SpM,KernelCanDealWithTripleGaussian){
 
   for(int i=0;i<ndat;++i){
     std::stringstream pval; pval<<"X_"<<i;
-    EXPECT_NEAR(backcont[i], p[pval.str()], 1.e-7);
+    EXPECT_NEAR(backcont[i], p[pval.str()], 1.e-5);
   }
 
 }
+TEST(SpM,ADMMHasSmallChiForExactSolution){
+    alps::params p;
+    SVDContinuation::define_parameters(p);
+
+    double beta=20;
+    int ndat=500;
+    p["BETA"]=beta;
+    p["NDAT"]=ndat;
+    p["NO_ERRORS"]=true;
+    p["DATASPACE"]="frequency";
+    p["KERNEL"]="fermionic";
+    p["PARTICLE_HOLE_SYMMETRY"]=true;
+    p["VERBOSE"]=false;
+
+    //grid
+    p["OMEGA_MAX"]=10;
+    p["OMEGA_MIN"]=-10;
+    p["CUT"]=0.1;
+    p["FREQUENCY_GRID"]="Lorentzian";
+    p["NFREQ"]=1000;
+
+  matsubara_gf_to_param(p, beta, ndat, &imag_backcont_triple_gaussian);
+
+  SVDContinuation C(p);
+
+  double rho=1, rhoprime=1., lambda=1.;
+  ADMM A(C.Vt(), C.U().transpose()*C.y(), C.delta_omega(), C.Sigma().diagonal(), rho, rhoprime, lambda);
+
+  //find the correct spectral function
+  Eigen::VectorXd real_comparison_data=C.delta_omega();
+  for(int i=0;i<real_comparison_data.size();++i){
+    real_comparison_data[i]*=triple_gaussian(C.omega_coord(i));
+  }
+  
+  //plug in the correct spectral function
+  A.externally_set_xprime(C.Vt()*real_comparison_data);
+  std::cout<<"chi square is: "<< A.chisquare_term()<<std::endl;
+  EXPECT_NEAR(0, A.chisquare_term(), 1.e-8);
+}
+
