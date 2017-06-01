@@ -116,7 +116,7 @@ double ADMM::constraint_violation_norm() const{
 double ADMM::constraint_violation_positivity() const{
   Eigen::VectorXd x=spectral_function().cwiseProduct(domega_);
   for(int i=0;i<x.size();++i) if(x[i]>0) x[i]=0;
-  return x.norm();
+  return -x.sum();
 }
 double ADMM::global_objective_functional() const{
   return chisquare_term()+lambda_*l1_of_xprime();

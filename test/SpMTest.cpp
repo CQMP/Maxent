@@ -155,7 +155,7 @@ TEST(SpM,KernelCanDealWithTripleGaussian){
   }
 
 }
-TEST(SpM,ADMMTestChiSquarePositivityNormForExactSolution){
+TEST(SpM,ADMMTestChiSquareNormForExactSolution){
     alps::params p;
     SVDContinuation::define_parameters(p);
 
@@ -193,10 +193,45 @@ TEST(SpM,ADMMTestChiSquarePositivityNormForExactSolution){
   A.externally_set_xprime(C.Vt()*real_comparison_data);
   std::cout<<"chi square is: "<< A.chisquare_term()<<std::endl;
   EXPECT_NEAR(0, A.chisquare_term(), 1.e-8);
-  std::cout<<"positivity constraint is: "<< A.constraint_violation_positivity()<<std::endl;
-  EXPECT_NEAR(0, A.constraint_violation_positivity(), 1.e-4);
   std::cout<<"integral is: "<< ((A.spectral_function()).cwiseProduct(C.delta_omega())).sum()<<std::endl;
   EXPECT_NEAR(0, A.constraint_violation_norm(), 1.e-4);
+}
+TEST(SpM,ADMMTestPositivityForExactSolution){
+    alps::params p;
+    SVDContinuation::define_parameters(p);
+
+    double beta=20;
+    int ndat=500;
+    p["BETA"]=beta;
+    p["NDAT"]=ndat;
+    p["NO_ERRORS"]=true;
+    p["DATASPACE"]="frequency";
+    p["KERNEL"]="fermionic";
+    p["PARTICLE_HOLE_SYMMETRY"]=true;
+    p["VERBOSE"]=false;
+
+    //grid
+    p["OMEGA_MAX"]=10;
+    p["OMEGA_MIN"]=-10;
+    p["CUT"]=0.1;
+    p["FREQUENCY_GRID"]="Lorentzian";
+    p["NFREQ"]=1000;
+
+  matsubara_gf_to_param(p, beta, ndat, &imag_backcont_triple_gaussian);
+
+  SVDContinuation C(p);
+
+  double rho=1, rhoprime=1., lambda=1.;
+  ADMM A(C.Vt(), C.U().transpose()*C.y(), C.delta_omega(), C.Sigma().diagonal(), rho, rhoprime, lambda);
+
+  //find the correct spectral function
+  Eigen::VectorXd real_comparison_data=C.delta_omega();
+  for(int i=0;i<real_comparison_data.size();++i){
+    real_comparison_data[i]*=triple_gaussian(C.omega_coord(i));
+  }
+
+  std::cout<<"positivity constraint is: "<< A.constraint_violation_positivity()<<std::endl;
+  EXPECT_NEAR(0, A.constraint_violation_positivity(), 1.e-7);
 }
 TEST(SpM,ADMMSpectralFunctionAccuracy){
     alps::params p;
@@ -243,7 +278,52 @@ TEST(SpM,ADMMSpectralFunctionAccuracy){
   Eigen::VectorXd spectral_function=A.spectral_function();
   for(int i=0;i<spectral_function.size();++i){
     std::cout<<C.omega_coord(i)<<" "<<triple_gaussian(C.omega_coord(i))<<" "<<spectral_function[i]<<std::endl;
-    EXPECT_NEAR(triple_gaussian(C.omega_coord(i)), spectral_function[i], 1.e-4);
+    EXPECT_NEAR(triple_gaussian(C.omega_coord(i)), spectral_function[i], 1.e-6);
   }
 }
+TEST(SpM,DISABLED_ADMML1OptimizationReducesL1Norm){
+    alps::params p;
+    SVDContinuation::define_parameters(p);
+
+    double beta=200;
+    int ndat=5000;
+    p["BETA"]=beta;
+    p["NDAT"]=ndat;
+    p["NO_ERRORS"]=true;
+    p["DATASPACE"]="frequency";
+    p["KERNEL"]="fermionic";
+    p["PARTICLE_HOLE_SYMMETRY"]=true;
+    p["VERBOSE"]=false;
+
+    //grid
+    p["OMEGA_MAX"]=10;
+    p["OMEGA_MIN"]=-10;
+    p["CUT"]=0.1;
+    p["FREQUENCY_GRID"]="Lorentzian";
+    p["NFREQ"]=1000;
+
+  matsubara_gf_to_param(p, beta, ndat, &imag_backcont_triple_gaussian);
+
+  SVDContinuation C(p);
+
+  //find the correct spectral function
+  Eigen::VectorXd real_comparison_data=C.delta_omega();
+  for(int i=0;i<real_comparison_data.size();++i){
+    real_comparison_data[i]*=triple_gaussian(C.omega_coord(i));
+  }
+
+  double rho=1, rhoprime=1., lambda=1.;
+  ADMM A(C.Vt(), C.U().transpose()*C.y(), C.delta_omega(), C.Sigma().diagonal(), rho, rhoprime, lambda);
+  //plug in the correct spectral function
+  A.externally_set_xprime(C.Vt()*real_comparison_data);
+  A.update_zprime();
+  Eigen::VectorXd xprime=A.xprime();
+  Eigen::VectorXd zprime=A.zprime();
+  for(int i=0;i<zprime.size();++i){
+    //need to continue here and actually check the L1 norm  reduction
+    std::cout<<i<<" "<<xprime[i]<<" "<<zprime[i]<<std::endl;
+  }
+
+}
+
 

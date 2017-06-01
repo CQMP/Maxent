@@ -46,7 +46,6 @@ public:
   ///update wprime
   void update_wprime();
 
-  void externally_set_xprime(const Eigen::VectorXd &xprime){xprime_=xprime;}
 
   ///run one ADMM iteration
   void iterate();
@@ -69,6 +68,14 @@ public:
 
   ///this transforms the continued spectral function back from singular to real space
   Eigen::VectorXd spectral_function() const;
+
+  ///getter functions, mostly for testing
+  const Eigen::VectorXd &zprime() const{return zprime_;}
+  const Eigen::VectorXd &xprime() const{return xprime_;}
+
+  void externally_set_xprime(const Eigen::VectorXd &xprime){xprime_=xprime;}
+  void externally_set_zprime(const Eigen::VectorXd &zprime){zprime_=zprime;}
+
 private:
   ///the constraint matrix Ax'+By'=c
   void compute_A();
