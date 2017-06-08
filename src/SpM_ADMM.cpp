@@ -47,8 +47,8 @@ void ADMM::decompose_P(){
       );
 }
 void ADMM::compute_q(){
-  q_=-yprime_.cwiseProduct(S_);
-      +rho_*(A_.transpose()*(B_*zprime_-c_+uprime_));
+  q_=yprime_.cwiseProduct(S_)
+      -rho_*(A_.transpose()*(B_*zprime_-c_+uprime_));
   if(enforce_positivity_){
     q_-=rhoprime_*(wprime_-sprime_);
   }
