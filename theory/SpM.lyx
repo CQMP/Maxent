@@ -355,9 +355,10 @@ where we've introduced a scalar parameter
 \end_inset
 
 , and a soft thresholding function 
-\begin_inset Formula $S.$
+\begin_inset Formula $S$
 \end_inset
 
+ (refer to Sec 4.4.3).
  These equations implement ADMM in the so-called scaled form, and the converged
  solution will not depend on 
 \begin_inset Formula $\rho$
@@ -485,7 +486,7 @@ The vector
 
 \begin_layout Section
 Optimization in 
-\begin_inset Formula $x$
+\begin_inset Formula $x'$
 \end_inset
 
 
@@ -527,7 +528,7 @@ x'^{k+1}=\text{argmin}_{x'}\left(\frac{1}{2}||Sx'-y'||_{2}^{2}+\frac{\rho}{2}||x
 Let us multiply this out:
 \begin_inset Formula 
 \[
-\frac{1}{2}\left[(Sx'-y')^{T}(Sx'-y')+\rho(x'-(z'^{k}-u^{k}))^{T}(x'-(z'^{k}-u^{k}))\right]=\frac{{1}}{2}x'^{T}Ax'-x'^{T}b+const
+\frac{1}{2}\left[(Sx'-y')^{T}(Sx'-y')+\rho(x'-(z'^{k}-u^{k}))^{T}(x'-(z'^{k}-u^{k}))\right]=\frac{{1}}{2}x'^{T}Px'-x'^{T}q+const
 \]
 
 \end_inset
@@ -535,7 +536,7 @@ Let us multiply this out:
 where
 \begin_inset Formula 
 \[
-A=S^{T}S+\rho I
+P=S^{T}S+\rho I
 \]
 
 \end_inset
@@ -543,13 +544,13 @@ A=S^{T}S+\rho I
 
 \begin_inset Formula 
 \begin{equation}
-b=S^{T}(y')+\rho(z'^{k}-u^{k})\label{eq:linearterm}
+q=S^{T}(y')+\rho(z'^{k}-u^{k})\label{eq:linearterm}
 \end{equation}
 
 \end_inset
 
 which has a minimum exactly where 
-\begin_inset Formula $Ax=b$
+\begin_inset Formula $Px=q$
 \end_inset
 
 , or
@@ -564,12 +565,17 @@ where
 \begin_inset Formula $v=z'^{k}-u^{k}$
 \end_inset
 
- (note that we don't need the constant term to minimize this – why introduce
- 
+ (p.s.
+ this 
 \begin_inset Formula $v$
 \end_inset
 
- here??? ).
+ is inconsistent with the 
+\begin_inset Formula $v$
+\end_inset
+
+ definted in the following section.
+ note that we don't need the constant term to minimize this).
  
 \end_layout
 
@@ -599,7 +605,7 @@ x'^{k+1}=(S^{T}S+\rho I)^{-1}(S^{T}(y')+\rho(z'^{k}-u^{k})).
 
 \begin_layout Section
 Optimization in 
-\begin_inset Formula $z$
+\begin_inset Formula $z'$
 \end_inset
 
 
@@ -1185,7 +1191,7 @@ Formulating this constraint in direct space rather than in singular space
 
 \begin_inset Formula 
 \[
-x'^{k+1}=\text{argmin}_{x'}\left(\frac{1}{2}||Sx'-y'||_{2}^{2}+\frac{\rho}{2}||x'-z'^{k}+u^{k}||_{2}^{2}+\frac{\rho'}{2}||x'-s'^{k}+w{}^{k}||_{2}^{2}\right)
+x'^{k+1}=\text{argmin}_{x'}\left(\frac{1}{2}||Sx'-y'||_{2}^{2}+\frac{\rho}{2}||x'-z'^{k}+u^{k}||_{2}^{2}+\frac{\rho'}{2}||x'-s'^{k}+w'{}^{k}||_{2}^{2}\right)
 \]
 
 \end_inset
@@ -1195,7 +1201,7 @@ multiplying all of this out will lead to additional terms with
 \end_inset
 
 and 
-\begin_inset Formula $w$
+\begin_inset Formula $w'$
 \end_inset
 
  wherever we had terms with 
@@ -1210,7 +1216,7 @@ and
  to
 \begin_inset Formula 
 \[
-b=S^{T}(y')+\rho(z'^{k}-u^{k})+\rho'(s'^{k}-w{}^{k})
+q=S^{T}(y')+\rho(z'^{k}-u^{k})+\rho'(s'^{k}-w'^{k})
 \]
 
 \end_inset
@@ -1398,10 +1404,11 @@ This is just the expression for the particle number.
 \end_layout
 
 \begin_layout Section
-Building in norm and integral constraints exactly
+Building in norm, integral and positivity constraints exactly
 \end_layout
 
 \begin_layout Standard
+\noindent
 ADMM has a straightforward way of building in constraints: currently we
  use 
 \begin_inset Formula $x'=z'$
@@ -1557,7 +1564,48 @@ Additional constraints for
 \begin_inset Formula $c.$
 \end_inset
 
+ 
+\end_layout
 
+\begin_layout Standard
+\noindent
+\align left
+If positivity constraint needs to be implemented, the optimization for 
+\begin_inset Formula $x'$
+\end_inset
+
+ takes a modified form, with 
+\begin_inset Formula $\rho'$
+\end_inset
+
+ term added:
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Formula $x'^{k+1}=\text{argmin}_{x'}\left(\frac{1}{2}||Sx'-y'||_{2}^{2}+\frac{\rho}{2}||Ax'+Bz'^{k}-c+u^{k}||_{2}^{2}+\frac{\rho'}{2}||x'-s'^{k}+w'{}^{k}||_{2}^{2}\right)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\noindent
+\align left
+The quadratic equation remains its form 
+\begin_inset Formula $\frac{1}{2}x^{T}Px-q^{T}x+c=0$
+\end_inset
+
+, with 
+\begin_inset Formula $P$
+\end_inset
+
+ and 
+\begin_inset Formula $q$
+\end_inset
+
+ modified as shown in the following section.
+ 
 \end_layout
 
 \begin_layout Section
@@ -1581,7 +1629,7 @@ reference "eq:AWithNorm"
 
 \end_inset
 
- and the optimization of 
+ and the full optimization, including positivity, of 
 \begin_inset Formula $x^{k+1}$
 \end_inset
 
@@ -1602,9 +1650,9 @@ reference "eq:qofQuadEqWithNorm"
 .
 \begin_inset Formula 
 \begin{align}
-P & =S^{T}S+\rho A^{T}A\\
-q & =y'^{T}S+\rho(Bz'^{k}-c+u^{k})^{T}A-\rho'(w'^{k}-s'^{k})-\rho''(v'^{k}-t'^{k})\\
-Ax'^{k+1} & =b
+P & =S^{T}S+\rho A^{T}A+\rho'I\\
+q & =y'^{T}S+\rho(Bz'{}^{k}-c+u^{k})^{T}A-\rho'(w{}^{k}-s'^{k})\\
+Px'^{k+1} & =q
 \end{align}
 
 \end_inset
@@ -1622,7 +1670,11 @@ As the matrix
 \begin_inset Formula $A.$
 \end_inset
 
- We then update the L1 norm and its dual variable according to Eq.
+ We then update the 
+\begin_inset Formula $L_{1}$
+\end_inset
+
+ norm and its dual variable according to Eq.
  
 \begin_inset CommandInset ref
 LatexCommand ref
