@@ -216,7 +216,7 @@ where
 \begin_inset Formula $\lambda$
 \end_inset
 
- is an (a priori arbitrary) parameter used to penalize larger 
+ is a (a priori arbitrary) parameter used to penalize larger 
 \begin_inset Formula $x'$
 \end_inset
 
@@ -1185,7 +1185,7 @@ Formulating this constraint in direct space rather than in singular space
 
 \begin_inset Formula 
 \[
-x'^{k+1}=\text{argmin}_{x}\left(\frac{1}{2}||Sx'-y'||_{2}^{2}+\frac{\rho}{2}||x'-z'^{k}+u^{k}||_{2}^{2}+\frac{\rho'}{2}||x'-s'^{k}+w{}^{k}||\right)
+x'^{k+1}=\text{argmin}_{x'}\left(\frac{1}{2}||Sx'-y'||_{2}^{2}+\frac{\rho}{2}||x'-z'^{k}+u^{k}||_{2}^{2}+\frac{\rho'}{2}||x'-s'^{k}+w{}^{k}||_{2}^{2}\right)
 \]
 
 \end_inset
@@ -1502,7 +1502,7 @@ x'^{k+1}=\text{argmin}_{x'}\left(\frac{1}{2}||Sx'-y'||_{2}^{2}+\frac{\rho}{2}||A
 \end_inset
 
 Multiplying this out, we get a quadratic equation of the form 
-\begin_inset Formula $\frac{1}{2}x^{T}Px+q^{T}x+c=0$
+\begin_inset Formula $\frac{1}{2}x^{T}Px-q^{T}x+c=0$
 \end_inset
 
  , with a solution at 
@@ -1520,7 +1520,7 @@ P=S^{T}S+\rho A^{T}A\label{eq:PofQuadEqWithNorm}
 
 \begin_inset Formula 
 \begin{equation}
-q=y'^{T}S+\rho(Bz'^{k}-c+u^{k})^{T}A\label{eq:qofQuadEqWithNorm}
+q=y'^{T}S-\rho(Bz'^{k}-c+u^{k})^{T}A\label{eq:qofQuadEqWithNorm}
 \end{equation}
 
 \end_inset
