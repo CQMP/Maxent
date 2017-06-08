@@ -41,10 +41,11 @@ void ADMM::compute_c(){
 }
 void ADMM::decompose_P(){
   Eigen::MatrixXd Sprod=S_.cwiseProduct(S_).asDiagonal();
-  P_.compute(
-      Sprod
-      +rho_*(A_.transpose()*A_)
-      );
+    Eigen::MatrixXd P_to_decompose=Sprod+rho_*(A_.transpose()*A_);
+    if(enforce_positivity_){
+        P_to_decompose+=rhoprime_*Eigen::MatrixXd::Identity(P_to_decompose.rows(), P_to_decompose.cols());
+    }
+  P_.compute(P_to_decompose);
 }
 void ADMM::compute_q(){
   q_=yprime_.cwiseProduct(S_)
