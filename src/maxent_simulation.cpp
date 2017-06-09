@@ -35,8 +35,8 @@ MaxEntSimulation::MaxEntSimulation(alps::params &parms)
 , make_back(parms["BACKCONTINUE"])
 , gen_err(parms["GENERATE_ERR"])
 , nfreq(parms["NFREQ"].as<int>())
-, qvec((int)parms["N_ALPHA"])
 , postprobdef(0)
+, qvec((int)parms["N_ALPHA"])
 {
   std::string bn=parms["BASENAME"]; name=bn+'.';
 

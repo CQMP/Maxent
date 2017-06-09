@@ -184,8 +184,8 @@ void KernelAndGridIO::read_data_from_param_file(const alps::params& p) {
 }
 
 KernelAndGridIO::KernelAndGridIO(alps::params& p) :
-    T_(1./p["BETA"].as<double>()),ndat_(p["NDAT"]), nfreq_(p["NFREQ"]),
-    y_(ndat_),sigma_(vector_type::Ones(ndat_)),K_(),grid_(p),inputGrid_(ndat_),no_errors_(p["NO_ERRORS"])
+    T_(1./p["BETA"].as<double>()),no_errors_(p["NO_ERRORS"]),ndat_(p["NDAT"]), nfreq_(p["NFREQ"]),
+    y_(ndat_),sigma_(vector_type::Ones(ndat_)),K_(),grid_(p),inputGrid_(ndat_)
 {
   if (ndat_<4) 
     boost::throw_exception(std::invalid_argument("NDAT too small"));
