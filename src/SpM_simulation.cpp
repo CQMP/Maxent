@@ -53,13 +53,11 @@ void SpMSimulation::run(){
   std::cout<<"the Kernel has eigenvalues: "<<Sigma().diagonal()<<std::endl;
 
   admm_.print_info(std::cout); std::cout<<std::endl;
-  for(int j=0;j<100;++j){
+  for(int j=0;j<10000;++j){
     for(int i=0;i<100;++i){
       admm_.iterate();
     }
     admm_.print_info(std::cout); std::cout<<std::endl;
-    //std::cout<<"chi2 admm: "<<admm_.chisquare_term()<<" direct: "<<0.5*(y_-K_*(admm_.spectral_function().cwiseProduct(delta_omega()))).squaredNorm()
-    //    <<" trans: "<<0.5*(U().transpose()*y_-Sigma()*Vt()*(admm_.spectral_function().cwiseProduct(delta_omega()))).squaredNorm();
   }
 }
 void SpMSimulation::evaluate(){
