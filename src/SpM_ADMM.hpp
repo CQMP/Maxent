@@ -24,7 +24,7 @@ public:
 , B_(Eigen::MatrixXd::Zero(ns_+1, ns_))
 , c_(Eigen::VectorXd::Zero(ns_+1))
 , q_(Eigen::VectorXd::Zero(ns_))
-, enforce_positivity_(false)
+, enforce_positivity_(true)
 {
     if(Vt_.rows()!=ns_) throw std::runtime_error("Vt should have ns rows");
     if(Vt_.cols()!=nw_) throw std::runtime_error("Vt should have nw rows");
