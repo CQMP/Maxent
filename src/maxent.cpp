@@ -20,8 +20,8 @@
 #include "maxent.hpp"
 #include <alps/utilities/fs/remove_extensions.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/filesystem/path.hpp>
 #include <boost/exception/diagnostic_information.hpp> 
+#include <unistd.h>
 
 
 int main(int argc,const char** argv)
@@ -108,7 +108,9 @@ int main(int argc,const char** argv)
     }
     else{
       //command line only terms, output in current directory 
-      std::string runtime_path =boost::filesystem::current_path().string();
+      char cwd[PATH_MAX];
+      getcwd(cwd, sizeof(cwd));//TODO: windows friendly solution
+      std::string runtime_path =cwd;
       basename = runtime_path+"/maxent.out";
     }
     parms["BASENAME"] = basename;
