@@ -18,7 +18,7 @@
  */
 
 #include "maxent.hpp"
-#include <alps/utilities/remove_extensions.hpp>
+#include <alps/utilities/fs/remove_extensions.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/exception/diagnostic_information.hpp> 
@@ -99,7 +99,7 @@ int main(int argc,const char** argv)
 
   std::string basename;
   if(parms.defaulted("BASENAME")){
-    basename = alps::remove_extensions(parms.get_origin_name()) + ".out";
+    basename = alps::fs::remove_extensions(parms.get_origin_name()) + ".out";
     parms["BASENAME"] = basename;
   }
   else

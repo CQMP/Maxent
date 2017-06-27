@@ -33,7 +33,7 @@ TEST(TabFunction, TabFunctionConstruction){
   p[tabparamname]=tf;
   write_minimal_tab_file(tf);
   TabFunction T(p, tabparamname);
-  boost::filesystem::remove(tf);
+  std::remove(tf.c_str());
   EXPECT_EQ(T(-20.),1./40);
   EXPECT_EQ(T(20.),1./40);
   EXPECT_EQ(T(0.),1./40);
@@ -45,7 +45,7 @@ TEST(TabFunction, TabFunctionConstructionWithMoreLines){
   p[tabparamname]=tf;
   write_minimal_tab_file(tf);
   TabFunction T(p, tabparamname);
-  boost::filesystem::remove(tf);
+  std::remove(tf.c_str());
   EXPECT_NEAR(T(-20.),1./40, 1.e-12);
   EXPECT_NEAR(T(20.),1./40, 1.e-12);
   EXPECT_NEAR(T(0.),1./40, 1.e-12);
@@ -57,7 +57,7 @@ TEST(TabFunction, OutsideMinMaxIsZero){
   p[tabparamname]=tf;
   write_minimal_tab_file(tf);
   TabFunction T(p, tabparamname);
-  boost::filesystem::remove(tf);
+  std::remove(tf.c_str());
 
   EXPECT_EQ(T(-21.),0.);
   EXPECT_EQ(T(21.),0.);
@@ -76,11 +76,11 @@ TEST(TabFunction, FailOutsideRange){
     FAIL() << "Expected to fail parameters out of range";
   }
   catch(std::logic_error const & err){
-    boost::filesystem::remove(tf);
+    std::remove(tf.c_str());
     EXPECT_EQ(err.what(),std::string("Input range outside of default model"));
   }
   catch(...){
-    boost::filesystem::remove(tf);
+    std::remove(tf.c_str());
     FAIL() << "expected parameters out of range error";
   }
 }

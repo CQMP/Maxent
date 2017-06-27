@@ -34,7 +34,7 @@ TEST(Parameters,CatchMissingDataInParamFile){
 
   try{
     ContiParameters c(p);
-    boost::filesystem::remove(pf);
+    std::remove(pf.c_str());
     FAIL() << "expected error on missing X_4 datapoint";
 
   }
@@ -47,12 +47,12 @@ TEST(Parameters,CatchMissingDataInParamFile){
   
   try{
     ContiParameters c2(p);
-    boost::filesystem::remove(pf);
+    std::remove(pf.c_str());
     FAIL() << "expected error on missing SIGMA_4";
   }
   catch(...){
     SUCCEED();
-    boost::filesystem::remove(pf);
+    std::remove(pf.c_str());
   }
 }
 
@@ -70,13 +70,13 @@ TEST(Parameters,CatchMissingDataInDataFile){
 
   try{
     ContiParameters c(p);
-    boost::filesystem::remove(pf);
+    std::remove(pf.c_str());
     FAIL() << "expected error on missing 4th datapoint";
 
   }
   catch(...){
     //error caught, user warned
     SUCCEED();
-    boost::filesystem::remove(pf);
+    std::remove(pf.c_str());
   }
 }

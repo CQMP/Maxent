@@ -81,7 +81,7 @@ TEST(Parameters,DataInParam){
     EXPECT_EQ(c.sigma(i),0.5);
   }
 
-  boost::filesystem::remove(pf);
+  std::remove(pf.c_str());
 }
 
 TEST(Parameters,DataInFile){
@@ -104,7 +104,7 @@ std::string pf=alps::temporary_filename("in_file.dat");
     EXPECT_EQ(c.sigma(i),0.5);
   }
 
-  boost::filesystem::remove(pf);
+  std::remove(pf.c_str());
 }
 
 TEST(Parameters,MaxentParams){
@@ -254,7 +254,7 @@ TEST(Parameters,HDF5ContiParams){
     EXPECT_NEAR(c.y(i),(i+1)*0.1,1e-10);
     EXPECT_EQ(c.sigma(i),0.5);
   }
-  boost::filesystem::remove(tf);
+  std::remove(tf.c_str());
 }
 TEST(Parameters,TZero){
 	//set up parameters
