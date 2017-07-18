@@ -20,7 +20,7 @@
 #include "../src/maxent.hpp"
 #include "../src/default_model.hpp"
 #include "gtest.h"
-#include <alps/utilities/temporary_filename.hpp>
+#include <alps/testing/unique_file.hpp>
 #include <iostream>
 #include "write_test_files.hpp"
 
@@ -65,7 +65,7 @@ TEST(Parameters,ContiParams){
     }
 }
 TEST(Parameters,DataInParam){
-  std::string pf=alps::temporary_filename("param_file.dat");
+  std::string pf=alps::testing::temporary_filename("param_file.dat");
   write_minimal_param_file(pf);
 
   //fake input
@@ -82,11 +82,11 @@ TEST(Parameters,DataInParam){
     EXPECT_EQ(c.sigma(i),0.5);
   }
 
-  boost::filesystem::remove(pf);
+  std::remove(pf.c_str());
 }
 
 TEST(Parameters,DataInFile){
-std::string pf=alps::temporary_filename("in_file.dat");
+std::string pf=alps::testing::temporary_filename("in_file.dat");
   write_minimal_input_file(pf);
 
   //fake input
@@ -105,7 +105,7 @@ std::string pf=alps::temporary_filename("in_file.dat");
     EXPECT_EQ(c.sigma(i),0.5);
   }
 
-  boost::filesystem::remove(pf);
+  std::remove(pf.c_str());
 }
 
 TEST(Parameters,MaxentParams){
@@ -207,7 +207,7 @@ TEST(Parameters,HDF5ContiParams){
   //and make sure Maxent does all the necessary reading
 
   alps::params p1; 
-  std::string tf=alps::temporary_filename("hdf5_input.h5");
+  std::string tf=alps::testing::temporary_filename("hdf5_input.h5");
   alps::hdf5::archive oar(tf, "w");
   MaxEntSimulation::define_parameters(p1);
   p1["N_ALPHA"] = 60;
@@ -252,7 +252,7 @@ TEST(Parameters,HDF5ContiParams){
     EXPECT_NEAR(c.y(i),(i+1)*0.1,1e-10);
     EXPECT_EQ(c.sigma(i),0.5);
   }
-  boost::filesystem::remove(tf);
+  std::remove(tf.c_str());
 }
 TEST(Parameters,TZero){
 	//set up parameters

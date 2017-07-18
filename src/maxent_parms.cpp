@@ -130,7 +130,7 @@ void KernelAndGridIO::read_data_from_text_file(const alps::params& p) {
 void KernelAndGridIO::read_data_from_hdf5_file(const alps::params& p) {
   std::string fname = p["DATA"];
   //attempt to read from h5 archive
-  alps::hdf5::archive ar(fname, alps::hdf5::archive::READ);
+  alps::hdf5::archive ar(fname, "r");
   std::vector<double> tmp(ndat());
   std::stringstream path;
   path << "/Data";

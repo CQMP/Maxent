@@ -53,17 +53,18 @@ void SpMSimulation::run(){
   std::cout<<"the Kernel has eigenvalues: "<<Sigma().diagonal()<<std::endl;
 
   admm_.print_info(std::cout); std::cout<<std::endl;
-  for(int j=0;j<10000;++j){
+  for(int j=0;j<1000;++j){
     for(int i=0;i<100;++i){
       admm_.iterate();
     }
     admm_.print_info(std::cout); std::cout<<std::endl;
+    if(admm_.converged()) break;
   }
 }
 void SpMSimulation::evaluate(){
   Eigen::VectorXd omega=omega_coord();
   Eigen::VectorXd spectrum=admm_.spectral_function();
-  std::string filename="spectrum.dat";
+  std::string filename="spectrum_"+name+"dat";
   std::ofstream spec_file(filename);
   for(int i=0;i<nfreq;++i){
     spec_file<<omega[i]<<" "<<spectrum[i]<<" "<<delta_omega(i)<<std::endl;

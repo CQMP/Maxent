@@ -105,6 +105,9 @@ void ADMM::print_info(std::ostream &os) const{
       <<global_objective_functional()<<std::endl;
   std::cout<<"moving on."<<std::endl;
 }
+bool ADMM::converged() const{
+  return constraint_violation_zprime_xprime()< convergence_tol_ &&  constraint_violation_sprime_xprime()< convergence_tol_;
+}
 double ADMM::constraint_violation_zprime_xprime() const{
   return (zprime_-xprime_).norm();
 }

@@ -19,7 +19,7 @@
 
 
 #include "../src/default_model.hpp"
-#include <alps/utilities/temporary_filename.hpp>
+#include <alps/testing/unique_file.hpp>
 #include"gtest.h"
 #include <fstream>
 #include "write_test_files.hpp"
@@ -29,11 +29,11 @@
 TEST(TabFunction, TabFunctionConstruction){
   alps::params p; p["OMEGA_MAX"]=20; p["OMEGA_MIN"]=-20;
   std::string tabparamname="TABFILE";
-  std::string tf=alps::temporary_filename("tab_file.dat");
+  std::string tf=alps::testing::temporary_filename("tab_file.dat");
   p[tabparamname]=tf;
   write_minimal_tab_file(tf);
   TabFunction T(p, tabparamname);
-  boost::filesystem::remove(tf);
+  std::remove(tf.c_str());
   EXPECT_EQ(T(-20.),1./40);
   EXPECT_EQ(T(20.),1./40);
   EXPECT_EQ(T(0.),1./40);
@@ -41,11 +41,11 @@ TEST(TabFunction, TabFunctionConstruction){
 TEST(TabFunction, TabFunctionConstructionWithMoreLines){
   alps::params p; p["OMEGA_MAX"]=20; p["OMEGA_MIN"]=-20;
   std::string tabparamname="TABFILE";
-  std::string tf=alps::temporary_filename("tab_file.dat");
+  std::string tf=alps::testing::temporary_filename("tab_file.dat");
   p[tabparamname]=tf;
   write_minimal_tab_file(tf);
   TabFunction T(p, tabparamname);
-  boost::filesystem::remove(tf);
+  std::remove(tf.c_str());
   EXPECT_NEAR(T(-20.),1./40, 1.e-12);
   EXPECT_NEAR(T(20.),1./40, 1.e-12);
   EXPECT_NEAR(T(0.),1./40, 1.e-12);
@@ -53,11 +53,11 @@ TEST(TabFunction, TabFunctionConstructionWithMoreLines){
 TEST(TabFunction, OutsideMinMaxIsZero){
   alps::params p; p["OMEGA_MAX"]=20; p["OMEGA_MIN"]=-20;
   std::string tabparamname="TABFILE";
-  std::string tf=alps::temporary_filename("tab_file.dat");
+  std::string tf=alps::testing::temporary_filename("tab_file.dat");
   p[tabparamname]=tf;
   write_minimal_tab_file(tf);
   TabFunction T(p, tabparamname);
-  boost::filesystem::remove(tf);
+  std::remove(tf.c_str());
 
   EXPECT_EQ(T(-21.),0.);
   EXPECT_EQ(T(21.),0.);
@@ -68,7 +68,7 @@ TEST(TabFunction, FailOutsideRange){
   //ask for range [-20,25] so it will fail
   alps::params p; p["OMEGA_MAX"]=25; p["OMEGA_MIN"]=-20;
   std::string tabparamname="TABFILE";
-  std::string tf=alps::temporary_filename("tab_file.dat");
+  std::string tf=alps::testing::temporary_filename("tab_file.dat");
   p[tabparamname]=tf;
   write_minimal_tab_file(tf);
   try{
@@ -76,11 +76,11 @@ TEST(TabFunction, FailOutsideRange){
     FAIL() << "Expected to fail parameters out of range";
   }
   catch(std::logic_error const & err){
-    boost::filesystem::remove(tf);
+    std::remove(tf.c_str());
     EXPECT_EQ(err.what(),std::string("Input range outside of default model"));
   }
   catch(...){
-    boost::filesystem::remove(tf);
+    std::remove(tf.c_str());
     FAIL() << "expected parameters out of range error";
   }
 }

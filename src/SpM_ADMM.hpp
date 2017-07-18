@@ -14,7 +14,7 @@ public:
 , rho_(rho)
 , rhoprime_(rhoprime)
 , lambda_(lambda)
-//, nu_(0)
+, convergence_tol_(1.e-14)
 , xprime_(Eigen::VectorXd::Zero(ns_))
 , zprime_(Eigen::VectorXd::Zero(ns_))
 , uprime_(Eigen::VectorXd::Zero(ns_+1))
@@ -65,6 +65,8 @@ public:
   double chisquare_term() const;
   ///this returns the chi2 part of the objective
   double l1_of_xprime() const;
+  ///this checks the ADMM convergence
+  bool converged() const;
 
   ///this transforms the continued spectral function back from singular to real space
   Eigen::VectorXd spectral_function() const;
@@ -116,6 +118,8 @@ private:
   const double rhoprime_;
   ///L1 norm parameter
   double lambda_;
+  ///convergence tolerance parameter
+  const double convergence_tol_;
 
   ///temporary doubles
   //double nu_;

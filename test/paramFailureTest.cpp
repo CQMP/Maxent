@@ -19,12 +19,12 @@
 
 #include "../src/maxent.hpp"
 #include "gtest.h"
-#include <alps/utilities/temporary_filename.hpp>
+#include <alps/testing/unique_file.hpp>
 #include <iostream>
 #include "write_test_files.hpp"
 
 TEST(Parameters,CatchMissingDataInParamFile){
-  std::string pf=alps::temporary_filename("param_file.dat");
+  std::string pf=alps::testing::temporary_filename("param_file.dat");
   write_minimal_param_file(pf);
 
   //fake input
@@ -34,7 +34,7 @@ TEST(Parameters,CatchMissingDataInParamFile){
 
   try{
     KernelAndGridIO c(p);
-    boost::filesystem::remove(pf);
+    std::remove(pf.c_str());
     FAIL() << "expected error on missing X_4 datapoint";
 
   }
@@ -47,17 +47,17 @@ TEST(Parameters,CatchMissingDataInParamFile){
   
   try{
     KernelAndGridIO c2(p);
-    boost::filesystem::remove(pf);
+    std::remove(pf.c_str());
     FAIL() << "expected error on missing SIGMA_4";
   }
   catch(...){
     SUCCEED();
-    boost::filesystem::remove(pf);
+    std::remove(pf.c_str());
   }
 }
 
 TEST(Parameters,DISABLED_CatchMissingDataInDataFile){
-  std::string pf=alps::temporary_filename("in_file.dat");
+  std::string pf=alps::testing::temporary_filename("in_file.dat");
   write_minimal_input_file(pf);
 
   //fake input
@@ -70,13 +70,13 @@ TEST(Parameters,DISABLED_CatchMissingDataInDataFile){
 
   try{
     KernelAndGridIO c(p);
-    boost::filesystem::remove(pf);
+    std::remove(pf.c_str());
     FAIL() << "expected error on missing 4th datapoint";
 
   }
   catch(...){
     //error caught, user warned
     SUCCEED();
-    boost::filesystem::remove(pf);
+    std::remove(pf.c_str());
   }
 }
