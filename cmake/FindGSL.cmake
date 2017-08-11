@@ -91,8 +91,7 @@ ELSE(WIN32)
       "${GSL_ROOT_DIR}/bin"
       CACHE STRING "preferred path to GSL (gsl-config)")
     FIND_PROGRAM(GSL_CONFIG gsl-config
-      ${GSL_CONFIG_PREFER_PATH}
-      /usr/bin/
+      PATHS ${GSL_CONFIG_PREFER_PATH}
       )
     # MESSAGE("DBG GSL_CONFIG ${GSL_CONFIG}")
     
