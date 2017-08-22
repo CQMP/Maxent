@@ -25,6 +25,12 @@ message(STATUS "Finding packages, please stand by...")
 find_package(GSL REQUIRED)
 find_package (Eigen3 3.1 REQUIRED)
 
+#note: ALPSCore does not need some boost libs and therefore does not provide
+#      the corresponding transitive dependencies;
+#note: It is possible to accidently find a version of Boost different that
+#      ALPSCore was compiled with; this will be addressed in a future ALPSCore version.
+find_package(Boost REQUIRED COMPONENTS filesystem)
+
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG(-Wno-return-type-c-linkage SUPPORTS_FLAG)
 if(SUPPORTS_FLAG)
@@ -40,6 +46,8 @@ endif()
 
 include_directories(${GSL_INCLUDE_DIR})
 include_directories(${EIGEN3_INCLUDE_DIR})
+include_directories(${Boost_INCLUDE_DIRS})
+
 
 set(LIB_FILES 
   ./src/maxent_helper.cpp
@@ -53,7 +61,7 @@ set(LIB_FILES
 
 ADD_LIBRARY(libmaxent ${LIB_FILES})
 target_link_libraries(libmaxent
-	${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} )
+	${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} ${Boost_LIBRARIES})
 #remove default "lib" prefix
 set_target_properties(libmaxent PROPERTIES PREFIX "")
 #executable
