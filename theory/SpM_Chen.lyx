@@ -888,7 +888,7 @@ in
 \[
 z_{i}=\begin{cases}
 0 & |v_{i}|<\frac{\lambda}{\rho}\\
-v_{i}-\frac{\lambda}{\rho}sgn(x_{i}) & |v_{i}|>\frac{\lambda}{\rho}
+v_{i}-\frac{\lambda}{\rho}sgn(v_{i}) & |v_{i}|>\frac{\lambda}{\rho}
 \end{cases}
 \]
 
@@ -1009,7 +1009,7 @@ We want to enforce positivity of a spectral function.
 
  in such a way that the resulting spectral function is positive everywhere.
  In our notation the spectral function is 
-\begin_inset Formula $\rho=Vx'.$
+\begin_inset Formula $\mathcal{A}=Vx'.$
 \end_inset
 
  We build in this constraint by modifying the Lagrangian from 
@@ -1094,7 +1094,11 @@ with
 \begin_inset Formula $||x^{k+1}-z+u^{k}||$
 \end_inset
 
- is smallest with z in the domain 
+ is smallest with 
+\begin_inset Formula $z$
+\end_inset
+
+ in the domain 
 \begin_inset Formula $\mathcal{C}$
 \end_inset
 
