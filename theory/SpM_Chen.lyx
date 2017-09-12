@@ -1019,15 +1019,19 @@ We want to enforce positivity of a spectral function.
  to
 \begin_inset Formula 
 \begin{equation}
-L_{\rho}(x',z',z)=f(x')+g(z')+h(z)\label{eq:TripleLagrangian}
+L_{\rho}(x',z',s)=f(x')+g(z')+h(s)\label{eq:TripleLagrangian}
 \end{equation}
 
 \end_inset
 
 i.e.
- we introduce a third variable and alternate the optimization between the
- three of them, subject to the constraint that 
-\begin_inset Formula $x'=z'=V^{T}z$
+ we introduce a third variable 
+\begin_inset Formula $s$
+\end_inset
+
+ and alternate the optimization between the three of them, subject to the
+ constraint that 
+\begin_inset Formula $x'=z'=V^{T}s$
 \end_inset
 
 .
@@ -1036,18 +1040,18 @@ i.e.
 
 \begin_layout Standard
 In the textbook case, we just have to minimize 
-\begin_inset Formula $f(x)+h(z).$
+\begin_inset Formula $f(x)+h(s).$
 \end_inset
 
  In that case, 
-\begin_inset Formula $h(z)$
+\begin_inset Formula $h(s)$
 \end_inset
 
  is constructed such that it enforces a positivity constraint such as in
  chapter 5, first page, and we obtain
 \begin_inset Formula 
 \[
-z^{k+1}=\Pi_{+}(x^{k+1}+u^{k})
+s^{k+1}=\Pi_{+}(x^{k+1}+w^{k})
 \]
 
 \end_inset
@@ -1061,7 +1065,7 @@ The operator
 \end_inset
 
  where we want to enforce the values of 
-\begin_inset Formula $z$
+\begin_inset Formula $s$
 \end_inset
 
 , i.e.
@@ -1072,13 +1076,13 @@ The operator
 \begin_layout Standard
 \begin_inset Formula 
 \[
-z^{k+1}=\text{argmin}_{z}(h(z)+\frac{\rho}{2}||x{}^{k+1}-z+u^{k}||_{2}^{2})
+s^{k+1}=\text{argmin}_{s}(h(s)+\frac{\rho}{2}||x{}^{k+1}-s+w^{k}||_{2}^{2})
 \]
 
 \end_inset
 
 with 
-\begin_inset Formula $h(z)$
+\begin_inset Formula $h(s)$
 \end_inset
 
  zero only in 
@@ -1091,24 +1095,24 @@ with
 
 ).
  The solution to this is the point where the 
-\begin_inset Formula $||x^{k+1}-z+u^{k}||$
+\begin_inset Formula $||x^{k+1}-s+w^{k}||$
 \end_inset
 
  is smallest with 
-\begin_inset Formula $z$
+\begin_inset Formula $s$
 \end_inset
 
  in the domain 
 \begin_inset Formula $\mathcal{C}$
 \end_inset
 
- .
+.
  In our case of a positivity constraint, the function is minimized for 
 \begin_inset Formula 
 \[
-z_{j}=\begin{cases}
-0 & (x^{k+1}+u^{k})<0\\
-x^{k+1}+u^{k} & \text{else}
+s_{j}=\begin{cases}
+0 & (x^{k+1}+w^{k})<0\\
+x^{k+1}+w^{k} & \text{else}
 \end{cases}
 \]
 
@@ -1127,21 +1131,21 @@ reference "eq:TripleLagrangian"
 \end_inset
 
 , 
-\begin_inset Formula $h(z)$
+\begin_inset Formula $h(s)$
 \end_inset
 
  evaluates to zero if 
-\begin_inset Formula $z$
+\begin_inset Formula $s$
 \end_inset
 
  is positive, and to inifinity otherwise.
- We optimize the three constraint in alternating fashion, in two ADMM loops
+ We optimize the three constraints in alternating fashion, in two ADMM loops
  which independently take care of the optimization of 
 \begin_inset Formula $z'$
 \end_inset
 
  and of 
-\begin_inset Formula $z$
+\begin_inset Formula $s$
 \end_inset
 
 : first optimize 
@@ -1153,7 +1157,7 @@ reference "eq:TripleLagrangian"
 \end_inset
 
  and 
-\begin_inset Formula $z$
+\begin_inset Formula $s$
 \end_inset
 
  constant.
@@ -1165,22 +1169,20 @@ reference "eq:TripleLagrangian"
 \begin_inset Formula $x'$
 \end_inset
 
- constant, and update the running sum of residual for this optimization,
- which is called 
-\begin_inset Formula $u'.$
+ constant, and update the running sum of residual 
+\begin_inset Formula $u'$
 \end_inset
 
- Independently optimize 
-\begin_inset Formula $z$
+ for this optimization; independently optimize 
+\begin_inset Formula $s$
 \end_inset
 
  keeping 
 \begin_inset Formula $x'$
 \end_inset
 
- constant.
- Then update the running residual sum 
-\begin_inset Formula $u$
+ constant, and then update the running residual sum 
+\begin_inset Formula $w$
 \end_inset
 
  for that optimization.
@@ -1188,24 +1190,11 @@ reference "eq:TripleLagrangian"
 \end_layout
 
 \begin_layout Standard
-This may become clearer if we relabel 
-\begin_inset Formula $z$
+If we work with 
+\begin_inset Formula $s'=V^{T}s$
 \end_inset
 
- as 
-\begin_inset Formula $s$
-\end_inset
-
- and work with 
-\begin_inset Formula $s'=V^{T}s,$
-\end_inset
-
- 
-\begin_inset Formula $s=Vs'$
-\end_inset
-
- in singular space.
- In that case
+ in the singular space:
 \begin_inset Formula 
 \[
 L_{\rho}(x',z',s')=f(x')+g(z')+j(s')
@@ -1243,7 +1232,7 @@ which is satisfied by
 \begin_inset Formula $s'=V^{T}s$
 \end_inset
 
- and
+ and (rewriting eq.48)
 \begin_inset Formula 
 \[
 s_{j}=\begin{cases}
@@ -1680,8 +1669,11 @@ If positivity constraint needs to be implemented, the optimization for
 \end_layout
 
 \begin_layout Standard
-\align center
-\begin_inset Formula $x'^{k+1}=\text{argmin}_{x'}\left(\frac{1}{2}||Sx'-y'||_{2}^{2}+\frac{\rho}{2}||Ax'+Bz'^{k}-c+u^{k}||_{2}^{2}+\frac{\rho'}{2}||x'-s'^{k}+w'{}^{k}||_{2}^{2}\right)$
+\begin_inset Formula 
+\[
+x'^{k+1}=\text{argmin}_{x'}\left(\frac{1}{2}||Sx'-y'||_{2}^{2}+\frac{\rho}{2}||Ax'+Bz'^{k}-c+u^{k}||_{2}^{2}+\frac{\rho'}{2}||x'-s'^{k}+w'{}^{k}||_{2}^{2}\right)
+\]
+
 \end_inset
 
 
@@ -1749,7 +1741,7 @@ reference "eq:qofQuadEqWithNorm"
 \begin_inset Formula 
 \begin{align}
 P & =S^{T}S+\rho A^{T}A+\rho'I\\
-q & =y'^{T}S+\rho(Bz'{}^{k}-c+u^{k})^{T}A-\rho'(w{}^{k}-s'^{k})\\
+q & =y'^{T}S-\rho(Bz'{}^{k}-c+u^{k})^{T}A-\rho'(w{}^{k}-s'^{k})\\
 Px'^{k+1} & =q
 \end{align}
 
