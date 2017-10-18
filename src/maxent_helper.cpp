@@ -271,7 +271,7 @@ void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A_in,const dou
       }
       else{
         for(int n=0;n<G.size();n+=2){
-          os << pp->inputGrid(n/2) << " " << G(n)*norm << " " << G(n+1*norm) << std::endl;
+          os << pp->inputGrid(n/2) << " " << G(n)*norm << " " << G(n+1)*norm << std::endl;
         }
       }
     }
