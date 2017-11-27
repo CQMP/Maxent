@@ -19,6 +19,7 @@
 
 #include "../src/maxent.hpp"
 #include "gtest.h"
+#include <alps/hdf5.hpp>
 #include <alps/utilities/temporary_filename.hpp>
 #include <alps/hdf5/vector.hpp>
 #include <iostream>
