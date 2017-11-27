@@ -195,7 +195,7 @@ void MaxEntSimulation::evaluate(alps::params &params){
   if (verbose) std::cerr << "chi scale factor: " << factor << std::endl;
 
 	alps::hdf5::archive ar(name+"out.h5", "w");
-  params.save(ar,"/parameters");
+  ar["/parameters"] << params;
 	ar << alps::make_pvp("/alpha/values",alpha);
 
   vector_type om(spectra[0].size());
