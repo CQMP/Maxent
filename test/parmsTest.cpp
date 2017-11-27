@@ -20,6 +20,7 @@
 #include "../src/maxent.hpp"
 #include "gtest.h"
 #include <alps/utilities/temporary_filename.hpp>
+#include <alps/hdf5/vector.hpp>
 #include <iostream>
 #include "write_test_files.hpp"
 
@@ -229,7 +230,7 @@ TEST(Parameters,HDF5ContiParams){
 	p1["TEXT_OUTPUT"] = false;
   p1["DATA_IN_HDF5"] = true;
   p1["DATA"]=tf;
-  p1.save(oar);
+  oar["/parameters"] << p1;
   std::vector<double> x,sigma;
   for(int i=1;i<6;i++){
     x.push_back(i/10.0);
@@ -240,8 +241,8 @@ TEST(Parameters,HDF5ContiParams){
   oar.close();
   //now read in same file
   alps::hdf5::archive iar(tf, "r");
-  alps::params p; 
-  p.load(iar);
+  alps::params p;
+  iar["/parameters"] >> p;
   iar.close();
   
   ContiParameters c(p);
