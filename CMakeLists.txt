@@ -23,10 +23,14 @@ include_directories("${PROJECT_BINARY_DIR}/config")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 message(STATUS "Finding packages, please stand by...")
 find_package(GSL REQUIRED)
-set(maxent_eigen_v_req "3.1")
-find_package (Eigen3 REQUIRED)
-if (${EIGEN3_VERSION_STRING} VERSION_LESS ${maxent_eigen_v_req})
-  message(FATAL_ERROR "Eigen3 version is too old (${EIGEN3_VERSION_STRING}), minimum ${maxent_eigen_v_req} required")
+
+# new ALPSCore provides Eigen
+if (NOT ALPSCore_HAS_EIGEN_VERSION)
+  set(maxent_eigen_v_req "3.1")
+  find_package (Eigen3 3.1 REQUIRED)
+  if (${EIGEN3_VERSION_STRING} VERSION_LESS ${maxent_eigen_v_req})
+    message(FATAL_ERROR "Eigen3 version is too old (${EIGEN3_VERSION_STRING}), minimum ${maxent_eigen_v_req} required")
+  endif()
 endif()
 
 include(CheckCXXCompilerFlag)
