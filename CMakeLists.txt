@@ -23,7 +23,11 @@ include_directories("${PROJECT_BINARY_DIR}/config")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 message(STATUS "Finding packages, please stand by...")
 find_package(GSL REQUIRED)
-find_package (Eigen3 3.1 REQUIRED)
+
+# new ALPSCore provides Eigen
+if (NOT ALPSCore_HAS_EIGEN_VERSION)
+  find_package (Eigen3 3.1 REQUIRED)
+endif()
 
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG(-Wno-return-type-c-linkage SUPPORTS_FLAG)
