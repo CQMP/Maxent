@@ -19,6 +19,7 @@
 #pragma once
 #include<vector>
 #include<alps/params.hpp>
+#include<iostream>
 #include"maxent_matrix_def.hpp"
 ///enum that enumerates if we're in time or in frequency
 enum dataspace_type{
