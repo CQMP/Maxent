@@ -3,6 +3,6 @@ NDAT=2048		#number of input data points*2 due to non-PH symmetry
 NFREQ=500               #num of output frequencies
 DATASPACE=frequency	#!$G(i\omega)$!
 KERNEL=fermionic         #fermionic values	
-PARTICLE_HOLE_SYMMETRY=0 #generated away from half-filling
+PARTICLE_HOLE_SYMMETRY=false #generated away from half-filling
 DATA="Gomegain"		 #location of data file
 NORM=.75643        #density is != 1
