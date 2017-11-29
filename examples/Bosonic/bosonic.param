@@ -6,5 +6,5 @@ NFREQ = 1000                  #number of output frequencies
 NDAT = 22                     #number of input data points*2 due to non-PH symmetry
 MAX_IT = 4000                 #increase maximum iterations for convergence
 DATASPACE = frequency         #frequency data
-PARTICLE_HOLE_SYMMETRY = 0    #use both real and imag part of input
+PARTICLE_HOLE_SYMMETRY = false    #use both real and imag part of input
 DATA=dat_in                   #name of data file

@@ -54,9 +54,9 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   //---------------------------------
   //    General
   //---------------------------------
-  p.define<bool>("DATA_IN_HDF5",false,"1 if data is in HDF5 format");
-  p.define<bool>("TEXT_OUTPUT",true,"1 if results should be output to text files");
-  p.define<bool>("VERBOSE",false,"1 to print verbose output");
+  p.define<bool>("DATA_IN_HDF5",false,"true if data is in HDF5 format");
+  p.define<bool>("TEXT_OUTPUT",true,"true if results should be output to text files");
+  p.define<bool>("VERBOSE",false,"true to print verbose output");
   p.define<bool>("SELF",false,"input is a self energy");
   p.define<int>("MAX_IT",1000,"Maximum Iterations for the fitting routine");
   p.define<int>("N_ALPHA",60,"Number of alpha samples");
@@ -111,7 +111,7 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   //---------------------------------
   p.define<std::string>("DATASPACE","time","Time or Frequency space");
   p.define<std::string>("KERNEL","fermionic","Type of kernel: Fermionic,Bosonic,TZero,Legendre"); 
-  p.define<bool>("PARTICLE_HOLE_SYMMETRY",false,"Set =1 if particle hole symmetric"); 
+  p.define<bool>("PARTICLE_HOLE_SYMMETRY",false,"Set =true if particle hole symmetric"); 
 }
 void MaxEntSimulation::run()
 {
