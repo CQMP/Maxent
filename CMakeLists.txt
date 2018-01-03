@@ -84,11 +84,11 @@ enable_testing(test)
 add_subdirectory(test)
 
 #add companion utilities
-#add_subdirectory(legendre_convert)
-#add_subdirectory(kk) 
-if(PADE)
+if(COMPANION)
   add_subdirectory(pade/pade_arbitrary_degree)
-endif(PADE)
+  add_subdirectory(legendre_convert)
+  add_subdirectory(kk) 
+endif(COMPANION)
 
 #install
 install(TARGETS maxent DESTINATION bin)
