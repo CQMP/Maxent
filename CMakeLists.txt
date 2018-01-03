@@ -55,31 +55,45 @@ set(LIB_FILES
   ./src/maxent_backcont.cpp
   ./src/default_model.cpp
   ./src/eigen_hdf5.cpp
+  )
+set(SpM_FILES
   ./src/SpM_ADMM.cpp
   ./src/SpM_simulation.cpp
-  )
-
+)
+set(NNLS_FILES
+  ./src/NNLS_simulation.cpp
+)
 ADD_LIBRARY(libmaxent ${LIB_FILES})
-target_link_libraries(libmaxent
-	${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} )
+ADD_LIBRARY(libspm  ${SpM_FILES})
+ADD_LIBRARY(libnnls ${NNLS_FILES})
+target_link_libraries(libmaxent ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} )
+target_link_libraries(libspm libmaxent)
+target_link_libraries(libnnls libmaxent)
 #remove default "lib" prefix
 set_target_properties(libmaxent PROPERTIES PREFIX "")
+set_target_properties(libspm PROPERTIES PREFIX "")
+set_target_properties(libnnls PROPERTIES PREFIX "")
 #executable
 add_executable(maxent 
   ./src/maxent.cpp
 )
-target_link_libraries(maxent libmaxent ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(maxent libmaxent)
 
 add_executable(SpM
   ./src/SpM_method.cpp
 )
-target_link_libraries(SpM libmaxent ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(SpM libspm)
+
+add_executable(NNLS
+  ./src/NNLS_method.cpp
+)
+target_link_libraries(NNLS libnnls)
 
 #testing setup
 option(Testing "Enable testing" ON)
 
 
-list(APPEND LINK_ALL libmaxent ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+list(APPEND LINK_ALL libmaxent libspm libnnls ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 enable_testing(test)
 add_subdirectory(test)
 

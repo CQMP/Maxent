@@ -1,4 +1,4 @@
-#include "SpM_method.hpp"
+#include "NNLS_method.hpp"
 #include <alps/utilities/fs/remove_extensions.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/exception/diagnostic_information.hpp>
@@ -7,7 +7,7 @@
 int main(int argc,const char** argv)
 {
   alps::params parms(argc,argv);
-  SpMSimulation::define_parameters(parms);
+  NNLS_Simulation::define_parameters(parms);
   //other help messages
   parms.define("help.grids","show help for grids");
 
@@ -60,7 +60,7 @@ int main(int argc,const char** argv)
     }
 
 
-    SpMSimulation my_sim(parms);
+    NNLS_Simulation my_sim(parms);
     my_sim.run();
     my_sim.evaluate();
   }
