@@ -3,5 +3,5 @@ NDAT=1024		#num of imag data points
 NFREQ=500               #num of output frequencies
 DATASPACE=time	#!$G(i\tau)$!
 KERNEL=fermionic         #fermionic values	
-PARTICLE_HOLE_SYMMETRY=0 #generated away from half-filling
+PARTICLE_HOLE_SYMMETRY=false #generated away from half-filling
 DATA="G_tau"		 #location of data file

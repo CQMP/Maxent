@@ -3,5 +3,5 @@ NDAT=1024		#num of data points
 NFREQ=500               #num of output frequencies
 DATASPACE=frequency	#!$G(i\omega)$!
 KERNEL=fermionic         #!\underline{fermionic}!|bosonic values	
-PARTICLE_HOLE_SYMMETRY=1 #generated at half-filling; only use imag part
+PARTICLE_HOLE_SYMMETRY=true #generated at half-filling; only use imag part
 DATA="G_im"		 #location of data file

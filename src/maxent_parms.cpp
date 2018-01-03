@@ -58,7 +58,7 @@ void KernelAndGridIO::read_data_from_text_file(const alps::params& p) {
   double norm=p["NORM"];
   std::string dataspace = p["DATASPACE"].as<std::string>();
   boost::to_lower(dataspace);
-  if(dataspace == "time" || dataspace == "legendre" || p["PARTICLE_HOLE_SYMMETRY"]==1){
+  if(dataspace == "time" || dataspace == "legendre" || p["PARTICLE_HOLE_SYMMETRY"]==true){
     while (datstream) {
       double index, X_i, dX_i;
       datstream >> index >> X_i;

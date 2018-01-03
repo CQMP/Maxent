@@ -1,7 +1,6 @@
 #include "SpM_method.hpp"
 #include <alps/utilities/fs/remove_extensions.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/filesystem/path.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 
 

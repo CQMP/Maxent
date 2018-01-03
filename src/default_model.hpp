@@ -23,6 +23,7 @@
 #include <math.h>
 #include<iomanip>
 #include <alps/params.hpp>
+#include <iostream>
 #include <boost/shared_ptr.hpp>
 
 
