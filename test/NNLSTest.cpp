@@ -154,3 +154,48 @@ TEST(NNLS,KernelCanDealWithTripleGaussian){
     EXPECT_NEAR(backcont[i], p[pval.str()], 1.e-5);
   }
 }
+TEST(NNLS,FirstDerivativeWorksAsAdvertised){
+    alps::params p;
+    NNLS_Simulation::define_parameters(p);
+
+    double beta=20;
+    int ndat=500;
+    p["BETA"]=beta;
+    p["NDAT"]=ndat;
+    p["NO_ERRORS"]=true;
+    p["DATASPACE"]="frequency";
+    p["KERNEL"]="fermionic";
+    p["PARTICLE_HOLE_SYMMETRY"]=true;
+    p["VERBOSE"]=false;
+
+    //grid
+    p["OMEGA_MAX"]=10;
+    p["OMEGA_MIN"]=-10;
+    p["CUT"]=0.1;
+    p["FREQUENCY_GRID"]="Lorentzian";
+    p["NFREQ"]=1000;
+
+  matsubara_gf_to_param(p, beta, ndat, &imag_backcont_triple_gaussian);
+
+  NNLS_Simulation C(p);
+
+  Eigen::VectorXd omega_vals=C.omega_coord();
+  Eigen::VectorXd delta_omega=C.delta_omega();
+  Eigen::VectorXd input_grid=C.inputGrid();
+
+  //fabricate the input data
+  Eigen::VectorXd real_comparison_data(omega_vals.size());
+  for(int i=0;i<real_comparison_data.size();++i){
+    real_comparison_data[i]=triple_gaussian(omega_vals[i]);
+  }
+
+  C.compute_first_derivative_matrix();
+  Eigen::MatrixXd L1=C.L1();
+  Eigen::VectorXd Deriv=C.L1()*real_comparison_data;
+
+  std::cout<<"Deriv size: "<<Deriv.size()<<" omega vals size: "<<omega_vals.size()<<std::endl;
+  for(int i=0;i<Deriv.size();++i){
+    std::cout<<omega_vals[i+2]<<" "<<Deriv[i]<<std::endl;
+  }
+}
+

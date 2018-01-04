@@ -44,6 +44,7 @@ public:
   const vector_type &delta_omega() const{return delta_omega_;}
   const vector_type &inputGrid() const {return inputGrid_;}
   const matrix_type &K() const {return K_;}
+  const matrix_type &L1() const {return L1_;}
 
 private:
   ///overall normalization

@@ -75,6 +75,7 @@ void NNLS_Simulation::evaluate(){
 void NNLS_Simulation::compute_first_derivative_matrix(){
   L1_=Eigen::MatrixXd::Zero(nfreq_-2,nfreq_);
   for(int i=2;i<nfreq_-1;++i){
+    //std::cout<<"accessing: "<<i<<" and: "<<i-2<<" "<<i-1<<" "<<i<<" "<<i+1<<" of: "<<
     //-> this needs to be verified
     double d_im2=delta_omega_[i-1]+0.5*(delta_omega_[i-2]+delta_omega_[i]);
     double d_im1=0.5*(delta_omega_[i-1]+delta_omega_[i]);
@@ -82,10 +83,10 @@ void NNLS_Simulation::compute_first_derivative_matrix(){
     double alpha=d_im1*d_ip1/(d_im2*(d_im2+d_ip1)*(d_im2-d_im1));
     double beta=-d_im2*d_ip1/(d_im1*(d_im2-d_im1)*(d_im1+d_ip1));
     double gamma=d_im2*d_im1/(d_ip1*(d_im1+d_ip1)*(d_im2+d_ip1));
-    L1_(i,i-2)=alpha;
-    L1_(i,i-1)=beta;
-    L1_(i,i  )=-(alpha+beta+gamma);
-    L1_(i,i+1)=gamma;
+    L1_(i-2,i-2)=alpha;
+    L1_(i-2,i-1)=beta;
+    L1_(i-2,i  )=-(alpha+beta+gamma);
+    L1_(i-2,i+1)=gamma;
   }
 }
 void NNLS_Simulation::compute_second_derivative_matrix(){
