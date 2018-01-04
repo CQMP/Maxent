@@ -55,7 +55,7 @@ void SVDContinuation::compute_minimal_chi2()const {
 void SVDContinuation::truncate_to_singular_space(const vector_type& S) {
   //(truncated) U has dimension ndat() * ns_; ndat() is # of input (matsubara frequency/imag time) points
   //(truncated) Sigma has dimension ns_*ns_ (number of singular eigenvalues)
-  //(truncated) V^T has dimensions ns_* nfreq(); nfreq() is number of output (real) frequencies
+  //(truncated) V^T has dimensions ns_* nfreq_(); nfreq_() is number of output (real) frequencies
   //ns_ is the dimension of the singular space.
   U_.conservativeResize(ndat(), ns_);
   Vt_.conservativeResize(ns_, nfreq());

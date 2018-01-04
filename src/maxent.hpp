@@ -173,6 +173,6 @@ public:
 }; 
 
 ///calculates the variance of a std::vector of eigen3 vectors
-//note: mean,std_dev must be initialized to Zeros(nfreq())
+//note: mean,std_dev must be initialized to Zeros(nfreq_())
 //located in maxent_helper.cpp
 void determineVariance(std::vector<vector_type> &in,vector_type &mean, vector_type &std_dev);

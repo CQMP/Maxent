@@ -34,6 +34,17 @@ public:
   void run();
   ///the evaluation and writing of files
   void evaluate();
+  ///compute the first derivative in a finite difference approximation
+  void compute_first_derivative_matrix();
+  ///compute the second derivative in a finite difference approximation
+  void compute_second_derivative_matrix();
+
+  ///const getter functions
+  const vector_type &omega_coord() const{return omega_coord_;}
+  const vector_type &delta_omega() const{return delta_omega_;}
+  const vector_type &inputGrid() const {return inputGrid_;}
+  const matrix_type &K() const {return K_;}
+
 private:
   ///overall normalization
   const double norm;
@@ -42,5 +53,14 @@ private:
   ///String identifying the kernel type, have a look at --help for available kernels
   std::string Kernel_type;
   ///number of real frequency points
-  const int nfreq;
+  const int nfreq_;
+
+  ///the real frequency grid
+  vector_type omega_coord_;
+  ///differences of the real frequency grid
+  vector_type delta_omega_;
+  ///finite difference matrix of first derivative
+  matrix_type L1_;
+  ///finite difference matrix of second derivative
+  matrix_type L2_;
 };

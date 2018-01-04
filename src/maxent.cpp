@@ -74,7 +74,7 @@ int main(int argc,const char** argv)
 
   std::string basename;
   if(parms.defaulted("BASENAME")){
-    basename = alps::fs::remove_extensions(parms.get_origin_name()) + ".out";
+    basename = alps::fs::remove_extensions(origin_name(parms)) + ".out";
     parms["BASENAME"] = basename;
   }
   else

@@ -41,8 +41,8 @@ def_(nfreq()), text_output(p["TEXT_OUTPUT"])
     for (int i=0; i<nfreq(); ++i){
       def_[i] = DM->D(omega_coord(i))* delta_omega(i);
     }
-    //normalizing the default model. Note that it is possible that it is NOT normalized to one here, because of the nfreq() discretization.
-    //in practice, increasing nfreq() here (NFREQ in the parameter file) will make this normalization more accurate.
+    //normalizing the default model. Note that it is possible that it is NOT normalized to one here, because of the nfreq_() discretization.
+    //in practice, increasing nfreq_() here (NFREQ in the parameter file) will make this normalization more accurate.
     def_ /= def_.sum();
     checkDefaultModel(def_);
 }
@@ -303,7 +303,7 @@ void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A_in,const dou
 }
 
 ///calculates the variance of a std::vector of eigen3 vectors
-//note: mean,std_dev must be initialized to Zeros(nfreq())
+//note: mean,std_dev must be initialized to Zeros(nfreq_())
 void determineVariance(std::vector<vector_type> &in,vector_type &mean, vector_type &std_dev){
 #ifndef NDEBUG
   if(in[0].size() != mean.size() || in[0].size() != std_dev.size())
