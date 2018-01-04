@@ -45,6 +45,7 @@ public:
   const vector_type &inputGrid() const {return inputGrid_;}
   const matrix_type &K() const {return K_;}
   const matrix_type &L1() const {return L1_;}
+  const matrix_type &L2() const {return L2_;}
 
 private:
   ///overall normalization

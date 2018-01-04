@@ -198,4 +198,47 @@ TEST(NNLS,FirstDerivativeWorksAsAdvertised){
     std::cout<<omega_vals[i+2]<<" "<<Deriv[i]<<std::endl;
   }
 }
+TEST(NNLS,SecondDerivativeWorksAsAdvertised){
+    alps::params p;
+    NNLS_Simulation::define_parameters(p);
+
+    double beta=20;
+    int ndat=500;
+    p["BETA"]=beta;
+    p["NDAT"]=ndat;
+    p["NO_ERRORS"]=true;
+    p["DATASPACE"]="frequency";
+    p["KERNEL"]="fermionic";
+    p["PARTICLE_HOLE_SYMMETRY"]=true;
+    p["VERBOSE"]=false;
+
+    //grid
+    p["OMEGA_MAX"]=10;
+    p["OMEGA_MIN"]=-10;
+    p["CUT"]=0.1;
+    p["FREQUENCY_GRID"]="Lorentzian";
+    p["NFREQ"]=1000;
+
+  matsubara_gf_to_param(p, beta, ndat, &imag_backcont_triple_gaussian);
+
+  NNLS_Simulation C(p);
+
+  Eigen::VectorXd omega_vals=C.omega_coord();
+  Eigen::VectorXd delta_omega=C.delta_omega();
+  Eigen::VectorXd input_grid=C.inputGrid();
+
+  //fabricate the input data
+  Eigen::VectorXd real_comparison_data(omega_vals.size());
+  for(int i=0;i<real_comparison_data.size();++i){
+    real_comparison_data[i]=triple_gaussian(omega_vals[i]);
+  }
+
+  C.compute_second_derivative_matrix();
+  Eigen::MatrixXd L2=C.L2();
+  Eigen::VectorXd Deriv2=C.L2()*real_comparison_data;
+
+  for(int i=0;i<Deriv2.size();++i){
+    std::cout<<omega_vals[i+2]<<" "<<Deriv2[i]<<std::endl;
+  }
+}
 
