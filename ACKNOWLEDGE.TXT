@@ -3,7 +3,8 @@ Whenever scientific publications result from a program based on ALPS or Maxent w
 1) The most current Maxent Paper:
 
 R. Levy, J.P.F. LeBlanc, E. Gull, Comput. Phys. Commun. 215 (2017).
-http://dx.doi.org/10.1016/j.cpc.2017.01.018/
+http://www.sciencedirect.com/science/article/pii/S0010465517300309
+http://dx.doi.org/10.1016/j.cpc.2017.01.018
 
 2) The most current ALPS Core Libraries paper:
 
