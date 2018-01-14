@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.1)
 project (MAXENT)
 
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-find_package(ALPSCore REQUIRED)
+find_package(ALPSCore 2.0 REQUIRED)
 
 #note: LAPACK also finds BLAS
 find_package(LAPACK)
