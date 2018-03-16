@@ -73,7 +73,9 @@ public:
 
   ///getter functions, mostly for testing
   const Eigen::VectorXd &zprime() const{return zprime_;}
+  const Eigen::VectorXd &yprime() const{return yprime_;}
   const Eigen::VectorXd &xprime() const{return xprime_;}
+  const Eigen::VectorXd &S() const{return S_;}
 
   void externally_set_xprime(const Eigen::VectorXd &xprime){xprime_=xprime;}
   void externally_set_zprime(const Eigen::VectorXd &zprime){zprime_=zprime;}
