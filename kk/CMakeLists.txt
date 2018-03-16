@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project (kk)
 find_package(OpenMP)
+find_package(GSL)
 if (OPENMP_FOUND)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
