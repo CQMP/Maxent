@@ -333,7 +333,7 @@ Note that the way the Maxent code was set up,
 \end_layout
 
 \begin_layout Section
-Optimization without constraints
+Optimization without (physical) constraints
 \end_layout
 
 \begin_layout Standard
@@ -653,11 +653,11 @@ which has a minimum exactly where
 \end_inset
 
  p.s.
- I don't really what this 
+ I don't really know what this 
 \begin_inset Formula $v$
 \end_inset
 
-does here, and I think we can just get rid of it here.
+ does here, and I think we can just get rid of it here.
  p.p.s.
  this 
 \begin_inset Formula $v$
@@ -1741,7 +1741,7 @@ reference "eq:qofQuadEqWithNorm"
 \begin_inset Formula 
 \begin{align}
 P & =S^{T}S+\rho A^{T}A+\rho'I\\
-q & =y'^{T}S-\rho(Bz'{}^{k}-c+u^{k})^{T}A-\rho'(w{}^{k}-s'^{k})\\
+q & =y'^{T}S-\rho(Bz'{}^{k}-c+u^{k})^{T}A-\rho'(w'^{k}-s'^{k})\\
 Px'^{k+1} & =q
 \end{align}
 

@@ -53,8 +53,8 @@ void SpMSimulation::run(){
   std::cout<<"the Kernel has eigenvalues: "<<Sigma().diagonal()<<std::endl;
 
   admm_.print_info(std::cout); std::cout<<std::endl;
-  for(int j=0;j<10000;++j){
-    for(int i=0;i<100;++i){
+  for(int j=0;j<1000;++j){
+    for(int i=0;i<1000;++i){
       admm_.iterate();
     }
     admm_.print_info(std::cout); std::cout<<std::endl;
@@ -73,4 +73,18 @@ void SpMSimulation::evaluate(){
   for(int i=0;i<ndat_;++i){
     spec_file<<inputGrid_[i]<<" "<<y_[i]<<" "<<back(i)<<std::endl;
   }*/
+    
+  std::string filename1="yprime_S.dat";
+  std::ofstream ys_file(filename1);
+  for(int i=0;i<admm_.yprime().size();++i){
+    ys_file<<admm_.yprime()[i]<<" "<<admm_.S().cwiseProduct(admm_.xprime())[i]<<" "<<admm_.yprime()[i]-admm_.S().cwiseProduct(admm_.xprime())[i]<<std::endl;
+  }
+    
+  std::string filename2="krho.dat";
+  std::ofstream krho_file(filename2);
+  krho_file<<std::setprecision(14);
+  for(int i=0;i<U().rows();++i){
+    krho_file<<(U()*admm_.S().cwiseProduct(admm_.xprime()))[i]<<std::endl;
+  }
+  
 }

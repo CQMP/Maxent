@@ -23,6 +23,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/math/special_functions/legendre.hpp> //needed for Legendre transform
 namespace bmth = boost::math;
+#include <iomanip>
 
 // We provide a file with data points and error bars, the latter are used only if
 // COVARIANCE_MATRIX is not set. The format is
@@ -68,6 +69,12 @@ void KernelAndGridIO::read_data_from_text_file(const alps::params& p) {
         y_[datIn] = X_i / norm;
         if(!no_errors_)  sigma_[datIn] = dX_i / norm;
         datIn++;
+      }
+      std::string filename1="y.dat";
+      std::ofstream y_file(filename1);
+      y_file<<std::setprecision(14);
+      for(int i=0;i<ndat();++i){
+          y_file<<y_[i]<<std::endl;
       }
     }
     if(ndat()!=datIn){

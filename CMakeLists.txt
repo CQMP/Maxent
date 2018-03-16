@@ -31,7 +31,7 @@ if(SUPPORTS_FLAG)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-return-type-c-linkage")
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fno-omit-frame-pointer -g -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNDEBUG -O3 -fno-omit-frame-pointer -g -Wall")
 
 #let gcc take advantage of Eigen3 vectorization
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
