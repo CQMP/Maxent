@@ -279,3 +279,122 @@ TEST(Parameters,TZero){
 	EXPECT_EQ(c.ndat(),5);
 	
 }
+
+TEST(Parameters,CovarianceDataInFile){
+  std::string pf=alps::temporary_filename("in_file.dat");
+  write_minimal_input_file(pf);
+  //create a diagonal covariance matrix as input
+  //this should match the same tests of DataInFile
+  std::string cov=alps::temporary_filename("cov.dat");
+  std::ofstream tempfile(cov.c_str());
+  tempfile<<0<< " "<<0<< " " << 0.3<<std::endl;
+  tempfile<<0<< " "<<1<< " " << 0  <<std::endl;
+  tempfile<<0<< " "<<2<< " " << 0  <<std::endl;
+  tempfile<<0<< " "<<3<< " " << 0  <<std::endl;
+  tempfile<<0<< " "<<4<< " " << 0  <<std::endl;
+  tempfile<<1<< " "<<0<< " " << 0  <<std::endl;
+  tempfile<<1<< " "<<1<< " " << 0.3<<std::endl;
+  tempfile<<1<< " "<<2<< " " << 0  <<std::endl;
+  tempfile<<1<< " "<<3<< " " << 0  <<std::endl;
+  tempfile<<1<< " "<<4<< " " << 0  <<std::endl;
+  tempfile<<2<< " "<<0<< " " << 0  <<std::endl;
+  tempfile<<2<< " "<<1<< " " << 0  <<std::endl;
+  tempfile<<2<< " "<<2<< " " << 0.3<<std::endl;
+  tempfile<<2<< " "<<3<< " " << 0  <<std::endl;
+  tempfile<<2<< " "<<4<< " " << 0  <<std::endl;
+  tempfile<<3<< " "<<0<< " " << 0  <<std::endl;
+  tempfile<<3<< " "<<1<< " " << 0  <<std::endl;
+  tempfile<<3<< " "<<2<< " " << 0  <<std::endl;
+  tempfile<<3<< " "<<3<< " " << 0.3<<std::endl;
+  tempfile<<3<< " "<<4<< " " << 0  <<std::endl;
+  tempfile<<4<< " "<<0<< " " << 0  <<std::endl;
+  tempfile<<4<< " "<<1<< " " << 0  <<std::endl;
+  tempfile<<4<< " "<<2<< " " << 0  <<std::endl;
+  tempfile<<4<< " "<<3<< " " << 0  <<std::endl;
+  tempfile<<4<< " "<<4<< " " << 0.3<<std::endl;
+  tempfile.close();
+
+  //fake input
+  alps::params p;
+  MaxEntSimulation::define_parameters(p);
+  p["BETA"]=2;
+  p["DATA"]=pf;
+  p["NDAT"] = 5;
+  p["COVARIANCE_MATRIX"]=cov;
+
+  //MaxEntParameters handles covariance scaling
+  MaxEntParameters c(p);
+  EXPECT_EQ(c.ndat(),5);
+  EXPECT_EQ(c.T(),0.5);
+
+  for(int i=0;i<c.ndat();i++){
+    EXPECT_NEAR(c.y(i),(i+1)*.1/0.3,1e-10);
+    EXPECT_EQ(c.sigma(i),0.3);
+  }
+
+  std::remove(pf.c_str());
+  std::remove(cov.c_str());
+}
+TEST(Parameters,CovarianceHDF5Params){
+  //here we make a temporary HDF5 param file
+  //and make sure Maxent does all the necessary reading
+
+  alps::params p1; 
+  std::string tf=alps::temporary_filename("hdf5_input.h5");
+  alps::hdf5::archive oar(tf, "w");
+  MaxEntSimulation::define_parameters(p1);
+  p1["N_ALPHA"] = 60;
+	p1["ALPHA_MIN"] = .01;
+	p1["ALPHA_MAX"] = 20.0;
+	p1["NORM"] = 1.0;
+	p1["OMEGA_MAX"] = 6.0;
+	p1["KERNEL"] = "fermionic"; 
+	p1["BETA"] = 2.0;
+	p1["NFREQ"] = 2001;
+	p1["NDAT"] = 5;
+	p1["FREQUENCY_GRID"] = "Lorentzian";
+	p1["DATASPACE"] = "frequency";
+	p1["MAX_IT"] = 200;
+	p1["DEFAULT_MODEL"] = "flat";
+	p1["PARTICLE_HOLE_SYMMETRY"] = true;
+	p1["TEXT_OUTPUT"] = false;
+  p1["DATA_IN_HDF5"] = true;
+  p1["DATA"]=tf;
+  //make it non-empty so it gets read in
+  p1["COVARIANCE_MATRIX"]="Garbage";
+  oar["/parameters"] << p1;
+  std::vector<double> x,sigma;
+  for(int i=1;i<6;i++){
+    x.push_back(i/10.0);
+    sigma.push_back(0.5);
+  }
+  Eigen::MatrixXd cov = Eigen::MatrixXd::Identity(5,5);
+  cov *= 0.3; //change error from sigma
+  std::vector<double> cov_vec;
+  for(int i=0;i<5;i++){
+    for(int j=0;j<5;j++)
+      cov_vec.push_back(cov(i,j));
+  }
+  oar["/Data"] << x;
+  oar["/Error"] << sigma; 
+  oar["/Covariance"] << cov_vec;
+  oar.close();
+  //now read in same file
+  alps::hdf5::archive iar(tf, "r");
+  alps::params p;
+  iar["/parameters"] >> p;
+  iar.close();
+  
+  MaxEntParameters c(p);
+
+	EXPECT_EQ(c.ndat(),5);
+	EXPECT_EQ(c.T(),0.5);
+	
+	//check input values
+  for(int i=0;i<c.ndat();i++){
+    EXPECT_NEAR(c.y(i),(i+1)*.1/0.3,1e-10);
+    EXPECT_EQ(c.sigma(i),0.3);
+  }
+  std::remove(tf.c_str());
+}
+

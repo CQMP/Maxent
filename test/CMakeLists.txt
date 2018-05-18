@@ -4,7 +4,7 @@ set(test_src
   default_modelTest
   backcontTest
   gridTest
-  parmsTest
+  paramsTest
   simulationTest
   paramFailureTest
 )
