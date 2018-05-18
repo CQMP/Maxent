@@ -47,7 +47,7 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 
 set(LIB_FILES 
   ./src/maxent_helper.cpp
-  ./src/maxent_parms.cpp
+  ./src/maxent_params.cpp
   ./src/maxent_grid.cpp
   ./src/maxent_kernel.cpp
   ./src/maxent_simulation.cpp
