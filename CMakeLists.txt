@@ -69,10 +69,13 @@ target_link_libraries(maxent libmaxent ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${
 #testing setup
 option(Testing "Enable testing" ON)
 
+if (Testing)
+  add_library(gtest ./test/gtest-all.cc ./test/gtest_main.cc)
+  list(APPEND LINK_ALL libmaxent ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+  enable_testing(test)
+  add_subdirectory(test)
+endif (Testing)
 
-list(APPEND LINK_ALL libmaxent ${ALPSCore_LIBRARIES} ${GSL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
-enable_testing(test)
-add_subdirectory(test)
 
 #add companion utilities
 add_subdirectory(legendre_convert)
