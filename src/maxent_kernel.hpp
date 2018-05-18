@@ -37,9 +37,9 @@ public:
   ///getter function for the kernel matrix
   const matrix_type &operator()()const{return K_;}
   ///getter function for kernel type
-  const kernel_type getKernelType() const{return ktype_;}
+  kernel_type getKernelType() const{return ktype_;}
   ///getter function for dataspace type
-  const dataspace_type getDataspaceType() const{return dtype_;}
+  dataspace_type getDataspaceType() const{return dtype_;}
 	///getter function for tau_points
 	const vector_type getTauPoints() const{return tau_points_;}
     

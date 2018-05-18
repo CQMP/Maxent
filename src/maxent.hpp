@@ -145,7 +145,7 @@ public:
   ///the spectral function A(omega)
   const vector_type getOmegaGrid() const{return omegaGrid;}
   ///getter for the posterior probability of the default model
-  const double getPostProb() const{return postprobdef;}
+  double getPostProb() const{return postprobdef;}
   ///getter for alpha values
   const vector_type getAlphaGrid() const{return alpha;} 
   ///getter for vector of Q value per alpha iteration
