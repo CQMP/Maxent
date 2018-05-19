@@ -39,6 +39,7 @@
 !ACKNOWLEDGE.TXT
 !COPYRIGHT.TXT
 !HEADER.TXT
+!.travis.yml
 !scripts/
 !test/gtest*
 
