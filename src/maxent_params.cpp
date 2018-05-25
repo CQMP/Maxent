@@ -240,7 +240,7 @@ void ContiParameters::decompose_covariance_matrix(const alps::params& p){
     // below that value)
     int new_ndat_,old_ndat_=ndat();
     for (new_ndat_ =0;new_ndat_<ndat();new_ndat_++)
-      if (var[new_ndat_]>1e-10) break;
+      if (var[new_ndat_]>1e-12) break; //pick cutoff value manually after looking at evalue spectrum
     // This is the number of good data
     ndat_ = old_ndat_ - new_ndat_;
     if (new_ndat_ ==0)
@@ -259,7 +259,7 @@ void ContiParameters::decompose_covariance_matrix(const alps::params& p){
       }
     }
     for (int i=0; i<ndat(); ++i) {
-      sigma_[i] = std::abs(var(new_ndat_+i))/static_cast<double>(p["NORM"]);
+      sigma_[i] = std::sqrt(std::abs(var(new_ndat_+i)))/static_cast<double>(p["NORM"]);
       if (p["VERBOSE"])
         std::cout << "# " << var(new_ndat_+i) << "\n";
     }
