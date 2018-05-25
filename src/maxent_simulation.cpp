@@ -1,19 +1,6 @@
 /*
- * Copyright (C) 1998-2016 ALPS Collaboration
- * 
- *     This program is free software; you can redistribute it and/or modify it
- *     under the terms of the GNU General Public License as published by the Free
- *     Software Foundation; either version 2 of the License, or (at your option)
- *     any later version.
- * 
- *     This program is distributed in the hope that it will be useful, but WITHOUT
- *     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- *     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
- *     more details.
- * 
- *     You should have received a copy of the GNU General Public License along
- *     with this program; if not, write to the Free Software Foundation, Inc., 59
- *     Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * Copyright (C) 1998-2018 ALPS Collaboration.
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
@@ -54,9 +41,9 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   //---------------------------------
   //    General
   //---------------------------------
-  p.define<bool>("DATA_IN_HDF5",false,"1 if data is in HDF5 format");
-  p.define<bool>("TEXT_OUTPUT",true,"1 if results should be output to text files");
-  p.define<bool>("VERBOSE",false,"1 to print verbose output");
+  p.define<bool>("DATA_IN_HDF5",false,"true if data is in HDF5 format");
+  p.define<bool>("TEXT_OUTPUT",true,"true if results should be output to text files");
+  p.define<bool>("VERBOSE",false,"true to print verbose output");
   p.define<bool>("SELF",false,"input is a self energy");
   p.define<int>("MAX_IT",1000,"Maximum Iterations for the fitting routine");
   p.define<int>("N_ALPHA",60,"Number of alpha samples");
@@ -69,7 +56,8 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   p.define<double>("BETA","beta, inverse temperature");
   p.define<int>("NDAT","# of input points");
   p.define<std::string>("DATA","","data file input");
-  p.define<std::string>("BASENAME","","Specified output name \n(generated if not given)");
+  p.define<std::string>("COVARIANCE_MATRIX","","name of covariance matrix file");
+  p.define<std::string>("BASENAME","","Specified output name (generated if not given)");
   p.define<int>("MODEL_RUNS","How many default model runs");
   p.define<double>("X_0","G input for param file entry");
   p.define<double>("SIGMA_0","G error input for param file entry");
@@ -110,8 +98,8 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   //    Kernel
   //---------------------------------
   p.define<std::string>("DATASPACE","time","Time or Frequency space");
-  p.define<std::string>("KERNEL","fermionic","Type of kernel: \nFermionic,Bosonic,TZero,Legendre"); 
-  p.define<bool>("PARTICLE_HOLE_SYMMETRY",false,"Set =1 if particle hole symmetric"); 
+  p.define<std::string>("KERNEL","fermionic","Type of kernel: Fermionic,Bosonic,TZero,Legendre"); 
+  p.define<bool>("PARTICLE_HOLE_SYMMETRY",false,"Set =true if particle hole symmetric"); 
 }
 void MaxEntSimulation::run()
 {

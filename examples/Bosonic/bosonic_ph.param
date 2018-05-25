@@ -8,5 +8,5 @@ NFREQ = 1000                  #number of output frequencies
 NDAT = 11                     #!\color{red}actual number of input data points!
 MAX_IT = 4000                 #increase maximum iterations for convergence
 DATASPACE = frequency         #frequency data
-PARTICLE_HOLE_SYMMETRY = 1    #!\color{red}PH symmetric data; only real part!
+PARTICLE_HOLE_SYMMETRY = true    #!\color{red}PH symmetric data; only real part!
 DATA=G_re                     #name of data file

@@ -1,19 +1,6 @@
 /*
- * Copyright (C) 1998-2016 ALPS Collaboration
- * 
- *     This program is free software; you can redistribute it and/or modify it
- *     under the terms of the GNU General Public License as published by the Free
- *     Software Foundation; either version 2 of the License, or (at your option)
- *     any later version.
- * 
- *     This program is distributed in the hope that it will be useful, but WITHOUT
- *     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- *     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
- *     more details.
- * 
- *     You should have received a copy of the GNU General Public License along
- *     with this program; if not, write to the Free Software Foundation, Inc., 59
- *     Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * Copyright (C) 1998-2018 ALPS Collaboration.
+ * All rights reserved. Use is subject to license terms. See LICENSE.TXT
  * For use in publications, see ACKNOWLEDGE.TXT
  */
 
@@ -62,7 +49,7 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
   int expectedDatIn = 0;
   std::string dataspace = p["DATASPACE"].as<std::string>();
   boost::to_lower(dataspace);
-  if(dataspace == "time" || dataspace == "legendre" || p["PARTICLE_HOLE_SYMMETRY"]==1){
+  if(dataspace == "time" || dataspace == "legendre" || p["PARTICLE_HOLE_SYMMETRY"]==true){
     while (datstream) {
       double index, X_i, dX_i;
       datstream >> index >> X_i >> dX_i;
@@ -101,7 +88,7 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
     expectedDatIn*=2;
     expectedDatIn-=1;
   }
-  if(p.defined("COVARIANCE_MATRIX")) {
+  if(p["COVARIANCE_MATRIX"]!="") {
     std::string fname = p["COVARIANCE_MATRIX"];
     read_covariance_matrix_from_text_file(fname);
   }
@@ -132,7 +119,7 @@ void ContiParameters::read_data_from_hdf5_file(const alps::params& p) {
   for (std::size_t i = 0; i < ndat(); i++)
     y_(i) = tmp[i] / static_cast<double>(p["NORM"]);
   path.str("");
-  if (!p.defined("COVARIANCE_MATRIX")) {
+  if (p["COVARIANCE_MATRIX"]=="") {
     path << "/Error";
     ar >> alps::make_pvp(path.str(), tmp);
     for (std::size_t i = 0; i < ndat(); i++)
@@ -162,7 +149,7 @@ void ContiParameters::read_data_from_param_file(const alps::params& p) {
     }
     y_(i) = static_cast<double>(p["X_" + boost::lexical_cast<std::string>(i)])
         / static_cast<double>(p["NORM"]);
-    if (!p.defined("COVARIANCE_MATRIX")) {
+    if (p["COVARIANCE_MATRIX"]=="") {
       if (!p.exists("SIGMA_" + boost::lexical_cast<std::string>(i))) {
         throw std::runtime_error(
             std::string("parameter SIGMA_"+boost::lexical_cast<std::string>(i)+ " missing! "));
@@ -205,7 +192,9 @@ y_(ndat_),sigma_(ndat_),K_(),grid_(p),inputGrid_(ndat_)
 }
 
 void ContiParameters::scale_data_with_error(const int ntab) {
-  //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
+  //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, 
+  //in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. 
+  //Then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
   for (int i = 0; i < ndat(); i++) {
     y_[i] /= sigma_[i];
     for (int j = 0; j < ntab; ++j) {
@@ -254,7 +243,10 @@ void ContiParameters::decompose_covariance_matrix(const alps::params& p){
       if (var[new_ndat_]>1e-10) break;
     // This is the number of good data
     ndat_ = old_ndat_ - new_ndat_;
-    std::cout << "# Ignoring singular eigenvalues (0-" << new_ndat_-1 << " out of " << old_ndat_ << ")\n";
+    if (new_ndat_ ==0)
+      std::cout << " Ignoring no singular eigenvalues of covariance" << std::endl;
+    else
+      std::cout << "# Ignoring singular eigenvalues (0-" << new_ndat_-1 << " out of " << old_ndat_ << ")\n";
     // Now resize kernel and data matrix and fill it with the values for the
     // good data directions
     K_.resize(ndat_,nfreq_);
@@ -394,12 +386,14 @@ MaxEntParameters::MaxEntParameters(alps::params& p) :
   k_type = ker.getKernelType();
 
   //scale lhs and rhs according to errors, etc.
-  if (p.defined("COVARIANCE_MATRIX"))
+  if (p["COVARIANCE_MATRIX"]!="")
     decompose_covariance_matrix(p);
     
     check_high_frequency_limit(y(),k_type);
 
-  //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
+  //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, 
+  //in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. 
+  //The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
   scale_data_with_error(nfreq());
 
   std::cerr << "Kernel is set up\n";
