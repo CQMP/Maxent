@@ -328,8 +328,8 @@ TEST(Parameters,CovarianceDataInFile){
   EXPECT_EQ(c.T(),0.5);
 
   for(int i=0;i<c.ndat();i++){
-    EXPECT_NEAR(c.y(i),(i+1)*.1/0.3,1e-10);
-    EXPECT_EQ(c.sigma(i),0.3);
+    EXPECT_NEAR(c.y(i),(i+1)*.1/std::sqrt(0.3),1e-10);
+    EXPECT_EQ(c.sigma(i),std::sqrt(0.3));
   }
 
   std::remove(pf.c_str());
@@ -392,8 +392,8 @@ TEST(Parameters,CovarianceHDF5Params){
 	
 	//check input values
   for(int i=0;i<c.ndat();i++){
-    EXPECT_NEAR(c.y(i),(i+1)*.1/0.3,1e-10);
-    EXPECT_EQ(c.sigma(i),0.3);
+    EXPECT_NEAR(c.y(i),(i+1)*.1/std::sqrt(0.3),1e-10);
+    EXPECT_EQ(c.sigma(i),std::sqrt(0.3));
   }
   std::remove(tf.c_str());
 }
