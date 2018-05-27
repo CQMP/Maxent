@@ -238,9 +238,11 @@ void ContiParameters::decompose_covariance_matrix(const alps::params& p){
     // We drop eigenvalues of the covariance matrix which are smaller than 1e-10
     // as they represent bad data directions (usually there is a steep drop
     // below that value)
+    double cutoff = p["CM_EIGENVALUE_CUTOFF"];
+    std::cout << "Cutoff for singular eigenvalues of the covariance: " << cutoff << "\n";
     int new_ndat_,old_ndat_=ndat();
     for (new_ndat_ =0;new_ndat_<ndat();new_ndat_++)
-      if (var[new_ndat_]>1e-10) break;
+      if (var[new_ndat_]>cutoff) break; 
     // This is the number of good data
     ndat_ = old_ndat_ - new_ndat_;
     if (new_ndat_ ==0)
@@ -259,7 +261,7 @@ void ContiParameters::decompose_covariance_matrix(const alps::params& p){
       }
     }
     for (int i=0; i<ndat(); ++i) {
-      sigma_[i] = std::abs(var(new_ndat_+i))/static_cast<double>(p["NORM"]);
+      sigma_[i] = std::sqrt(std::abs(var(new_ndat_+i)))/static_cast<double>(p["NORM"]);
       if (p["VERBOSE"])
         std::cout << "# " << var(new_ndat_+i) << "\n";
     }
