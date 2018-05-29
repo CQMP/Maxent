@@ -1,5 +1,6 @@
 Maxent
 ======
+[![Build Status](https://travis-ci.org/CQMP/Maxent.svg?branch=GPLv3)](https://travis-ci.org/CQMP/Maxent)
 
 The Maxent Project: A utility for performing analytic continuation using the method of Maximum Entropy.
 
