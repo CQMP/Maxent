@@ -57,6 +57,7 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   p.define<int>("NDAT","# of input points");
   p.define<std::string>("DATA","","data file input");
   p.define<std::string>("COVARIANCE_MATRIX","","name of covariance matrix file");
+  p.define<double>("CM_EIGENVALUE_CUTOFF",1e-10, "Cutoff for eigenvalues of the covariance matrix");
   p.define<std::string>("BASENAME","","Specified output name (generated if not given)");
   p.define<int>("MODEL_RUNS","How many default model runs");
   p.define<double>("X_0","G input for param file entry");
@@ -311,15 +312,20 @@ void MaxEntSimulation::evaluate(alps::params &params){
     // for the self energy: use Im Sigma(omega)=-A(omega)*pi
     ofstream_ maxspec_self_str;maxspec_self_str.open((name+"maxspec_self.dat").c_str());
     ofstream_ avspec_self_str; avspec_self_str.open((name+"avspec_self.dat").c_str());
+    ofstream_ chispec_self_str; chispec_self_str.open((name+"chispec_self.dat").c_str());
     for (std::size_t  i=0; i<avspec.size(); ++i){ 
       avspec_self_str << omega_coord(i) << " " << -avspec[i]*M_PI<< " " << -def[i]*norm*M_PI<<std::endl;
     }
     for (std::size_t i=0; i<spectra[0].size(); ++i){
       maxspec_self_str << omega_coord(i) << " " << -spectra[max_a][i]*norm*M_PI<< " " << -def[i]*norm*M_PI << std::endl;
     }
+    for (std::size_t  i=0; i<specchi.size(); ++i){ 
+      chispec_self_str << omega_coord(i) << " " << -specchi[i]*M_PI<< " " << -def[i]*norm*M_PI<<std::endl;
+    }
     //for public facing variables
     avspec*=-M_PI;
     maxspec*=-M_PI;
+    specchi*=-M_PI;
   }
 
   if(make_back){
@@ -339,7 +345,7 @@ void MaxEntSimulation::evaluate(alps::params &params){
 
     std::cerr << "spectra"<<sp<< " max backcont diff" <<sp<<  "chi^2 value " <<std::endl;
     std::cerr << "======="<< sp<<" ================="<< sp<< "=========== " <<std::endl;
-    backcontinue(chispec_back_file,specchi,norm,"chispec",chispec_back);
+    backcontinue(chispec_back_file,specchi,norm_fix,"chispec",chispec_back);
     backcontinue(avspec_back_file,avspec,norm_fix,"avspec ",avspec_back);
     backcontinue(maxspec_back_file,maxspec,norm_fix,"maxspec",maxspec_back);
   }
