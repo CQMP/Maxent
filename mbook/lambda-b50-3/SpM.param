@@ -1,0 +1,12 @@
+BETA = 50
+DATA = "TripleGaussianFrequency.dat"
+DATASPACE =frequency
+KERNEL =fermionic
+NDAT =1000
+NORM =1
+NO_ERRORS=1 
+PARTICLE_HOLE_SYMMETRY =1
+RHO arg =0.2
+RHOPRIME =0.02
+
+LAMBDA =0.00000001

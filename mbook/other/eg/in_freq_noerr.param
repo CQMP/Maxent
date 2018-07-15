@@ -1,0 +1,11 @@
+BETA=100			#inverse temperature
+NDAT=100 #num of data points
+NFREQ=5000               #num of output frequencies;
+KERNEL=fermionic         #!\underline{fermionic}!|bosonic values	
+PARTICLE_HOLE_SYMMETRY=1 #generated at half-filling
+DATASPACE=frequency #!$G(\omega)$!
+DATA="TripleGaussianFrequency.dat"		 #location of data file
+NO_ERRORS=1
+OMEGA_MIN=-20
+OMEGA_MAX=20
+VERBOSE=0
