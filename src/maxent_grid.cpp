@@ -19,6 +19,7 @@
 #include "maxent_grid.hpp"
 
 #include<cmath>
+#include<iostream>
 #include <boost/algorithm/string.hpp>    
 
 grid::grid(const alps::params &p):

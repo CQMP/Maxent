@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <iostream>
 #include <fstream>
 #include "maxent_svd.hpp"
 #include <boost/random/mersenne_twister.hpp>
