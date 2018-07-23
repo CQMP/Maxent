@@ -20,6 +20,7 @@
 #include<vector>
 #include<iomanip>
 #include<alps/params.hpp>
+#include<alps/hdf5/vector.hpp>
 #include "maxent_matrix_def.hpp"
 
 ///this class is responsible for creating mapping data for real frequency grids.
