@@ -21,6 +21,9 @@
 #include <iostream>
 #include <cmath>
 #include <gsl/gsl_integration.h>
+#include <boost/random/normal_distribution.hpp>
+#include <boost/random.hpp>
+
 
 double gaussian(double x){
   //return gaussian(x,0,1,1);
@@ -66,6 +69,18 @@ void matsubara_gf_to_param(alps::params &p, double beta, int nmax, double (*fun)
   }
   gsl_integration_workspace_free (w);
 }
+void imag_time_gf_to_param(alps::params &p, int nmax, double beta){
+    
+    //todo: put in the actual imaginary time green's function
+    for(int j=0;j<nmax;j++){
+        
+        std::stringstream pval; pval<<"X_"<<j;
+        std::stringstream pval2; pval2<<"TAU_"<<j;
+        p[pval.str()] = 0;
+        p[pval2.str()] = beta/(nmax-1)*j;
+    }
+}
+
 TEST(SpM,KernelCanDealWithGaussian){
     alps::params p;
     SVDContinuation::define_parameters(p);
@@ -326,4 +341,61 @@ TEST(SpM,DISABLED_ADMML1OptimizationReducesL1Norm){
 
 }
 
+TEST(SpM,KernelInImagTimeCanDealWithTripleGaussian){
+    alps::params p;
+    SVDContinuation::define_parameters(p);
+    
+    double beta=20;
+    int ndat=500;
+    p["BETA"]=beta;
+    p["NDAT"]=ndat;
+    p["NO_ERRORS"]=true;
+    p["DATASPACE"]="time";
+    p["KERNEL"]="fermionic";
+    p["PARTICLE_HOLE_SYMMETRY"]=true;
+    p["VERBOSE"]=false;
+    
+    //grid
+    p["OMEGA_MAX"]=10;
+    p["OMEGA_MIN"]=-10;
+    p["CUT"]=0.1;
+    p["FREQUENCY_GRID"]="Lorentzian";
+    p["NFREQ"]=1000;
+    
+    imag_time_gf_to_param(p, ndat, beta);
+    
+    SVDContinuation C(p);
+    
+    Eigen::VectorXd omega_vals=C.omega_coord();
+    Eigen::VectorXd delta_omega=C.delta_omega();
+    Eigen::VectorXd input_grid=C.inputGrid();
+    
+    //fabricate the input data
+    Eigen::VectorXd real_comparison_data=delta_omega;
+    for(int i=0;i<real_comparison_data.size();++i){
+        real_comparison_data[i]*=triple_gaussian(omega_vals[i]);
+    }
+    
+    //let the kernel multiply to imag frequency
+    Eigen::VectorXd backcont=C.U()*C.Sigma()*C.Vt()*real_comparison_data;
+    
+    for(int i=0;i<ndat;++i){
+        std::cout<<i*beta/(ndat-1)<<" "<<backcont[i]<<std::endl;
+    }
+    
+}
 
+TEST(SpM,TestRandom){
+  boost::random::mt19937 rng;
+  boost::random::normal_distribution<double> norm(0., 0.00001);
+  for(int i=0;i<1001;++i){
+      std::cout<<i<<" "<<norm(rng)<<std::endl;;
+  }
+  
+    std::string filename1="noise.dat";
+    std::ofstream noise_file(filename1);
+    for(int i=0;i<1001;++i){
+        noise_file<<i<<" "<<norm(rng)<<std::endl;
+    }
+
+}
