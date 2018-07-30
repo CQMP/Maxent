@@ -6,7 +6,7 @@ if (OPENMP_FOUND)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
-# find_package(ALPSCore REQUIRED) # does it use ALPSCore?
+find_package(GSL REQUIRED)
 set(boost_req program_options)
 find_package (Boost COMPONENTS ${boost_req} REQUIRED)
 message(STATUS "Found Boost includes: ${Boost_INCLUDE_DIRS}" )
