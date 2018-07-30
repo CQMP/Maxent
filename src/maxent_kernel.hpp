@@ -18,6 +18,7 @@
  */
 #pragma once
 #include<vector>
+#include<iostream>
 #include<alps/params.hpp>
 #include<iostream>
 #include"maxent_matrix_def.hpp"

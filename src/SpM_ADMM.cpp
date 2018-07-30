@@ -101,6 +101,8 @@ void ADMM::print_info(std::ostream &os) const{
       <<chisquare_term()
       <<" l1 of x': "
       <<l1_of_xprime()<<std::endl;
+  os<<" ns: "
+      <<ns_<<std::endl;
   os<<" objective: "
       <<global_objective_functional()<<std::endl;
   std::cout<<"moving on."<<std::endl;
