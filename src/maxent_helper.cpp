@@ -171,7 +171,7 @@ double MaxEntHelper::chi_scale_factor(vector_type A, const double chi_sq, const 
     if (lambda[i]>=0) 
       Ng += lambda[i]/(lambda[i]+alpha);
   }
-  std::cerr << "Ng: " << Ng << std::endl;
+  std::cout << "Ng: " << Ng << std::endl;
   //std::cerr << "chi2 max: " << chi_sq << std::endl;
   return sqrt(chi_sq/(ndat()-Ng));
 }
@@ -276,7 +276,7 @@ void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A_in,const dou
 
     double chi_sq = chi2(A_chi);
     const std::string sp = "    ";
-    std::cerr <<  name << sp+sp <<  max_err << sp+sp+"  " << chi_sq << std::endl;
+    std::cout <<  name << sp+sp <<  max_err << sp+sp+"  " << chi_sq << std::endl;
 }
 
 ///calculates the varience of a std::vector of eigen3 vectors
