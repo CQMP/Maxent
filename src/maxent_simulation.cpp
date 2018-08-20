@@ -119,13 +119,13 @@ void MaxEntSimulation::run()
   //this loop is the 'core' of the maxent program: iterate over all alphas, compute the spectra, normalization, and probabilities
   //loop over all alpha values
   for (std::size_t a=0; a<alpha.size(); ++a) {
-    std::cerr << "alpha it: " << a << "\t";
+    std::cout << "alpha it: " << a << "\t";
     //fitting procedure for 'u'
     u = levenberg_marquardt(u, alpha[a]);
     //computation of spectral function out of 'u'
     vector_type A = get_spectrum(u);
     //computation of normalization
-    std::cerr << "norm: " << transform_into_real_space(u).sum() << "\t";
+    std::cout << "norm: " << transform_into_real_space(u).sum() << "\t";
     if (text_output) {
       spectral_function_file<<"# alpha: "<<alpha[a]<<std::endl;
       for (std::size_t i=0; i<A.size(); ++i)
@@ -138,8 +138,8 @@ void MaxEntSimulation::run()
     //computation of chi2
     double chi_squared = chi2(transform_into_real_space(u));
     chi_sq[a] = chi_squared;
-    if (verbose) std::cerr << "0.5*chi2  : " << 0.5*chi_squared;
-    std::cerr << std::endl;
+    if (verbose) std::cout << "0.5*chi2  : " << 0.5*chi_squared;
+    std::cout << std::endl;
     if (text_output) print_chi2(transform_into_real_space(u), fits_file);
     qvec(a)=Q(u,alpha[a]); 
   }
@@ -180,7 +180,7 @@ void MaxEntSimulation::evaluate(){
   int max_a,nothing; double max_lprob;
   max_lprob=lprob.maxCoeff(&max_a,&nothing);
   const double factor = chi_scale_factor(spectra[max_a], chi_sq[max_a], alpha[max_a]);
-  if (verbose) std::cerr << "chi scale factor: " << factor << std::endl;
+  if (verbose) std::cout << "chi scale factor: " << factor << std::endl;
 
 	alps::hdf5::archive ar(name+"out.h5", "w");
 	ar << alps::make_pvp("/alpha/values",alpha);
@@ -341,8 +341,8 @@ void MaxEntSimulation::evaluate(){
       norm_fix *=-M_PI;
     }
 
-    std::cerr << "spectra"<<sp<< " max backcont diff" <<sp<<  "chi^2 value " <<std::endl;
-    std::cerr << "======="<< sp<<" ================="<< sp<< "=========== " <<std::endl;
+    std::cout << "spectra"<<sp<< " max backcont diff" <<sp<<  "chi^2 value " <<std::endl;
+    std::cout << "======="<< sp<<" ================="<< sp<< "=========== " <<std::endl;
     backcontinue(chispec_back_file,specchi,norm_fix,"chispec",chispec_back);
     backcontinue(avspec_back_file,avspec,norm_fix,"avspec ",avspec_back);
     backcontinue(maxspec_back_file,maxspec,norm_fix,"maxspec",maxspec_back);
@@ -389,9 +389,9 @@ vector_type MaxEntSimulation::levenberg_marquardt(vector_type u, const double al
       break;
   }
   if (it == max_it) std::cerr<<"WARNING: iteration reached max_it without converging, your minimizer is having problems. Please be careful!"<<std::endl;
-  if (verbose) std::cerr <<"Iterations: " << it+1 << "\t";
-  std::cerr << "Q = 0.5chi^2-\\alpha*entropy: " << Q1 << "\t";
-  if (verbose) std::cerr << "entropy: "<<entropy(transform_into_real_space(u))<<"\talpha*entropy: "<<alpha*entropy(transform_into_real_space(u))<<"\t ";
+  if (verbose) std::cout <<"Iterations: " << it+1 << "\t";
+  std::cout << "Q = 0.5chi^2-\\alpha*entropy: " << Q1 << "\t";
+  if (verbose) std::cout << "entropy: "<<entropy(transform_into_real_space(u))<<"\talpha*entropy: "<<alpha*entropy(transform_into_real_space(u))<<"\t ";
   return u;
 }
 

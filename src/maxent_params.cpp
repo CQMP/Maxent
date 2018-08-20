@@ -140,7 +140,7 @@ void ContiParameters::read_data_from_param_file(const alps::params& p) {
   if (!p.defined("NORM")) {
     throw std::runtime_error("parameter NORM missing!");
   } else
-    std::cerr << "Data normalized to: " << static_cast<double>(p["NORM"])
+    std::cout << "Data normalized to: " << static_cast<double>(p["NORM"])
         << std::endl;
 
   for (int i = 0; i < ndat(); ++i) {
@@ -206,7 +206,7 @@ void ContiParameters::scale_data_with_error(const int ntab) {
 void ContiParameters::read_covariance_matrix_from_text_file(
     const std::string& fname) {
   cov_.resize(ndat(), ndat());
-  std::cerr << "Reading covariance matrix\n";
+  std::cout << "Reading covariance matrix\n";
   std::ifstream covstream(fname.c_str());
   if (!covstream)
     boost::throw_exception(
@@ -398,7 +398,7 @@ MaxEntParameters::MaxEntParameters(alps::params& p) :
   //The then define y := \bar{G}/sigma_ and K := (1/sigma_)\tilde{K}
   scale_data_with_error(nfreq());
 
-  std::cerr << "Kernel is set up\n";
+  std::cout << "Kernel is set up\n";
 
   vector_type S(ndat());
   bool verbose=p["VERBOSE"];

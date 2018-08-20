@@ -50,16 +50,16 @@ void pade_interpolator::pade_interpolate(const imaginary_domain_data &data, real
     matsubara_values     [i]=pade_complex_type(data.val()[i].real(), data.val()[i].imag());
   }
 
-  std::cerr<<"filling."<<std::endl;
+  std::cout<<"filling."<<std::endl;
   pade_complex_matrix_type Vinv(pade_mu_+pade_nu_+1,pade_mu_+pade_nu_+1);
   fill_Vinv_matrix(Vinv, matsubara_frequencies, pade_mu_, pade_nu_);
   
-  std::cerr<<"assembling."<<std::endl;
+  std::cout<<"assembling."<<std::endl;
   pade_complex_matrix_type Lambda(pade_mu_+pade_nu_,pade_mu_+pade_nu_);
   pade_complex_vector_type rhs(pade_mu_+pade_nu_);
   assemble_matrix_system(Lambda, rhs, Vinv, matsubara_values, pade_mu_, pade_nu_);
 
-  std::cerr<<"solving."<<std::endl;
+  std::cout<<"solving."<<std::endl;
   pade_complex_vector_type res(rhs.size(), pade_complex_type(0., 0.));
   pade_complex_vector_type q(pade_mu_+pade_nu_+1);
   pade_solver s;
@@ -70,7 +70,7 @@ void pade_interpolator::pade_interpolate(const imaginary_domain_data &data, real
     q[i+1]=res[i];
   }
   
-  std::cerr<<"evaluating."<<std::endl;
+  std::cout<<"evaluating."<<std::endl;
 #pragma omp parallel for default(none) shared(real) firstprivate(q,matsubara_values,matsubara_frequencies,Vinv,real_frequencies,N_real)
   for(int k=0;k<N_real;++k){
     //real.val()[k]=to_simple_precision(evaluate_bary_poly(q, matsubara_values, matsubara_frequencies, Vinv,  pade_mu_,  pade_nu_, imag_frequencies[k]));
