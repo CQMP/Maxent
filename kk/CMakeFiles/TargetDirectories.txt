@@ -1,0 +1,7 @@
+/Users/tchen/Documents/acnotes/kk/CMakeFiles/install/local.dir
+/Users/tchen/Documents/acnotes/kk/CMakeFiles/rebuild_cache.dir
+/Users/tchen/Documents/acnotes/kk/CMakeFiles/kk.dir
+/Users/tchen/Documents/acnotes/kk/CMakeFiles/edit_cache.dir
+/Users/tchen/Documents/acnotes/kk/CMakeFiles/install/strip.dir
+/Users/tchen/Documents/acnotes/kk/CMakeFiles/install.dir
+/Users/tchen/Documents/acnotes/kk/CMakeFiles/list_install_components.dir

@@ -1,0 +1,218 @@
+\documentclass[final,5p,twocolumn,12pt]{elsarticle}
+
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsmath}
+
+\biboptions{sort&compress}
+
+\usepackage{listings}
+\lstset{
+basicstyle=\small\ttfamily,
+columns=flexible,
+breaklines=true
+}
+\usepackage{fancybox}
+\newcommand{\code}[1]{\texttt{#1}}
+\PassOptionsToPackage{normalem}{ulem}
+\usepackage{ulem}
+\usepackage{subfig}
+\usepackage{multirow}
+%prevent alps[core] hyphenation
+\hyphenation{ALPSCore} 
+\hyphenation{ALPS}
+
+\usepackage{colortbl}
+\definecolor{lightgray}{gray}{0.8}
+
+\newcounter{bla}
+\newenvironment{refnummer}{%
+\list{[\arabic{bla}]}%
+{\usecounter{bla}%
+ \setlength{\itemindent}{0pt}%
+ \setlength{\topsep}{0pt}%
+ \setlength{\itemsep}{0pt}%
+ \setlength{\labelsep}{2pt}%
+ \setlength{\listparindent}{0pt}%
+ \settowidth{\labelwidth}{[9]}%
+ \setlength{\leftmargin}{\labelwidth}%
+ \addtolength{\leftmargin}{\labelsep}%
+ \setlength{\rightmargin}{0pt}}}
+ {\endlist}
+ 
+\usepackage{hyperref}
+
+\journal{Computer Physics Communications}
+
+\begin{document}
+
+\newcommand{\ME}{\begin{tt}Maxent\end{tt}}
+\newcommand{\MEsp}{\begin{tt}Maxent\end{tt} }
+\begin{frontmatter}
+
+\title{Implementation of the Sparse Modeling Method for Analytical Continuation}
+
+%% use optional labels to link authors explicitly to addresses:
+%% \author[label1,label2]{<author name>}
+%% \address[label1]{<address>}
+%% \address[label2]{<address>}
+
+\author[a]{Tianran Chen\corref{author}}
+%\author[a,b]{Second Author}
+\author[b]{Emanuel Gull}
+
+\cortext[author] {Corresponding author.\\\textit{E-mail address:} tchen@wcupa.edu}
+\address[a]{Department of Physics, West Chester University, PA 19380, USA}
+\address[b]{Department of Physics, University of Michigan, Ann Arbor, MI 48109, USA}
+
+\begin{abstract}
+We present SpM, a tool for performing analytic continuation of spectral functions using the maximum entropy method. The code operates on discrete imaginary axis datasets (values with uncertainties) and transforms this input to the real axis. The code works for imaginary time and Matsubara frequency data and implements the `Legendre' representation of finite temperature Green's functions. It implements a variety of kernels, default models, and grids for continuing bosonic, fermionic, anomalous, and other data. Our implementation is licensed under GPLv3 and extensively documented. This paper shows the use of the programs in detail.
+\end{abstract}
+
+\begin{keyword}
+Sparse Modeling Method \sep Analytic Continuation
+\end{keyword}
+
+\end{frontmatter}
+
+%%
+%% Start line numbering here if you want
+%%
+% \linenumbers
+
+% Computer program descriptions should contain the following
+% PROGRAM SUMMARY.
+
+{\bf PROGRAM SUMMARY}
+  %Delete as appropriate.
+
+\begin{small}
+\noindent
+{\em Manuscript Title: }   Implementation of the Sparse Modeling Method for Analytic Continuation                                    \\
+{\em Authors: }                       Tianran Chen and Emanuel Gull                         \\
+{\em Program Title: }      SpM                                   \\
+{\em Journal Reference:}                                      \\
+  %Leave blank, supplied by Elsevier.
+{\em Catalogue identifier:}                                   \\
+  %Leave blank, supplied by Elsevier.
+{\em Licensing provisions:}     GPLv3                               \\
+  %enter "none" if CPC non-profit use license is sufficient.
+{\em Programming language: C++}                                   \\
+{\em Operating system:} Tested on Linux and Mac OS X                                    \\
+  %Operating system(s) for which program has been designed.
+{\em RAM:} 10 MB -- 200 MB                                              \\
+  %RAM in bytes required to execute program with typical data.
+{\em Keywords:} Maximum Entropy Method, Analytic Continuation \\
+  % Please give some freely chosen keywords that we can use in a
+  % cumulative keyword index.
+{\em Classification:} 4.9 \\
+  %Classify using CPC Program Library Subject Index, see (
+  % http://cpc.cs.qub.ac.uk/subjectIndex/SUBJECT_index.html)
+  %e.g. 4.4 Feynman diagrams, 5 Computer Algebra.
+{\em External routines/libraries:} ALPSCore \citep{ALPS20}\cite{ALPSCore}, GSL, HDF5 \\
+  % Fill in if necessary, otherwise leave out.
+{\em Nature of problem:
+}The analytic continuation of imaginary axis correlation functions to real frequency/time variables is an ill-posed problem which has an infinite number of solutions. \\
+  %Describe the nature of the problem here.
+   \\
+{\em Solution method: }The sparse modeling method obtains a possible solution that maximizes entropy, enforces sum rules, and otherwise produces `smooth' curves.  Our implementation allows for input in Matsubara frequencies, imaginary time, or a Legendre expansion. It implements a range of bosonic, fermionic and generalized kernels for normal and anomalous Green's functions, self-energies, and two-particle response functions.\\
+  %Describe the method solution here.
+   \\
+{\em Running time: }10s - 2h per solution\\
+  %Give an indication of the typical running time here.
+   \\
+\begin{thebibliography}{0}
+\bibitem{1}B. Bauer, et al., The ALPS project release 2.0: open source software for strongly correlated systems, J. Stat. Mech. Theor. Exp. 2011 (05) (2011) P05001. arXiv:1101.2646, doi:10.1088/1742-5468/2011/ 05/P05001.
+\bibitem{2}A. Gaenko, E. Gull, A. E. Antipov, L. Gamper, G. Carcassi, J. Paki, R. Levy, M. Dolfi, J. Greitemann, J.P.F. LeBlanc, Alpscore: Version 0.5.4doi: 10.5281/zenodo.50203.
+\end{thebibliography}
+\end{small}
+
+%% main text
+\section{Introduction}
+Analytical continuation has been a long-standing problem in quantum many-body physics. In numerical simulations of many-body systems such as quantum Monte Carlo lattice and impurity solvers, correlation functions are usually calculated in the imaginary time formalism; in experiments, however, it's the real frequency response or spectral functions that are measured. To compare with experimental results, one needs to use analytical continuation to convert the numerical data from imaginary to real axis.
+
+Analytical continuation, however, is very sensitive to noise, especially for quantum Monte Carlo (QMC) simulations. Any small fluctuations in the input data, such as Monte Carlo statistical noise or finite precision, may lead to large fluctuations of the output data. For this reason, the standard Pade approximation often generates unphysical solutions. To reduce sensitivity to noise, a variety of alternatives have been proposed, including the maximum entropy method [ref], a constrained optimization procedure [ref], and a number of stochastic methods [ref]. 
+
+In this paper, we will discuss a more recent algorithm: sparse modeling (SpM), which utilizes some of the new techniques developed in data science and information theories. Compared to other methods, SpM proves to have the advantage of obtaining stable and physical real-frequency spectra, by eliminating the redundant variables that may cause overfitting. In the remainder of the paper, we will briefly review the formalism of SpM method and introduce its implementation with examples. Our implementation is part of the ALPS applications and makes use of the core ALPS libraries. 
+
+\section{Sparse Modeling Approach}
+\subsection{Analytic Continuation}
+In diagrammatic perturbation theory and quantum Monte Carlo simulations, Green's function is computed in the imaginary time as $G(\tau)$, with $0<\tau<\beta$, or in the imaginary frequency as $G(i\omega_n)$ through a Fourier transform:
+
+\begin{equation}
+G(i\omega_n)=\int_0^\beta e^{i\omega_n\tau}G(\tau),
+\end{equation}
+where $i\omega_n$ are the Matsubara frequencies: $i\omega_n = 2\pi(n+\frac{1}{2})/\beta$ for fermionic and $i\omega_n=2\pi n/\beta$ for bosonic operators. In the case of fermions, $G(\tau)$ is related to a real frequency Green's function $G(\omega)$ via
+\begin{equation}
+G(\tau) = \frac{1}{\pi}\int_{-\infty}^{\infty}  \frac{d\omega \text{Im}\left[G(\omega)\right]e^{-\tau\omega}}{1+e^{-\beta\omega}}. \label{taucont}
+\end{equation}
+Defining the spectral function
+\begin{equation}
+\mathcal{A}(\omega)=-\dfrac{1}{\pi}\mbox{Im}\left[G(\omega)\right], 
+\end{equation}
+one can formulate Eq.~\ref{taucont} as
+\begin{equation}
+G(\tau)=\int_{-\infty}^{\infty} d\omega\thinspace K(\tau,\omega)\mathcal{A}(\omega),
+\label{eq:G=KA}
+\end{equation}
+where $0\leq\tau\leq\beta\equiv1/T$, and the kernel $K(\tau,\omega)$ is given by 
+\begin{equation}
+K(\tau,\omega) =-\dfrac{e^{-\tau\omega}}{1+e^{-\omega\beta}}.
+\end{equation}
+In analytical continuation, the imaginary time Green's function $G(\tau)$ is the input data (produced from QMC simulations), and $\mathcal{A}(\omega)$, the desired real frequency spectral function, is the output data. Thus, analytical continuation is essentially an inversion problem: for a given input $G(\tau)$, one can infer $\mathcal{A}(\omega)$ from the inverse of the integral. 
+
+However, due to the bad conditioning of kernel $K(\tau,\omega)$, Eq.~\ref{eq:G=KA} becomes very sensitive to noise: even small fluctuations in $G(\tau)$ may lead to large variations of $\mathcal{A}(\omega)$, making it difficult to select the actual solution among a large number of possible spectra. 
+
+Thus, instead of solving for the spectral function exactly, one can approximate it and then evaluate the deviation. For simplicity, we write Eq.~\ref{eq:G=KA} as a linear vector equation: 
+\begin{equation}
+G= K\mathcal{A},
+\end{equation}
+where $G_i\equiv G(\tau_i)$, $K_{ij}\equiv K(\tau_i,\omega_j)$, and $\mathcal{A}_j \equiv \mathcal{A}(\omega_j)\Delta\omega$. Here, $\tau$ is discretized in linear or non-linear manner to $M$ points in the range of $[0:\beta]$, while $\omega$ is discretized to $N$ points in $[-\omega_{max}:\omega_{max}]$. 
+
+
+
+
+
+\label{}
+
+%% The Appendices part is started with the command \appendix;
+%% appendix sections are then done as normal sections
+%% \appendix
+
+%% \section{}
+%% \label{}
+
+%% References
+%%
+%% Following citation commands can be used in the body text:
+%% Usage of \cite is as follows:
+%%   \cite{key}         ==>>  [#]
+%%   \cite[chap. 2]{key} ==>> [#, chap. 2]
+%%
+
+%% References with bibTeX database:
+
+\bibliographystyle{elsarticle-num}
+\bibliography{<your-bib-database>}
+
+%% Authors are advised to submit their bibtex database files. They are
+%% requested to list a bibtex style file in the manuscript if they do
+%% not want to use elsarticle-num.bst.
+
+%% References without bibTeX database:
+
+% \begin{thebibliography}{00}
+
+%% \bibitem must have the following form:
+%%   \bibitem{key}...
+%%
+
+% \bibitem{}
+
+% \end{thebibliography}
+
+
+\end{document}
+
+%%
+%% End of file 
