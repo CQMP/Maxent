@@ -1,0 +1,6 @@
+@Library('alpscore_jenkins_pipeline') _
+
+build_alpscore_app(
+    compilers: 'gcc_5.4.0 clang_5.0.1 intel_18.0.5',
+    mpilibs: 'OpenMPI',
+)
