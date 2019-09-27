@@ -82,6 +82,7 @@ K_(ndat_,nfreq_)
         for (int j=1; j<nfreq_; ++j) {
           double omega = freq[j];
           K_(i,j) = 0.5*omega * (std::exp(-omega*tau) + std::exp(-omega*(1./T_-tau))) / (1 - std::exp(-omega/T_));
+          if(std::isnan(K_(i,j))) K_(i,j)=0; //the limit of the function above for omega -> -Infity
         }
       }
     }
