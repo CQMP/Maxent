@@ -185,6 +185,7 @@ confirmed it numerically.
 | B18 | usability | The default Lorentzian grid is centered at (OMEGA_MIN+OMEGA_MAX)/2. With `OMEGA_MIN=0` (T=0, bosonic) it has almost no points near ω=0 (lowest points 0.82 and 2.06 for NFREQ=200, OMEGA_MAX=10), so spectra with weight at low frequency cannot be fitted. Consider a different default grid when `OMEGA_MIN=0`, or a warning. |
 | B19 | `src/maxent_simulation.cpp` (`levenberg_marquardt`) | The minimizer can diverge. Reproducer: `test/regression/inputs/t_model_quadratic_rise_exp_decay` with `--LAMBDA=1`: from the second α on, Q ≈ 1e26 and norm ≈ 1e8, every α hits `MAX_IT` (258 s); with `--MAX_IT=100` it stops with `Q=NaN, something went wrong`. Also diverges with the quadratic grid and with `OMEGA_MIN=0.2`, so it is not caused by the default model vanishing at ω=0. `LAMBDA=2` converges. Needs step-size control / a trust region. |
 | B20 | `pade/pade_arbitrary_degree/` | Pade does not compile: missing `#include <iostream>`, ALPSCore changed `params::help_requested()`, and `std::complex<mpf_class>` is not supported by libc++ (the standard only allows `std::complex` of floating-point types). Left off (D7). |
+| B21 | `src/` (logging) | Progress and diagnostic messages go to `std::cerr` (25 places in `src/`) with no convention and no verbosity control (issue #46, open since 2018; the old PR #47 `cerr -> cout` was closed as outdated on 2026-09-23). Decide a convention (results/progress to `cout`, warnings/errors to `cerr`), add a verbosity setting, and update the CLI regression references deliberately (they record stdout/stderr). |
 
 ---
 
@@ -324,7 +325,7 @@ After this step, the core library's only Boost dependency is header-only Boost.M
 
 ### 2.3 Code fixes
 
-* Fix B1 through B18 (§1.6), including B7b. B5, B6 and B7 change reachable behavior, so each gets its own commit with a before/after test.
+* Fix B1 through B20 (§1.6), including B7b. B21 (logging convention and verbosity) can go here or into a later step; it changes the CLI regression references on purpose. B5, B6 and B7 change reachable behavior, so each gets its own commit with a before/after test.
 * Remove all `using namespace boost::numeric;` lines, `#include <alps/config.hpp>`, dead commented-out ublas and lapack-bindings code, and the unused `alps::cast`.
 * Make `eigen_hdf5.hpp`/`eigen_lapack.hpp` functions `inline`, or move them into `.cpp` files (B8).
 * Use `Eigen::Index` for loop indices (B14). Consider `BDCSVD` in place of `JacobiSVD` (B11); that one is a numerics change and needs checking against the references.
@@ -581,3 +582,4 @@ make -j8 && ctest     # 6/6 executables, 35 cases pass, ~9 s
 | 2026-09-23 | 2.0 | **Step 2.0 done.** `test/regression/`: 56 cases (11 full, 11 fast, 29 targeted, 4 CLI, components), 1165 datasets, 4.7 MB of references, deterministic. Tolerances measured with four variant builds (-O0, LAPACK, clang 22, GCC 15); all pass. Detection check: the pre-B7 kernel is caught. GSL→Boost Legendre quadrature validated to 2e-16. Found B19 (minimizer divergence). ALPSCore GCC fix submitted as ALPSCore/ALPSCore#667. Not yet in CTest (step 2.1). |
 | 2026-09-23 | 2.1 | **Step 2.1 done.** Build-only source fix committed; CMake rewritten (3.22...4.2, project version 2.0.0, C++17, default Release, `maxent::core` target, `MAXENT_*` options, GoogleTest 1.18.0 via FetchContent, regression suite in CTest, presets, GNUInstallDirs). Bit-identical to the references. See §2.1 for notes. Merged as PR #52 (`ccc3be4`) after two Copilot reviews (4 findings: 3 fixed, 1 kept with explanation; second review: approval recommended). |
 | 2026-09-23 | 2.2 prep | Ready for step 2.2: `modernize/step2` at `ccc3be4` builds against ALPSCore `master` `8d2ed3a9` (C++17, Boost 1.88, found without `Boost_DIR`); 39/39 tests, regression bit-identical (920 + 237 datasets). Note: `~/Projects/ALPSCore/install` currently holds a C++11/Boost 1.81 build that Maxent rejects; use an install of current `master`. |
+| 2026-09-23 | repo | Closed two outdated PRs: #35 (SpM notes, superseded by #45) and #47 (`cerr -> cout`, 2018). Issue #46 (logging to `cerr`) stays open; recorded as B21. |
