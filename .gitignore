@@ -1,78 +1,13 @@
-#everything in folder ignored
+# Build directories
+build*/
+cmake-build-*/
 
-*
-!.gitignore
-!src/maxent_helper.cpp
-!src/maxent_parms.cpp
-!test/parmsTest.cpp
-!test/paramFailureTest.cpp
-!src/maxent_grid.cpp
-!src/maxent_kernel.cpp
-!src/maxent_grid.hpp
-!test/gridTest.cpp
-!src/maxent_kernel.hpp
-!src/maxent_parms.h
-!src/maxent_simulation.cpp
-!test/simulationTest.cpp
-!src/maxent_backcont.cpp
-!src/maxent_backcont.hpp
-!test/backcontTest.cpp
-!src/maxent_matrix_def.hpp
-!src/maxent.cpp
-!src/maxent.h
-!src/default_model.hpp
-!src/default_model.cpp
-!test/default_modelTest.cpp
-!test/write_test_files.hpp
-!src/maxent_legendre_util.cpp
-!src/maxent_legendre_util.hpp
-!CMakeLists.txt
-!cmake/
-!cmake/EnableGtests.cmake
-!doxygen/Doxyfile
-!legendre_convert/legendre_convert.cpp
-!legendre_convert/CMakeLists.txt
-!src/eigen_hdf5.hpp
-!src/eigen_lapack.hpp
-!examples/
-!LICENSE.txt
-!CITATION.md
-!.travis.yml
-!scripts/
-!test/gtest*
-
+# OS and editor files
 .DS_Store
-*.pyc
 *.swp
+.vscode/
+.idea/
 
-#C++ Files
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
-/Debug/
-/Debug/
+# Python
+__pycache__/
+*.pyc

@@ -291,8 +291,7 @@ After this step, the core library's only Boost dependency is header-only Boost.M
   * one job with `USE_LAPACK=ON`
 
   Build ALPSCore from source in CI and cache it.
-* **Replace the allowlist `.gitignore`.** It starts with `*` and re-includes individual files, so every new file (e.g. `test/regression/`, this plan) is silently ignored unless force-added. Replace it with a conventional ignore list **before step 2.0 adds files**.
-* Extend `.gitignore` to cover `build*/`, `submission*`, `theory/`, `.DS_Store`, and Eclipse files. Decide what to do with the local-only directories (`submission/`, `theory/`, `doc/`).
+* **Replace the allowlist `.gitignore`.** Done 2026-09-23: replaced with a minimal ignore list (build dirs, OS/editor files, Python caches). Local-only material (D10) is hidden per clone via `.git/info/exclude`, not in the repository.
 * Remove the dead Pade sources (`main*.cpp`, `lu.cpp`, `pade_interpolator_old.cpp`), or move them to `pade/attic/` if they are still wanted.
 * Update the README: build instructions, dependency list (no GSL), and remove the Travis badge.
 
@@ -527,3 +526,4 @@ make -j8 && ctest     # 6/6 executables, 35 cases pass, ~9 s
 | 2026-09-23 | 0 | Branch audit: `new_alps` and `external_to_ALPS_branch` are fully merged into master (no hidden migration work). `xi_bose_bugfix` holds the B7 fix; `GPLv3` holds an unmerged relicensing attempt. Work branch `modernize/step2` created from master; this plan committed. |
 | 2026-09-23 | 2.3 | Merged `xi_bose_bugfix` into `modernize/step2` (B7 fixed); 6/6 test executables pass. The regression references will therefore include the B7 fix. Local cleanup: deleted local `xi_bose_bugfix`, `GPLv3`, `HiroshiMethod`, `NNLS` (all fully on origin) and `tmp` (its unique commit `7967ffa` kept as tag `archive/tmp`); pruned stale remote-tracking refs. Six old stashes kept (2017 SpM/ADMM work in `stash@{1}`, `stash@{3}`). |
 | 2026-09-23 | lic | Relicensed to MIT in the ALPS format: ALPS "Applications" header with the existing copyright line kept verbatim plus `ALPS Project:` and `SPDX-License-Identifier: MIT` lines (39 C++ files; third-party gtest/FindEigen3 notices untouched); `LICENSE.TXT` (GPL v2) → `LICENSE.txt` (ALPS MIT text, `Copyright 1998-2026 ALPS Collaboration`); `ACKNOWLEDGE.TXT` → `CITATION.md` (ALPS format); README MIT badge and license section; `.zenodo.json` license `MIT`; old Python 2 header scripts and `HEADER.TXT` replaced by `scripts/check_license_headers.py`. Build and 6/6 tests pass. |
+| 2026-09-23 | 2.4 | Allowlist `.gitignore` replaced by a minimal one. In this clone, `doc/`, `submission/`, `submission.zip`, `theory/`, `examples/SpM/`, `pade/pade_arbitrary_degree.zip` and the Eclipse files in `src/` are listed in `.git/info/exclude` (local only) until D10 is decided. |
