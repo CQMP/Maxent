@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 project (MAXENT)
 
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+find_package(Boost CONFIG REQUIRED)
 find_package(ALPSCore 2.0 REQUIRED)
 
 list(APPEND LINK_ALL ${ALPSCore_LIBRARIES})

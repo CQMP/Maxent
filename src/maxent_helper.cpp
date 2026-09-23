@@ -162,7 +162,7 @@ double MaxEntHelper::chi_scale_factor(vector_type A, const double chi_sq, const 
 {
   for (unsigned int i=0; i<A.size(); ++i) 
     A[i] *= delta_omega(i);
-  using namespace boost::numeric;
+
   matrix_type L = maxent_prec_prod_trans(K(), K());
   for (unsigned int i=0; i<L.rows(); ++i)
     for (unsigned int j=0; j<L.cols(); ++j)

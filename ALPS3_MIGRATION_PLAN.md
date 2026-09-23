@@ -184,6 +184,7 @@ confirmed it numerically.
 | B17 | `src/maxent_kernel.cpp` (`setup_legendre_kernel`) | The Legendre **bosonic** kernel uses the fermionic integrand (1+e^{−βω} denominator); it is bit-identical to the fermionic kernel (confirmed with the component dump). |
 | B18 | usability | The default Lorentzian grid is centered at (OMEGA_MIN+OMEGA_MAX)/2. With `OMEGA_MIN=0` (T=0, bosonic) it has almost no points near ω=0 (lowest points 0.82 and 2.06 for NFREQ=200, OMEGA_MAX=10), so spectra with weight at low frequency cannot be fitted. Consider a different default grid when `OMEGA_MIN=0`, or a warning. |
 | B19 | `src/maxent_simulation.cpp` (`levenberg_marquardt`) | The minimizer can diverge. Reproducer: `test/regression/inputs/t_model_quadratic_rise_exp_decay` with `--LAMBDA=1`: from the second α on, Q ≈ 1e26 and norm ≈ 1e8, every α hits `MAX_IT` (258 s); with `--MAX_IT=100` it stops with `Q=NaN, something went wrong`. Also diverges with the quadratic grid and with `OMEGA_MIN=0.2`, so it is not caused by the default model vanishing at ω=0. `LAMBDA=2` converges. Needs step-size control / a trust region. |
+| B20 | `pade/pade_arbitrary_degree/` | Pade does not compile: missing `#include <iostream>`, ALPSCore changed `params::help_requested()`, and `std::complex<mpf_class>` is not supported by libc++ (the standard only allows `std::complex` of floating-point types). Left off (D7). |
 
 ---
 
@@ -256,6 +257,11 @@ the observed spread times a safety margin. Record the chosen values in
 `MANIFEST.md`.
 
 ### 2.1 CMake modernization
+
+Decisions (2026-09-23): project version **2.0.0**; default build type
+**Release**; old option names (`Testing`, `PADE`, `USE_LAPACK`) are **dropped**,
+not aliased; GoogleTest via `FetchContent`, pinned to the **newest release
+(1.18.0)**; Pade stays off and broken for now (B20, D7).
 
 * One top-level `cmake_minimum_required(VERSION 3.22)`, matching ALPS 3.0. Subdirectories drop their own `cmake_minimum_required`/`project()` or become proper subprojects.
 * `set(CMAKE_CXX_STANDARD 17)`, `CMAKE_CXX_STANDARD_REQUIRED ON`, `CMAKE_CXX_EXTENSIONS OFF`.

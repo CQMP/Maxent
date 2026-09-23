@@ -228,7 +228,7 @@ void ContiParameters::read_covariance_matrix_from_text_file(
 }
 
 void ContiParameters::decompose_covariance_matrix(const alps::params& p){
-  using namespace boost::numeric;
+
     vector_type var(ndat());
     //bindings::lapack::syev('V', bindings::upper(cov_) , var, bindings::lapack::optimal_workspace()); 
     //TODO: check if this truly implements lapack's expected overwrite of cov_
@@ -273,7 +273,7 @@ void ContiParameters::decompose_covariance_matrix(const alps::params& p){
 }
 
 void MaxEntParameters::compute_minimal_chi2()const {
-  using namespace boost::numeric;
+
   matrix_type Ut = U_.transpose(); //U^T has dimension ns_*ndat()
   vector_type t = maxent_prec_prod(Ut, y_); //t has dimension ns_
   vector_type y2 = maxent_prec_prod(U_, t); //y2 has dimension ndat(), which is dimension of y
