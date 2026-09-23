@@ -1,0 +1,33 @@
+{
+  "description": "Rules are matched in order against '<case>:<dataset>'; the first match applies. A dataset passes if max|a-b| <= atol + rtol * max|reference|. Values are about 10x the largest difference observed between the reference build and four variant builds of the same source (AppleClang -O0, LAPACK SVD, clang 22, GCC 15), rounded up; see PROVENANCE.md. The Legendre example is extremely ill-conditioned (minimal chi2 ~ 1e-17) and gets looser rules for its alpha probabilities and Ng.",
+  "rules": [
+    {"pattern": ":cli/", "atol": 0, "rtol": 0,
+     "why": "command-line output and exit code must not change"},
+    {"pattern": ":log/scalars/(n_singular|max_it_warnings)$", "atol": 0, "rtol": 0,
+     "why": "counts; identical in all variants"},
+    {"pattern": ":log/scalars/minimal_chi2$", "atol": 1e-12, "rtol": 1e-6,
+     "why": "values below ~1e-12 are rounding noise (observed relative differences up to 1 at 1e-17)"},
+    {"pattern": ":log/scalars/posterior_probability$", "atol": 1e-30, "rtol": 2e-4,
+     "why": "observed 2.1e-5; values below 1e-30 are rounding noise (Legendre: 1e-43)"},
+    {"pattern": "^legendre[^:]*:log/scalars/ng$", "atol": 0, "rtol": 0.3,
+     "why": "Legendre: observed 2.9e-2 (GCC 15)"},
+    {"pattern": ":log/scalars/ng$", "atol": 0, "rtol": 1e-3,
+     "why": "observed 5.6e-5"},
+    {"pattern": "^legendre[^:]*:.*(alpha/probability|\\.prob\\.dat)$", "atol": 0, "rtol": 3e-2,
+     "why": "Legendre: observed 2.8e-3 (GCC 15)"},
+    {"pattern": "(alpha/probability|\\.prob\\.dat)$", "atol": 0, "rtol": 1e-3,
+     "why": "observed 5.9e-5 (LAPACK)"},
+    {"pattern": "^legendre[^:]*:.*spectrum/variance$", "atol": 1e-13, "rtol": 3e-4,
+     "why": "Legendre: the variance over alpha is <= 5e-15 (rounding noise); observed 5.3e-16"},
+    {"pattern": "spectrum/variance$", "atol": 1e-20, "rtol": 3e-4,
+     "why": "observed 2.3e-5; Legendre variance is ~1e-24 (rounding noise)"},
+    {"pattern": "^components:.*svd_", "atol": 0, "rtol": 1e-13,
+     "why": "singular values; observed 2.1e-15 (LAPACK)"},
+    {"pattern": "^components:", "atol": 0, "rtol": 1e-14,
+     "why": "kernels, grids, default models; observed 5.5e-16"},
+    {"pattern": "\\.chi2\\.dat$", "atol": 0, "rtol": 1e-7,
+     "why": "observed 1.7e-9"},
+    {"pattern": ":files/", "atol": 1e-15, "rtol": 2e-6,
+     "why": "spectra, back-continuations, grids, all other outputs; observed 1.5e-7 (GCC 15, u2_time_fast)"}
+  ]
+}

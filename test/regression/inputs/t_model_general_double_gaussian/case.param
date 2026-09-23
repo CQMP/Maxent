@@ -1,0 +1,12 @@
+BETA=5.0
+NFREQ=200
+N_ALPHA=20
+NDAT=24
+DATASPACE=frequency
+KERNEL=fermionic
+PARTICLE_HOLE_SYMMETRY=true
+DATA="data.dat"
+DEFAULT_MODEL="general double gaussian"
+SIGMA=1
+SHIFT=1
+BOSE_NORM=0.5

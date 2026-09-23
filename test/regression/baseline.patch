@@ -1,0 +1,73 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ef78ecc..2218732 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.1)
+ project (MAXENT)
+ 
+ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
++find_package(Boost CONFIG REQUIRED)
+ find_package(ALPSCore 2.0 REQUIRED)
+ 
+ list(APPEND LINK_ALL ${ALPSCore_LIBRARIES})
+diff --git a/src/maxent_helper.cpp b/src/maxent_helper.cpp
+index 25db1e6..0e4ad3f 100644
+--- a/src/maxent_helper.cpp
++++ b/src/maxent_helper.cpp
+@@ -162,7 +162,7 @@ double MaxEntHelper::chi_scale_factor(vector_type A, const double chi_sq, const
+ {
+   for (unsigned int i=0; i<A.size(); ++i) 
+     A[i] *= delta_omega(i);
+-  using namespace boost::numeric;
++
+   matrix_type L = maxent_prec_prod_trans(K(), K());
+   for (unsigned int i=0; i<L.rows(); ++i)
+     for (unsigned int j=0; j<L.cols(); ++j)
+diff --git a/src/maxent_kernel.cpp b/src/maxent_kernel.cpp
+index 1a5efc0..89ff405 100644
+--- a/src/maxent_kernel.cpp
++++ b/src/maxent_kernel.cpp
+@@ -25,7 +25,7 @@ nfreq_(p["NFREQ"]),
+ T_(1./static_cast<double>(p["BETA"])),
+ K_(ndat_,nfreq_)
+ {
+-  using namespace boost::numeric;
++
+   //K_.clear();
+   K_=matrix_type::Zero(ndat_,nfreq_);
+   std::string dataspace_name = p["DATASPACE"];
+diff --git a/src/maxent_params.cpp b/src/maxent_params.cpp
+index 79f52a4..3bf9e12 100644
+--- a/src/maxent_params.cpp
++++ b/src/maxent_params.cpp
+@@ -228,7 +228,7 @@ void ContiParameters::read_covariance_matrix_from_text_file(
+ }
+ 
+ void ContiParameters::decompose_covariance_matrix(const alps::params& p){
+-  using namespace boost::numeric;
++
+     vector_type var(ndat());
+     //bindings::lapack::syev('V', bindings::upper(cov_) , var, bindings::lapack::optimal_workspace()); 
+     //TODO: check if this truly implements lapack's expected overwrite of cov_
+@@ -273,7 +273,7 @@ void ContiParameters::decompose_covariance_matrix(const alps::params& p){
+ }
+ 
+ void MaxEntParameters::compute_minimal_chi2()const {
+-  using namespace boost::numeric;
++
+   matrix_type Ut = U_.transpose(); //U^T has dimension ns_*ndat()
+   vector_type t = maxent_prec_prod(Ut, y_); //t has dimension ns_
+   vector_type y2 = maxent_prec_prod(U_, t); //y2 has dimension ndat(), which is dimension of y
+diff --git a/src/maxent_simulation.cpp b/src/maxent_simulation.cpp
+index 9bd46f2..f98cad3 100644
+--- a/src/maxent_simulation.cpp
++++ b/src/maxent_simulation.cpp
+@@ -361,7 +361,7 @@ void MaxEntSimulation::evaluate(){
+ // 
+ vector_type MaxEntSimulation::levenberg_marquardt(vector_type u, const double alpha) const
+ {
+-  using namespace boost::numeric;
++
+   double mu = 1e-18;
+   const double nu = 1.3;
+   double Q1=0.;

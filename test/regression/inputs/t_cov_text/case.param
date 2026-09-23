@@ -1,0 +1,8 @@
+BETA=5.0
+NFREQ=200
+N_ALPHA=20
+NDAT=33
+DATASPACE=time
+KERNEL=fermionic
+DATA="data.dat"
+COVARIANCE_MATRIX="cov.dat"
