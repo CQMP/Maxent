@@ -180,6 +180,10 @@ confirmed it numerically.
 | B14 | throughout | `std::size_t` vs `Eigen::Index` sign-compare in about 40 loops. |
 | B15 | `src/maxent_grid.cpp` (log grid) | Intermediate `float` casts reduce the precision of the log grid. |
 | B16 | `src/maxent.cpp:67` vs `src/maxent_grid.cpp:25` | `--help.grids` advertises `half-lorentzian` with `CUT=0.1`, but the grid code only accepts `half lorentzian` (with a space) and the defined default is `CUT=0.01`. A user following the help text gets "No valid frequency grid specified". Fix: accept both spellings and print the real default. |
+| B7b | `src/maxent_kernel.cpp` (time bosonic) | The B7 fix sets **column 0** to the ω→0 limit T, but column 0 is the lowest grid frequency, not ω=0. With `OMEGA_MIN=0` the error is small (0.2 vs 0.2065 at ω=0.125, β=5); with a symmetric grid column 0 is ω=−OMEGA_MAX and T is badly wrong. Confirmed with the component dump. Fix: evaluate the formula everywhere, using the limit only for \|ω\| below a small threshold (or a series expansion). |
+| B17 | `src/maxent_kernel.cpp` (`setup_legendre_kernel`) | The Legendre **bosonic** kernel uses the fermionic integrand (1+e^{−βω} denominator); it is bit-identical to the fermionic kernel (confirmed with the component dump). |
+| B18 | usability | The default Lorentzian grid is centered at (OMEGA_MIN+OMEGA_MAX)/2. With `OMEGA_MIN=0` (T=0, bosonic) it has almost no points near ω=0 (lowest points 0.82 and 2.06 for NFREQ=200, OMEGA_MAX=10), so spectra with weight at low frequency cannot be fitted. Consider a different default grid when `OMEGA_MIN=0`, or a warning. |
+| B19 | `src/maxent_simulation.cpp` (`levenberg_marquardt`) | The minimizer can diverge. Reproducer: `test/regression/inputs/t_model_quadratic_rise_exp_decay` with `--LAMBDA=1`: from the second α on, Q ≈ 1e26 and norm ≈ 1e8, every α hits `MAX_IT` (258 s); with `--MAX_IT=100` it stops with `Q=NaN, something went wrong`. Also diverges with the quadratic grid and with `OMEGA_MIN=0.2`, so it is not caused by the default model vanishing at ω=0. `LAMBDA=2` converges. Needs step-size control / a trust region. |
 
 ---
 
@@ -272,7 +276,7 @@ the observed spread times a safety margin. Record the chosen values in
 | Item | Action | Notes |
 |---|---|---|
 | `cmake/FindGSL.cmake` | Delete; it uses the deprecated `EXEC_PROGRAM` (CMake dev warnings). If GSL stays anywhere, use CMake's built-in `FindGSL` → `GSL::gsl`. | |
-| GSL (core, one `gsl_integration_qag` call) | Replace with `boost::math::quadrature::gauss_kronrod` (header-only; ALPS ships Boost anyway) | Validate against GSL references (2.0). **Performance:** the Legendre example took 111 s with a naive swap. Profile it, cache `legendre_p` via recurrence, use an adaptive depth, or parallelize over (l, j). |
+| GSL (core, one `gsl_integration_qag` call) | Replace with `boost::math::quadrature::gauss_kronrod` (header-only; ALPS ships Boost anyway) | **Validated in 2.0:** `boost::math::quadrature::gauss_kronrod<double,61>` reproduces the GSL Legendre kernels to 2e-16 (machine precision). **Performance:** the Legendre example takes 55 s with GSL and 111 s with the naive Boost swap; the replacement must at least match GSL. Profile it, cache `legendre_p` via recurrence, use an adaptive depth, or parallelize over (l, j). |
 | GSL (`kk`, cubic spline) | Replace with a small natural-cubic-spline implementation, or `boost::math::interpolators::cardinal_cubic_b_spline` (needs a uniform grid; check), or keep GSL optional for `kk` only | Decide per [§6](#6-open-decisions) D6. |
 | `boost::shared_ptr` | `std::shared_ptr` / `std::unique_ptr` (the default model is owned uniquely) | mechanical |
 | `boost::lexical_cast<std::string>(int)` | `std::to_string` | mechanical |
@@ -288,7 +292,7 @@ After this step, the core library's only Boost dependency is header-only Boost.M
 
 ### 2.3 Code fixes
 
-* Fix B1 through B16 (§1.6). B5, B6 and B7 change reachable behavior, so each gets its own commit with a before/after test.
+* Fix B1 through B18 (§1.6), including B7b. B5, B6 and B7 change reachable behavior, so each gets its own commit with a before/after test.
 * Remove all `using namespace boost::numeric;` lines, `#include <alps/config.hpp>`, dead commented-out ublas and lapack-bindings code, and the unused `alps::cast`.
 * Make `eigen_hdf5.hpp`/`eigen_lapack.hpp` functions `inline`, or move them into `.cpp` files (B8).
 * Use `Eigen::Index` for loop indices (B14). Consider `BDCSVD` in place of `JacobiSVD` (B11); that one is a numerics change and needs checking against the references.
@@ -541,3 +545,5 @@ make -j8 && ctest     # 6/6 executables, 35 cases pass, ~9 s
 | 2026-09-23 | 2.4 | Allowlist `.gitignore` replaced by a minimal one. In this clone, `doc/`, `submission/`, `submission.zip`, `theory/`, `examples/SpM/`, `pade/pade_arbitrary_degree.zip` and the Eclipse files in `src/` are listed in `.git/info/exclude` (local only) until D10 is decided. |
 | 2026-09-23 | 2.4 | Deleted local-only `doc/`, `submission/`, `submission.zip`, `theory/`, `examples/SpM/`, the Eclipse files in `src/` and `pade/pade_arbitrary_degree.zip` (none were tracked). D10 resolved; `.git/info/exclude` back to its default. |
 | 2026-09-23 | 2.0 | Dry run of the reference generation. Confirmed that CLI overrides (`--NFREQ=…`) work with parameter files. Found 11 (not 10) example runs, a filename-case bug in `examples/Legendre/in.param` (fixed), and B16. Fast-set sizes agreed. |
+| 2026-09-23 | 2.0 | Reference generation started: baseline worktree at `6ba7250` + `baseline.patch`, GSL build; 56 cases (11 full, 11 fast, 29 targeted, 4 CLI, components) deterministic (two runs: 1209 datasets, 0 differences). Found B7b, B17, B18. Confirmed B3 (GCC on arm64: `unrecognized command-line option '-msse2'`). ALPSCore does not build with GCC 15 (missing `<algorithm>` in `params_impl.hpp`); fix and upstream PR delegated. Variant builds (-O0, LAPACK, clang 22, GCC 15) for tolerance measurement. |
+| 2026-09-23 | 2.0 | **Step 2.0 done.** `test/regression/`: 56 cases (11 full, 11 fast, 29 targeted, 4 CLI, components), 1165 datasets, 4.7 MB of references, deterministic. Tolerances measured with four variant builds (-O0, LAPACK, clang 22, GCC 15); all pass. Detection check: the pre-B7 kernel is caught. GSL→Boost Legendre quadrature validated to 2e-16. Found B19 (minimizer divergence). ALPSCore GCC fix submitted as ALPSCore/ALPSCore#667. Not yet in CTest (step 2.1). |
