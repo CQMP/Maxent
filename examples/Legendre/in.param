@@ -2,7 +2,7 @@ BETA = 2                  #inverse temperature
 NDAT = 10                 #num of data points
 DATASPACE=Legendre        #!$G(\ell)$!
 KERNEL=fermionic          #!\underline{fermionic}! values
-DATA=gl.dat               #location of data file
+DATA=Gl.dat               #location of data file
 PARTICLE_HOLE_SYMMETRY=true  #This example has PH symmetry
 NFREQ=5000                #increase omega grid for better
                           #integration and convergence
