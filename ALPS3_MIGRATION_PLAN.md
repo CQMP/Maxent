@@ -356,7 +356,7 @@ ALPS 3.0 only has the ALPS-2-era ancestors of those pieces.
    * The test `maxent_linear_grid_numeric` (`tool/CMakeLists.txt:91-94`).
 
    Our binary name, class names (global namespace) and features overlap. **Integration must replace or rename, not add.** Existing pyalps users call `AnalyticContinuation(dict)` with the legacy parameter names.
-2. **Licensing.** Maxent's `LICENSE.TXT` is **GPL v2**. `kk.cpp` and `legendre_convert.cpp` headers say GPL v2 *or later*. The `src/` headers say "ALPS Collaboration … see LICENSE.TXT". **ALPS 3.0 is MIT** (SPDX headers), and ALPSCore is now MIT as well. Merging GPL code into ALPS would force GPL onto the combined work, which ALPS will not accept. **Relicensing to MIT needs agreement from the copyright holders.** Git authorship: Ryan Levy (273 commits), Emanuel Gull (61), Alexander Gaenko (10), Petar Bakalov (6), James LeBlanc (1), xichenli (1). This blocks step 5, not steps 2–4.
+2. **Licensing (resolved 2026-09-23).** All authors agreed to relicense. Maxent is now MIT and uses the ALPS header convention (`ALPS Project:` + `SPDX-License-Identifier: MIT`), so it is license-compatible with ALPS 3.0. `scripts/check_license_headers.py` enforces the headers.
 3. **Output compatibility.** The legacy ALPS maxent writes a different `.out.h5` layout than ours, and pyalps plotting helpers may assume the legacy layout. This needs checking in step 5.
 4. **Global namespace.** Maxent classes (`grid`, `kernel`, `Backcont`, `DefaultModel`, `Model`, `Gaussian`, …) and typedefs (`matrix_type`, `vector_type`) live in the global namespace. The legacy ALPS maxent uses the same names. Before the two can share a build, everything goes into `namespace alps::maxent` (or `maxent`).
 
@@ -365,7 +365,6 @@ ALPS 3.0 only has the ALPS-2-era ancestors of those pieces.
 | Risk | Severity | Likelihood | Mitigation |
 |---|---|---|---|
 | Parameter semantics and file format differ | high | certain | Maxent-owned params (§4.1) with a regression suite over all example files |
-| GPL → MIT relicensing not obtained | high (blocks step 5) | unknown | Start contacting contributors now (D1) |
 | Collision with legacy ALPS `maxent` / pyalps users | medium | certain | Coordinate with ALPS maintainers; offer a compatibility shim (§5.3) |
 | Eigen as a new ALPS dependency | medium | certain | Optional component, found or fetched (D3) |
 | HDF5 archive subtle differences (Eigen traits, chunking, HDF5 2.x) | low–medium | possible | HDF5 seam plus the layout test (§2.0/5) |
@@ -433,7 +432,7 @@ coexists with it in a controlled way.
 
 ### 5.1 Preconditions
 
-* Relicensing to MIT is done (D1), and all Maxent files carry the ALPS SPDX header.
+* Relicensing to MIT is done (D1, resolved), and all Maxent files carry the ALPS SPDX header. Keep `scripts/check_license_headers.py` passing.
 * Agreement with the ALPS maintainers on placement, naming, Eigen, and what happens to the legacy tool (D2–D4). Follow `CONTRIBUTING.md` and the repo's `CLAUDE.md`/`AGENTS.md`.
 
 ### 5.2 Layout (proposal)
@@ -483,7 +482,7 @@ Recommended path:
 
 | ID | Decision | Needed by | Recommendation |
 |---|---|---|---|
-| D1 | Relicense Maxent GPL v2 → MIT (needs the contributors' consent) | step 5 (start now; it has lead time) | Yes. Contact Levy, LeBlanc, Gaenko, Bakalov, and xichenli. Note: the unmerged `origin/GPLv3` branch (23 commits, 2017–2018, Ryan Levy) moved toward GPLv3, so the license history must be settled first. |
+| D1 | Relicense Maxent GPL v2 → MIT | step 5 | **Resolved 2026-09-23:** all authors agreed; Maxent is MIT in the ALPS format (see §3.3 item 2). The GPL v2 license and the unmerged GPLv3 attempt are superseded. |
 | D2 | Replace the legacy ALPS `tool/maxent`, or coexist | step 5 | Replace, with a one-release `maxent_legacy` deprecation window |
 | D3 | Eigen as a new ALPS dependency, or port numerics to ublas/LAPACK | step 4/5 | Keep Eigen (header-only; find, else FetchContent). A port would be large and risky. |
 | D4 | Location in ALPS: `applications/maxent` vs `tool/maxent` | step 5 | `applications/maxent` (it is a full application with utilities and tests) |
@@ -527,3 +526,4 @@ make -j8 && ctest     # 6/6 executables, 35 cases pass, ~9 s
 | 2026-09-23 | 2.0 | ALPSCore reinstalled from master (see D9). Maxent (only the `boost::numeric` fix, Boost found first, policy flag, **original GSL code**) builds incl. `kk` and passes 6/6 test executables against it. |
 | 2026-09-23 | 0 | Branch audit: `new_alps` and `external_to_ALPS_branch` are fully merged into master (no hidden migration work). `xi_bose_bugfix` holds the B7 fix; `GPLv3` holds an unmerged relicensing attempt. Work branch `modernize/step2` created from master; this plan committed. |
 | 2026-09-23 | 2.3 | Merged `xi_bose_bugfix` into `modernize/step2` (B7 fixed); 6/6 test executables pass. The regression references will therefore include the B7 fix. Local cleanup: deleted local `xi_bose_bugfix`, `GPLv3`, `HiroshiMethod`, `NNLS` (all fully on origin) and `tmp` (its unique commit `7967ffa` kept as tag `archive/tmp`); pruned stale remote-tracking refs. Six old stashes kept (2017 SpM/ADMM work in `stash@{1}`, `stash@{3}`). |
+| 2026-09-23 | lic | Relicensed to MIT in the ALPS format: ALPS "Applications" header with the existing copyright line kept verbatim plus `ALPS Project:` and `SPDX-License-Identifier: MIT` lines (39 C++ files; third-party gtest/FindEigen3 notices untouched); `LICENSE.TXT` (GPL v2) → `LICENSE.txt` (ALPS MIT text, `Copyright 1998-2026 ALPS Collaboration`); `ACKNOWLEDGE.TXT` → `CITATION.md` (ALPS format); README MIT badge and license section; `.zenodo.json` license `MIT`; old Python 2 header scripts and `HEADER.TXT` replaced by `scripts/check_license_headers.py`. Build and 6/6 tests pass. |

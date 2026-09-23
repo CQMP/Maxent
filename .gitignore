@@ -35,10 +35,8 @@
 !src/eigen_hdf5.hpp
 !src/eigen_lapack.hpp
 !examples/
-!LICENSE.TXT
-!ACKNOWLEDGE.TXT
-!COPYRIGHT.TXT
-!HEADER.TXT
+!LICENSE.txt
+!CITATION.md
 !.travis.yml
 !scripts/
 !test/gtest*

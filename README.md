@@ -1,6 +1,7 @@
 Maxent
 ======
 [![Build Status](https://travis-ci.org/CQMP/Maxent.svg?branch=master)](https://travis-ci.org/CQMP/Maxent)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.txt)
 
 The Maxent Project: A utility for performing analytic continuation using the method of Maximum Entropy.
 
@@ -32,6 +33,7 @@ Table of Contents
     * [Pade](#pade)
     * [Kramers-Kronig](#kramers-kronig)
     * [Legendre Convert](#legendre-convert)
+  * [License and citations](#license-and-citations)
 
 ## Requirements
 
@@ -176,3 +178,7 @@ Requires: Boost
 ### Pade
 Requires: [GMP](https://gmplib.org/),[Eigen3.1](http://eigen.tuxfamily.org/index.php?title=Main_Page)
 Because Pade requires GMP, it does not build automatically. To include it in your build, either run `cmake` from the pade folder, or in your `maxent` build folder add `-DPADE=1` to the`cmake` command 
+
+## License and citations
+
+Maxent is distributed under the terms in [LICENSE.txt](LICENSE.txt). See [CITATION.md](CITATION.md) for citation guidance.
