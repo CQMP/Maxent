@@ -179,6 +179,7 @@ confirmed it numerically.
 | B13 | `src/maxent.cpp:88` | Uses the deprecated `params::get_origin_name()`. |
 | B14 | throughout | `std::size_t` vs `Eigen::Index` sign-compare in about 40 loops. |
 | B15 | `src/maxent_grid.cpp` (log grid) | Intermediate `float` casts reduce the precision of the log grid. |
+| B16 | `src/maxent.cpp:67` vs `src/maxent_grid.cpp:25` | `--help.grids` advertises `half-lorentzian` with `CUT=0.1`, but the grid code only accepts `half lorentzian` (with a space) and the defined default is `CUT=0.01`. A user following the help text gets "No valid frequency grid specified". Fix: accept both spellings and print the real default. |
 
 ---
 
@@ -206,8 +207,8 @@ Measured facts that the design relies on:
 
 | Set | Cases | Quantities |
 |---|---|---|
-| Full examples (CTest label `regression-full`, opt-in) | 10 runs: U0 freq/τ, U2 freq/time/self, Bosonic, Bosonic PH, Legendre, Self Energy U1/U10 | HDF5: `/alpha/{values,probability}`, `/spectrum/{omega,average,maximum,chi,variance}`, `bosonic`/`anomalous` groups. Text-only: χ²(α), `*_back.dat`, `fits.dat`, `*_self.dat`, bosonic spectra. Log scalars: minimal χ², number of singular values, posterior probability of the default model, Ng, χ scale factor. Not captured: `spex.dat`. |
-| Fast set (default `ctest`) | Reduced `NFREQ`/`N_ALPHA`/`NDAT` variants of the above, about 1–2 s each | same |
+| Full examples (CTest label `regression-full`, opt-in) | 11 runs: U0 `in`/`in_tau`; U2 `frequency`/`time`/`self`; Bosonic `bosonic`/`bosonic_ph`; Legendre `in`; Self Energy `U1/in`, `U10/in`, `U10/green` | HDF5: `/alpha/{values,probability}`, `/spectrum/{omega,average,maximum,chi,variance}`, `bosonic`/`anomalous` groups. Text-only: χ²(α), `*_back.dat`, `fits.dat`, `*_self.dat`, bosonic spectra. Log scalars: minimal χ², number of singular values, posterior probability of the default model, Ng, χ scale factor. Not captured: `spex.dat`. |
+| Fast set (default `ctest`) | The same 11 inputs with command-line overrides `--NFREQ=200 --N_ALPHA=20` (Legendre `--NFREQ=500`); `NDAT` unchanged (truncating τ data changes the physics). About 1–2 s each. | same |
 | Targeted cases | Covariance (text, HDF5); `DATA_IN_HDF5`; `X_i`/`SIGMA_i` input; explicit `TAU_i`; T=0, time-bosonic, anomalous (PH and non-PH) kernels; every default model incl. tabulated; every grid; `MODEL_RUNS` (varspec) | same, plus a component harness that dumps the kernel matrix, its singular values, the grid and the discretized default model for small sizes |
 | CLI snapshots | `--help`, `--help.models`, `--help.grids`, missing-parameter error | exact text (exit codes once B1 is fixed) |
 
@@ -216,8 +217,19 @@ Not captured:
 * `GENERATE_ERR`: seeded from the clock (B10). It gets a reference after the seed parameter is added.
 * The LAPACK SVD path: compared against the Eigen results within tolerance, with no separate reference.
 
-Cases that run through suspected bugs (B5–B7) record current behavior and are
-flagged in the manifest.
+Cases that run through suspected bugs record current behavior and are flagged
+in the manifest. The baseline is `modernize/step2`, so it already contains the
+B7 fix (merged from `xi_bose_bugfix`). Grid cases use the spelling the code
+accepts (`half lorentzian`, see B16).
+
+**Builds**
+
+* Reference build: the baseline in a `git worktree`, plus `baseline.patch`, with GSL 2.8 and ALPSCore `3606edfb`.
+* Variant builds, used only to measure tolerances:
+  * AppleClang Debug with `-O0`
+  * `clang++-mp-22`
+  * `g++-mp-15` (needs a second ALPSCore built with GCC, because GCC's libstdc++ can't link against the libc++ ALPSCore; `-msse2` removed, B3)
+  * `USE_LAPACK=1`
 
 **Layout and documentation** (`test/regression/`)
 
@@ -276,7 +288,7 @@ After this step, the core library's only Boost dependency is header-only Boost.M
 
 ### 2.3 Code fixes
 
-* Fix B1 through B15 (§1.6). B5, B6 and B7 change reachable behavior, so each gets its own commit with a before/after test.
+* Fix B1 through B16 (§1.6). B5, B6 and B7 change reachable behavior, so each gets its own commit with a before/after test.
 * Remove all `using namespace boost::numeric;` lines, `#include <alps/config.hpp>`, dead commented-out ublas and lapack-bindings code, and the unused `alps::cast`.
 * Make `eigen_hdf5.hpp`/`eigen_lapack.hpp` functions `inline`, or move them into `.cpp` files (B8).
 * Use `Eigen::Index` for loop indices (B14). Consider `BDCSVD` in place of `JacobiSVD` (B11); that one is a numerics change and needs checking against the references.
@@ -528,3 +540,4 @@ make -j8 && ctest     # 6/6 executables, 35 cases pass, ~9 s
 | 2026-09-23 | lic | Relicensed to MIT in the ALPS format: ALPS "Applications" header with the existing copyright line kept verbatim plus `ALPS Project:` and `SPDX-License-Identifier: MIT` lines (39 C++ files; third-party gtest/FindEigen3 notices untouched); `LICENSE.TXT` (GPL v2) → `LICENSE.txt` (ALPS MIT text, `Copyright 1998-2026 ALPS Collaboration`); `ACKNOWLEDGE.TXT` → `CITATION.md` (ALPS format); README MIT badge and license section; `.zenodo.json` license `MIT`; old Python 2 header scripts and `HEADER.TXT` replaced by `scripts/check_license_headers.py`. Build and 6/6 tests pass. |
 | 2026-09-23 | 2.4 | Allowlist `.gitignore` replaced by a minimal one. In this clone, `doc/`, `submission/`, `submission.zip`, `theory/`, `examples/SpM/`, `pade/pade_arbitrary_degree.zip` and the Eclipse files in `src/` are listed in `.git/info/exclude` (local only) until D10 is decided. |
 | 2026-09-23 | 2.4 | Deleted local-only `doc/`, `submission/`, `submission.zip`, `theory/`, `examples/SpM/`, the Eclipse files in `src/` and `pade/pade_arbitrary_degree.zip` (none were tracked). D10 resolved; `.git/info/exclude` back to its default. |
+| 2026-09-23 | 2.0 | Dry run of the reference generation. Confirmed that CLI overrides (`--NFREQ=…`) work with parameter files. Found 11 (not 10) example runs, a filename-case bug in `examples/Legendre/in.param` (fixed), and B16. Fast-set sizes agreed. |
