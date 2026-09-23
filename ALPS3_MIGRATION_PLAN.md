@@ -25,6 +25,10 @@ Reference trees used for this analysis:
 
 ## 1. Current state (Step 1, done)
 
+*This section is a snapshot of the baseline (`a399253`, 2026-09-23). Later
+changes are recorded in the work log (Appendix B); removed components are
+marked as such.*
+
 ### 1.1 Repository inventory
 
 | Component | Path | LOC | Built by default | ALPSCore use | Other deps |
@@ -34,11 +38,11 @@ Reference trees used for this analysis:
 | Unit tests | `test/*Test.cpp` (6 files) | ~1,640 | yes (`Testing=ON`) | params, hdf5, `temporary_filename` | bundled Google Test (`gtest-all.cc`, 21k-line `gtest.h`) |
 | `kk` (Kramers–Kronig) | `kk/kk.cpp` | 209 | yes | **none** | GSL (spline), Boost.ProgramOptions, OpenMP |
 | `legendre_convert` | `legendre_convert/` | 579 | yes | **none** (links `ALPSCore_LIBRARIES` for no reason) | Boost (program_options, random, math) |
-| `pade` | `pade/pade_arbitrary_degree/` | ~1,300 | no (`-DPADE=1`) | `alps::params` (subclassed), `alps::numeric::matrix` in unbuilt files | GMP, Eigen3, Boost.ProgramOptions **Removed 2026-09-23 (D7).** |
+| ~~`pade`~~ | ~~`pade/pade_arbitrary_degree/`~~ | — | — | — | **Removed** (D7, 2026-09-23). At baseline: ~1,300 LOC, off by default, subclassed `alps::params`, needed GMP. |
 
-Pade details: `main.cpp`, `main_gmp.cpp`, `main_bary.cpp`, `lu.cpp` and
-`pade_interpolator_old.cpp` are in git but not in its CMake, so they are dead
-code. Its CMake hard-codes `link_directories("/opt/local/lib")`.
+Pade (removed, D7) had five unbuilt alternative sources at baseline
+(`main.cpp`, `main_gmp.cpp`, `main_bary.cpp`, `lu.cpp`, `pade_interpolator_old.cpp`)
+and a CMake file that hard-coded `link_directories("/opt/local/lib")`.
 
 Files that exist only in the local checkout (ignored, but they clutter the work
 tree): `build/` (CMake 3.14 cache), `submission/`, `submission.zip` (3.5 MB),
@@ -83,7 +87,7 @@ two places: output in `MaxEntSimulation::evaluate()`, and input in
 | `alps::fs::remove_extensions` | `maxent.cpp:88` | 1 |
 | `alps::cast` | `eigen_hdf5.hpp` (`using` only, never called) | 0 real uses |
 | `<alps/config.hpp>` ("needed to set up correct bindings") | 5 files | obsolete ublas-bindings leftover |
-| `alps::numeric::matrix` | Pade, **unbuilt files only** | — |
+| `alps::numeric::matrix` | Pade, **unbuilt files only** (Pade removed, D7) | — |
 
 Boost usage outside ALPSCore: `shared_ptr` (31), `lexical_cast` (15),
 `throw_exception` (11), `to_lower` (5), `math::isnan` (4), `random`
@@ -153,7 +157,7 @@ pass in about 9 s**. All shipped examples run to completion:
 * No golden-value regression tests. The simulation tests would not catch a 10% change in a spectrum.
 * Nothing tests the `maxent` executable: CLI parsing, `--help`, `MODEL_RUNS`, or the output files and HDF5 layout.
 * No kernel unit tests. `kernelTest` is mentioned in `maxent_kernel.cpp:39` but does not exist.
-* No tests for `kk`, `legendre_convert` or `pade`.
+* No tests for `kk` or `legendre_convert` (nor for `pade`, since removed, D7).
 * The `examples/` directory is not exercised by CI.
 * The LAPACK SVD path (`USE_LAPACK`) is untested.
 
@@ -388,7 +392,7 @@ ALPS 3.0 only has the ALPS-2-era ancestors of those pieces.
 | `<alps/config.hpp>` | `<alps/config.h>` (+ `alps/ngs/config.hpp`) | different header name | Maxent doesn't need it. Delete in step 2. |
 | `alps/utilities/temporary_filename.hpp` | `alps/utility/temporary_filename.hpp` (**utility**, singular), same signature | path differs | Replace with `std::filesystem` in step 2. |
 | `alps::fs::remove_extensions` | missing | missing | `std::filesystem::path` logic. Check whether ALPSCore strips *all* extensions or the last one, and keep the `BASENAME` default identical. |
-| `alps::numeric::matrix` (Pade dead files only) | `alps/numeric/matrix.hpp` exists | irrelevant | Dead code, delete. |
+| `alps::numeric::matrix` (Pade dead files only) | `alps/numeric/matrix.hpp` exists | irrelevant | No longer used: Pade removed (D7). |
 | Eigen (ALPSCore optionally bundles it, `ALPSCore_HAS_EIGEN_VERSION`) | **ALPS 3.0 does not use Eigen anywhere** (it uses ublas plus LAPACK bindings) | missing | Eigen becomes a *new* dependency for ALPS. See D3. |
 | GSL | not used by ALPS | missing | Removed in step 2. |
 | Imported CMake targets (`alps::alps-params`, …) via `ALPSCoreConfig.cmake` | `ALPSConfig.cmake` sets **variables** (`ALPS_INCLUDE_DIRS`, `ALPS_LIBRARY_DIRS`, …). `UseALPS.cmake` **force-sets the compiler and `CMAKE_CXX_FLAGS` in the cache** unless `PREVENT_ALPS_COMPILERS` is set. No imported targets. | different model; UseALPS is intrusive | A standalone build needs a small `FindALPS3`/wrapper that creates an INTERFACE target, sets `PREVENT_ALPS_COMPILERS`, and avoids `UseALPS.cmake`. |
