@@ -35,6 +35,9 @@ were bit-identical.
 
 ## Variant builds (tolerance measurement)
 
+(At the time, `dump_components` was built stand-alone against each Maxent
+build tree; it is now a target of the main build.)
+
 The tolerances in `tolerances.json` were set from the differences between the
 reference build and these builds of the same baseline (see
 [`MANIFEST.md`](MANIFEST.md) and [`REFERENCE_CHANGES.md`](REFERENCE_CHANGES.md)):

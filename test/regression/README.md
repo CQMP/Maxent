@@ -15,7 +15,8 @@ result, and is flagged in [`MANIFEST.md`](MANIFEST.md).
 | `inputs/<case>/` | Inputs of the targeted and CLI cases |
 | `generate.py` | Runs the cases with a `maxent` binary and packs the results, one HDF5 file per case |
 | `compare.py` | Compares results against `reference/` using `tolerances.json` |
-| `components/` | `dump_components`: kernel matrices, grids, default models and singular values at small size |
+| `components/` | `dump_components` (a target of the main build): kernel matrices, grids, default models and singular values at small size |
+| `CMakeLists.txt` | Registers the suite with CTest |
 | `reference/<case>.h5` | The references |
 | `tolerances.json` | Comparison tolerances per dataset pattern |
 | [`MANIFEST.md`](MANIFEST.md) | Every case: what it covers, runtime, known-issue flags; tolerance summary |
@@ -35,22 +36,30 @@ result, and is flagged in [`MANIFEST.md`](MANIFEST.md).
 
 ## Running
 
-```bash
-# run the cases with a maxent binary (and optionally the component dump)
-python3 test/regression/generate.py --maxent <build>/maxent \
-    [--components <dir>/dump_components] --out /tmp/maxent-results \
-    [--sets fast,targeted,cli,full] [--cases REGEX]
+From a build tree (`MAXENT_BUILD_TESTS=ON`, the default):
 
-# compare with the references
-python3 test/regression/compare.py test/regression/reference /tmp/maxent-results [--cases REGEX]
+```bash
+ctest --test-dir build -L regression        # fast, targeted, cli, components (seconds)
+ctest --test-dir build -L regression-full   # needs -DMAXENT_REGRESSION_FULL=ON (about 1 min)
+```
+
+Each set is two CTest tests: `regression_<set>_generate` runs the cases into
+`build/test/regression/results-<set>/`, and `regression_<set>_compare` checks
+them against `reference/`. By hand:
+
+```bash
+python3 test/regression/generate.py --maxent build/maxent \
+    --components build/test/regression/dump_components --out /tmp/maxent-results \
+    [--sets fast,targeted,cli,full] [--cases REGEX]
+python3 test/regression/compare.py test/regression/reference /tmp/maxent-results \
+    [--sets fast,targeted,cli,components] [--cases REGEX]
 ```
 
 `compare.py` exits with status 1 if any case fails. `--report` prints the
 difference of every dataset instead of judging it.
 
-Requirements: Python 3 with numpy and h5py. `dump_components` is built with
-`components/CMakeLists.txt` against an existing Maxent build tree (it becomes a
-regular target in step 2.1).
+Requirements: Python 3 with numpy and h5py. Without them, CMake prints a
+warning and does not register the regression tests.
 
 ## What is compared
 

@@ -1,91 +1,97 @@
-cmake_minimum_required(VERSION 3.1)
-project (MAXENT)
+# SPDX-License-Identifier: MIT
+cmake_minimum_required(VERSION 3.22...4.2)
+project(Maxent VERSION 2.0.0 LANGUAGES CXX)
 
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-find_package(Boost CONFIG REQUIRED)
+if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+  message(FATAL_ERROR "In-source builds are not supported. Use a separate build directory.")
+endif()
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo MinSizeRel)
+endif()
+
+option(MAXENT_BUILD_TESTS "Build unit tests and the regression suite" ON)
+option(MAXENT_BUILD_UTILITIES "Build the kk and legendre_convert utilities" ON)
+option(MAXENT_BUILD_PADE "Build the pade utility (needs GMP; currently does not compile, see B20)" OFF)
+option(MAXENT_USE_LAPACK "Use LAPACK for the SVD of the kernel instead of Eigen" OFF)
+option(MAXENT_WERROR "Treat compiler warnings as errors" OFF)
+option(MAXENT_REGRESSION_FULL "Also register the full-size regression cases (about 1 min)" OFF)
+option(MAXENT_USE_SYSTEM_GTEST "Use an installed GoogleTest instead of downloading it" OFF)
+
+# ---------------------------------------------------------------- dependencies
+# ALPSCore first: it reports the Boost version it was built with, and Maxent
+# must use the same one.
 find_package(ALPSCore 2.0 REQUIRED)
-
-list(APPEND LINK_ALL ${ALPSCore_LIBRARIES})
-#note: LAPACK also finds BLAS
-find_package(LAPACK)
-if(LAPACK_FOUND AND USE_LAPACK)
-    set(HAVE_BLAS 1)
-    set(HAVE_LAPACK 1)
-    message(STATUS "Using LAPACK and BLAS routines for SVD")
-    list(APPEND LINK_ALL ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+if(DEFINED ALPSCore_BOOST_VERSION)
+  find_package(Boost ${ALPSCore_BOOST_VERSION} EXACT CONFIG)
 else()
-    set(HAVE_BLAS 0)
-    set(HAVE_LAPACK 0)
+  find_package(Boost 1.70 CONFIG)
 endif()
-configure_file(
-	"${PROJECT_SOURCE_DIR}/cmake/maxent_config.hpp.in"
-	"${PROJECT_BINARY_DIR}/config/maxent_config.hpp"
-    )
-
-include_directories("${PROJECT_BINARY_DIR}/config")
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-message(STATUS "Finding packages, please stand by...")
+if(NOT Boost_FOUND)
+  message(FATAL_ERROR "Boost ${ALPSCore_BOOST_VERSION} (the version ALPSCore was built with) was not "
+    "found. Pass -DBoost_DIR=<dir containing BoostConfig.cmake> or add its prefix to CMAKE_PREFIX_PATH.")
+endif()
+find_package(Eigen3 3.3 CONFIG REQUIRED)
 find_package(GSL REQUIRED)
-list(APPEND LINK_ALL ${GSL_LIBRARIES})
 
-# new ALPSCore provides Eigen
-if (NOT ALPSCore_HAS_EIGEN_VERSION)
-  find_package (Eigen3 3.1 REQUIRED)
+set(HAVE_BLAS 0)
+set(HAVE_LAPACK 0)
+if(MAXENT_USE_LAPACK)
+  find_package(LAPACK REQUIRED)  # also finds BLAS
+  set(HAVE_BLAS 1)
+  set(HAVE_LAPACK 1)
+  message(STATUS "Using LAPACK for the SVD of the kernel")
+endif()
+configure_file(cmake/maxent_config.hpp.in ${PROJECT_BINARY_DIR}/config/maxent_config.hpp)
+
+# ---------------------------------------------------------------- warnings
+add_library(maxent_warnings INTERFACE)
+target_compile_options(maxent_warnings INTERFACE
+  $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall -Wextra -Wpedantic>
+  $<$<AND:$<BOOL:${MAXENT_WERROR}>,$<CXX_COMPILER_ID:GNU,Clang,AppleClang>>:-Werror>)
+
+# ---------------------------------------------------------------- library and program
+add_library(maxent_core STATIC
+  src/default_model.cpp
+  src/maxent_backcont.cpp
+  src/maxent_grid.cpp
+  src/maxent_helper.cpp
+  src/maxent_kernel.cpp
+  src/maxent_params.cpp
+  src/maxent_simulation.cpp)
+add_library(maxent::core ALIAS maxent_core)
+target_include_directories(maxent_core PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/config>)
+target_link_libraries(maxent_core
+  PUBLIC ${ALPSCore_LIBRARIES} Boost::headers Eigen3::Eigen GSL::gsl
+  PRIVATE maxent_warnings)
+if(MAXENT_USE_LAPACK)
+  target_link_libraries(maxent_core PUBLIC LAPACK::LAPACK)
 endif()
 
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG(-Wno-return-type-c-linkage SUPPORTS_FLAG)
-if(SUPPORTS_FLAG)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-return-type-c-linkage")
-endif()
+add_executable(maxent src/maxent.cpp)
+target_link_libraries(maxent PRIVATE maxent::core maxent_warnings)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -DNDEBUG")
-
-#let gcc take advantage of Eigen3 vectorization
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2")
-endif()
-
-include_directories(${GSL_INCLUDE_DIR})
-include_directories(${EIGEN3_INCLUDE_DIR})
-
-set(LIB_FILES 
-  ./src/maxent_helper.cpp
-  ./src/maxent_params.cpp
-  ./src/maxent_grid.cpp
-  ./src/maxent_kernel.cpp
-  ./src/maxent_simulation.cpp
-  ./src/maxent_backcont.cpp
-  ./src/default_model.cpp
-  )
-
-ADD_LIBRARY(libmaxent ${LIB_FILES})
-target_link_libraries(libmaxent ${LINK_ALL})
-#remove default "lib" prefix
-set_target_properties(libmaxent PROPERTIES PREFIX "")
-#executable
-add_executable(maxent 
-  ./src/maxent.cpp
-  )
-target_link_libraries(maxent libmaxent ${LINK_ALL})
-
-#testing setup
-option(Testing "Enable testing" ON)
-
-if (Testing)
-  add_library(gtest ./test/gtest-all.cc ./test/gtest_main.cc)
-  list(APPEND LINK_ALL libmaxent)
-  enable_testing(test)
+# ---------------------------------------------------------------- tests and utilities
+if(MAXENT_BUILD_TESTS)
+  enable_testing()
   add_subdirectory(test)
-endif (Testing)
+endif()
 
+if(MAXENT_BUILD_UTILITIES)
+  add_subdirectory(kk)
+  add_subdirectory(legendre_convert)
+endif()
 
-#add companion utilities
-add_subdirectory(legendre_convert)
-add_subdirectory(kk) 
-if(PADE)
+if(MAXENT_BUILD_PADE)
   add_subdirectory(pade/pade_arbitrary_degree)
-endif(PADE)
+endif()
 
-#install
-install(TARGETS maxent DESTINATION bin)
+# ---------------------------------------------------------------- install
+include(GNUInstallDirs)
+install(TARGETS maxent RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

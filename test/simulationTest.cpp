@@ -10,7 +10,7 @@
 *****************************************************************************/
 
 #include "../src/maxent.hpp"
-#include "gtest.h"
+#include <gtest/gtest.h>
 #include <iostream>
 double getNorm(const vector_type &omega, const vector_type &y){
     int size = omega.size();

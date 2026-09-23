@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 """Compare regression results against the references.
 
-    python3 test/regression/compare.py REFERENCE_DIR RESULT_DIR [--cases REGEX] [--report]
+    python3 test/regression/compare.py REFERENCE_DIR RESULT_DIR [--sets SETS] [--cases REGEX] [--report]
 
 For every reference file <case>.h5 the result file of the same name must exist.
 Every dataset under /files, /log/scalars and /cli is compared:
@@ -106,13 +106,23 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("reference", type=Path)
     ap.add_argument("result", type=Path)
-    ap.add_argument("--cases", default=".*")
+    ap.add_argument("--cases", default=".*", help="regular expression on case names")
+    ap.add_argument("--sets", help="comma-separated sets to compare (full,fast,targeted,cli,components); "
+                                   "default: all")
     ap.add_argument("--tolerances", type=Path, default=HERE / "tolerances.json")
     ap.add_argument("--report", action="store_true", help="print all differences, never fail")
     args = ap.parse_args()
 
     rules = [] if args.report else load_tolerances(args.tolerances)
     refs = sorted(p for p in args.reference.glob("*.h5") if re.search(args.cases, p.stem))
+    if args.sets:
+        wanted = set(args.sets.split(","))
+
+        def ref_set(path):
+            with h5py.File(path, "r") as h5:
+                return as_text(h5.attrs["set"])
+
+        refs = [p for p in refs if ref_set(p) in wanted]
     if not refs:
         print("no reference files selected")
         return 1

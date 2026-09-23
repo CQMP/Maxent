@@ -46,31 +46,50 @@ When compiling both ALPSCore and Maxent, be careful to ensure boost was compiled
 ALPSCore needs to be properly installed, see [ALPSCore library](https://github.com/ALPSCore/ALPSCore). ALPSCore provides the location of the Boost libraries.
 
 #### Eigen3
-For our linear algebra routines we use Eigen3 version >=3.1. If not in your path use `-DEIGEN3_INCLUDE_DIR=/path/to/eigen3/include`, where `/path/to/eigen3/include` is the directory containing `Eigen` subdirectory with Eigen3 header files.
+For our linear algebra routines we use Eigen3 version >=3.3. CMake finds it through its `Eigen3Config.cmake`; if it is not in a standard location, add its prefix to `CMAKE_PREFIX_PATH` or set `-DEigen3_DIR=/path/to/share/eigen3/cmake`.
 
 #### GSL
-Maxent requires the GNU Scientific Library (GSL), which can be found [here](https://www.gnu.org/software/gsl/). The choice of BLAS library (the included CBLAS or an external ATLAS/BLAS/etc) does not matter here as the only the integration library is used. If not in your path use `-GSL_ROOT_DIR=` to the path that has `bin/gsl-config`.
+Maxent requires the GNU Scientific Library (GSL), which can be found [here](https://www.gnu.org/software/gsl/). The choice of BLAS library (the included CBLAS or an external ATLAS/BLAS/etc) does not matter here as the only the integration library is used. If it is not in a standard location, use `-DGSL_ROOT_DIR=/path/to/gsl/prefix`.
 
 #### LAPACK (Optional)
 Eigen3 has a good SVD routine, but can be very slow for a large kernel.
 Some systems, like OS X or those with Intel MKL, have precompiled BLAS/LAPACK routines that can be faster and as accurate as Eigen3.
-To turn on LAPACK support for the SVD, please use the flag `-DUSE_LAPACK=1`. 
+To turn on LAPACK support for the SVD, use `-DMAXENT_USE_LAPACK=ON`.
 
 
 ## Installation
-To install provide something like:
+Maxent needs CMake 3.22 or newer and a C++17 compiler. Boost must be the same
+version that ALPSCore was built with; CMake checks this.
 ```
-$ git clone https://github.com/CQMP/Maxent  
-$ mkdir build  
-$ cd build  
-$ cmake  ../ -DCMAKE_INSTALL_PREFIX=/path/to/here/Maxent/build -DALPSCore_DIR=/path/to/alpscore/build/share/ALPSCore
-$ make -j 8
+$ git clone https://github.com/CQMP/Maxent
+$ cmake -S Maxent -B build -DALPSCore_DIR=/path/to/alpscore/share/ALPSCore \
+        -DBoost_DIR=/path/to/lib/cmake/Boost-<version> \
+        -DCMAKE_INSTALL_PREFIX=/path/to/install
+$ cmake --build build -j 8
+$ cmake --install build
 ```
-Sometimes it is more convenient to have `CC=gcc CXX=g++` (or clang, etc) before the cmake command.
+The default build type is `Release`. Presets for common configurations are in
+`CMakePresets.json` (`cmake --preset release|dev|asan`, pass the paths above
+with `-D`). Use `CXX=g++` (or clang++, etc.) before the first `cmake` command to
+choose a compiler.
+
+Options:
+
+| Option | Default | Meaning |
+|---|---|---|
+| `MAXENT_BUILD_TESTS` | ON | unit tests and the regression suite |
+| `MAXENT_BUILD_UTILITIES` | ON | `kk` and `legendre_convert` |
+| `MAXENT_BUILD_PADE` | OFF | `pade` (needs GMP; currently does not compile) |
+| `MAXENT_USE_LAPACK` | OFF | LAPACK instead of Eigen for the SVD of the kernel |
+| `MAXENT_WERROR` | OFF | treat warnings as errors |
+| `MAXENT_REGRESSION_FULL` | OFF | also run the full-size regression cases (about 1 min) |
+| `MAXENT_USE_SYSTEM_GTEST` | OFF | use an installed GoogleTest instead of downloading 1.18.0 |
 
 ### Tests
-Once compiled please run `make test`
-to ensure everything works.  
+Once compiled, run `ctest --test-dir build` to make sure everything works.
+This runs the unit tests (label `unit`) and the regression suite (label
+`regression`, needs Python 3 with numpy and h5py); see
+[test/regression/README.md](test/regression/README.md).
 
 ## Convention
 The Maxent project uses the following conventions:
@@ -177,7 +196,7 @@ Requires: Boost
 ## Optional
 ### Pade
 Requires: [GMP](https://gmplib.org/),[Eigen3.1](http://eigen.tuxfamily.org/index.php?title=Main_Page)
-Because Pade requires GMP, it does not build automatically. To include it in your build, either run `cmake` from the pade folder, or in your `maxent` build folder add `-DPADE=1` to the`cmake` command 
+Because Pade requires GMP, it does not build automatically. To include it in your build, add `-DMAXENT_BUILD_PADE=ON` to the `cmake` command. (Pade currently does not compile.)
 
 ## License and citations
 
