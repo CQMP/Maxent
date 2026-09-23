@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: MIT
 #
 # Regression suite (see README.md). Two tests per set, linked by a fixture:
+# labels regression-fast and regression-full (ctest -L is a regular
+# expression, so -L regression selects both).
 # *_generate runs the cases into the build tree, *_compare checks the results
 # against reference/.
 add_executable(dump_components components/dump_components.cpp)
@@ -40,7 +42,7 @@ function(maxent_regression_test name sets label)
     FIXTURES_REQUIRED regression_${name} LABELS ${label})
 endfunction()
 
-maxent_regression_test(fast fast,targeted,cli regression)
+maxent_regression_test(fast fast,targeted,cli regression-fast)
 if(MAXENT_REGRESSION_FULL)
   maxent_regression_test(full full regression-full)
 endif()

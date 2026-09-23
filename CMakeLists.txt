@@ -6,6 +6,11 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
   message(FATAL_ERROR "In-source builds are not supported. Use a separate build directory.")
 endif()
 
+include(GNUInstallDirs)
+# Installed programs keep the directories of their shared dependencies
+# (ALPSCore, GSL, Boost) in their RPATH.
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -93,5 +98,4 @@ if(MAXENT_BUILD_PADE)
 endif()
 
 # ---------------------------------------------------------------- install
-include(GNUInstallDirs)
 install(TARGETS maxent RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

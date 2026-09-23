@@ -86,10 +86,10 @@ Options:
 | `MAXENT_USE_SYSTEM_GTEST` | OFF | use an installed GoogleTest instead of downloading 1.18.0 |
 
 ### Tests
-Once compiled, run `ctest --test-dir build` to make sure everything works.
-This runs the unit tests (label `unit`) and the regression suite (label
-`regression`, needs Python 3 with numpy and h5py); see
-[test/regression/README.md](test/regression/README.md).
+Once compiled, run `ctest --test-dir build` (or `ctest --preset <preset>` for
+a preset build) to make sure everything works. This runs the unit tests (label
+`unit`) and the regression suite (label `regression-fast`, needs Python 3 with
+numpy and h5py); see [test/regression/README.md](test/regression/README.md).
 
 ## Convention
 The Maxent project uses the following conventions:

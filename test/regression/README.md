@@ -39,8 +39,9 @@ result, and is flagged in [`MANIFEST.md`](MANIFEST.md).
 From a build tree (`MAXENT_BUILD_TESTS=ON`, the default):
 
 ```bash
-ctest --test-dir build -L regression        # fast, targeted, cli, components (seconds)
+ctest --test-dir build -L regression-fast   # fast, targeted, cli, components (seconds)
 ctest --test-dir build -L regression-full   # needs -DMAXENT_REGRESSION_FULL=ON (about 1 min)
+ctest --test-dir build -L regression        # every registered regression test
 ```
 
 Each set is two CTest tests: `regression_<set>_generate` runs the cases into

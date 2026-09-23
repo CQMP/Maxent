@@ -1,6 +1,17 @@
 # SPDX-License-Identifier: MIT
 if(MAXENT_USE_SYSTEM_GTEST)
-  find_package(GTest 1.18 CONFIG REQUIRED)
+  # Prefer GTestConfig.cmake, which checks the version. Fall back to CMake's
+  # FindGTest module (no version check) only if no config file exists at all.
+  find_package(GTest 1.18 CONFIG QUIET)
+  if(NOT GTest_FOUND)
+    if(GTest_CONSIDERED_CONFIGS)
+      message(FATAL_ERROR "MAXENT_USE_SYSTEM_GTEST: found GoogleTest ${GTest_CONSIDERED_VERSIONS} "
+        "(${GTest_CONSIDERED_CONFIGS}), but 1.18 or newer is required.")
+    endif()
+    find_package(GTest REQUIRED)
+    message(WARNING "MAXENT_USE_SYSTEM_GTEST: GoogleTest found without a config file; "
+      "its version (1.18 or newer required) cannot be checked.")
+  endif()
 else()
   include(FetchContent)
   FetchContent_Declare(googletest
