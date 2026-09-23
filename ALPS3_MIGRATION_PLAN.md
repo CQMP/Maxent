@@ -272,7 +272,9 @@ ASan+UBSan with no sanitizer reports), clang 22 and GCC 15. Notes:
 * ALPSCore's installed config never passes its Boost hint on: it sets
   `alps_BOOST_DIR_` but reads `alps_Boost_DIR_` (case mismatch). Maxent
   therefore requires `Boost_DIR` (or `CMAKE_PREFIX_PATH`) and checks that the
-  version equals `ALPSCore_BOOST_VERSION`.
+  version equals `ALPSCore_BOOST_VERSION`. **Fixed upstream** by ALPSCore#666
+  (merged 2026-09-23, `8d2ed3a9`): against ALPSCore `master` at or after that
+  commit, Maxent configures without `Boost_DIR`.
 * The ALPSCore install ships gtest 1.16 headers in its include directory; they
   shadowed the fetched 1.18 headers (link errors). Tests now link GoogleTest
   first.
@@ -577,4 +579,5 @@ make -j8 && ctest     # 6/6 executables, 35 cases pass, ~9 s
 | 2026-09-23 | 2.0 | Dry run of the reference generation. Confirmed that CLI overrides (`--NFREQ=…`) work with parameter files. Found 11 (not 10) example runs, a filename-case bug in `examples/Legendre/in.param` (fixed), and B16. Fast-set sizes agreed. |
 | 2026-09-23 | 2.0 | Reference generation started: baseline worktree at `6ba7250` + `baseline.patch`, GSL build; 56 cases (11 full, 11 fast, 29 targeted, 4 CLI, components) deterministic (two runs: 1209 datasets, 0 differences). Found B7b, B17, B18. Confirmed B3 (GCC on arm64: `unrecognized command-line option '-msse2'`). ALPSCore does not build with GCC 15 (missing `<algorithm>` in `params_impl.hpp`); fix and upstream PR delegated. Variant builds (-O0, LAPACK, clang 22, GCC 15) for tolerance measurement. |
 | 2026-09-23 | 2.0 | **Step 2.0 done.** `test/regression/`: 56 cases (11 full, 11 fast, 29 targeted, 4 CLI, components), 1165 datasets, 4.7 MB of references, deterministic. Tolerances measured with four variant builds (-O0, LAPACK, clang 22, GCC 15); all pass. Detection check: the pre-B7 kernel is caught. GSL→Boost Legendre quadrature validated to 2e-16. Found B19 (minimizer divergence). ALPSCore GCC fix submitted as ALPSCore/ALPSCore#667. Not yet in CTest (step 2.1). |
-| 2026-09-23 | 2.1 | **Step 2.1 done.** Build-only source fix committed; CMake rewritten (3.22...4.2, project version 2.0.0, C++17, default Release, `maxent::core` target, `MAXENT_*` options, GoogleTest 1.18.0 via FetchContent, regression suite in CTest, presets, GNUInstallDirs). Bit-identical to the references. See §2.1 for notes. |
+| 2026-09-23 | 2.1 | **Step 2.1 done.** Build-only source fix committed; CMake rewritten (3.22...4.2, project version 2.0.0, C++17, default Release, `maxent::core` target, `MAXENT_*` options, GoogleTest 1.18.0 via FetchContent, regression suite in CTest, presets, GNUInstallDirs). Bit-identical to the references. See §2.1 for notes. Merged as PR #52 (`ccc3be4`) after two Copilot reviews (4 findings: 3 fixed, 1 kept with explanation; second review: approval recommended). |
+| 2026-09-23 | 2.2 prep | Ready for step 2.2: `modernize/step2` at `ccc3be4` builds against ALPSCore `master` `8d2ed3a9` (C++17, Boost 1.88, found without `Boost_DIR`); 39/39 tests, regression bit-identical (920 + 237 datasets). Note: `~/Projects/ALPSCore/install` currently holds a C++11/Boost 1.81 build that Maxent rejects; use an install of current `master`. |
