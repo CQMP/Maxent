@@ -21,7 +21,6 @@ endif()
 
 option(MAXENT_BUILD_TESTS "Build unit tests and the regression suite" ON)
 option(MAXENT_BUILD_UTILITIES "Build the kk and legendre_convert utilities" ON)
-option(MAXENT_BUILD_PADE "Build the pade utility (needs GMP; currently does not compile, see B20)" OFF)
 option(MAXENT_USE_LAPACK "Use LAPACK for the SVD of the kernel instead of Eigen" OFF)
 option(MAXENT_WERROR "Treat compiler warnings as errors" OFF)
 option(MAXENT_REGRESSION_FULL "Also register the full-size regression cases (about 1 min)" OFF)
@@ -91,10 +90,6 @@ endif()
 if(MAXENT_BUILD_UTILITIES)
   add_subdirectory(kk)
   add_subdirectory(legendre_convert)
-endif()
-
-if(MAXENT_BUILD_PADE)
-  add_subdirectory(pade/pade_arbitrary_degree)
 endif()
 
 # ---------------------------------------------------------------- install

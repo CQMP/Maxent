@@ -1,7 +1,7 @@
 KramersKronig
 =============
 
-Kramers Kronig transform code: takes a file (usually from maxent or pade) and evaluates the Kramers Kronig transform. See `kk --help` for more options.
+Kramers Kronig transform code: takes a file (usually from maxent) and evaluates the Kramers Kronig transform. See `kk --help` for more options.
 
 Format input data as
 ````
