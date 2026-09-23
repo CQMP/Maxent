@@ -10,7 +10,7 @@
 *****************************************************************************/
 
 #include "../src/maxent.hpp"
-#include "gtest.h"
+#include <gtest/gtest.h>
 #include "../src/maxent_backcont.hpp"
 
 inline vector_type getA(){

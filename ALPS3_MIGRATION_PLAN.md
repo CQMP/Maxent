@@ -184,6 +184,7 @@ confirmed it numerically.
 | B17 | `src/maxent_kernel.cpp` (`setup_legendre_kernel`) | The Legendre **bosonic** kernel uses the fermionic integrand (1+e^{−βω} denominator); it is bit-identical to the fermionic kernel (confirmed with the component dump). |
 | B18 | usability | The default Lorentzian grid is centered at (OMEGA_MIN+OMEGA_MAX)/2. With `OMEGA_MIN=0` (T=0, bosonic) it has almost no points near ω=0 (lowest points 0.82 and 2.06 for NFREQ=200, OMEGA_MAX=10), so spectra with weight at low frequency cannot be fitted. Consider a different default grid when `OMEGA_MIN=0`, or a warning. |
 | B19 | `src/maxent_simulation.cpp` (`levenberg_marquardt`) | The minimizer can diverge. Reproducer: `test/regression/inputs/t_model_quadratic_rise_exp_decay` with `--LAMBDA=1`: from the second α on, Q ≈ 1e26 and norm ≈ 1e8, every α hits `MAX_IT` (258 s); with `--MAX_IT=100` it stops with `Q=NaN, something went wrong`. Also diverges with the quadratic grid and with `OMEGA_MIN=0.2`, so it is not caused by the default model vanishing at ω=0. `LAMBDA=2` converges. Needs step-size control / a trust region. |
+| B20 | `pade/pade_arbitrary_degree/` | Pade does not compile: missing `#include <iostream>`, ALPSCore changed `params::help_requested()`, and `std::complex<mpf_class>` is not supported by libc++ (the standard only allows `std::complex` of floating-point types). Left off (D7). |
 
 ---
 
@@ -256,6 +257,35 @@ the observed spread times a safety margin. Record the chosen values in
 `MANIFEST.md`.
 
 ### 2.1 CMake modernization
+
+Decisions (2026-09-23): project version **2.0.0**; default build type
+**Release**; old option names (`Testing`, `PADE`, `USE_LAPACK`) are **dropped**,
+not aliased; GoogleTest via `FetchContent`, pinned to the **newest release
+(1.18.0)**; Pade stays off and broken for now (B20, D7).
+
+**Done 2026-09-23.** Results are **bit-identical** to the references
+(Release `-O3 -std=c++17`: 1157 fast/targeted/CLI/component datasets and 237
+full-size datasets, 0 differences). CTest: 35 unit tests (listed individually)
+plus the regression tests, all passing with AppleClang (Release, Debug,
+ASan+UBSan with no sanitizer reports), clang 22 and GCC 15. Notes:
+
+* ALPSCore's installed config never passes its Boost hint on: it sets
+  `alps_BOOST_DIR_` but reads `alps_Boost_DIR_` (case mismatch). Maxent
+  therefore requires `Boost_DIR` (or `CMAKE_PREFIX_PATH`) and checks that the
+  version equals `ALPSCore_BOOST_VERSION`.
+* The ALPSCore install ships gtest 1.16 headers in its include directory; they
+  shadowed the fetched 1.18 headers (link errors). Tests now link GoogleTest
+  first.
+* GCC 15 cannot compile GoogleTest against the macOS 26 SDK (`mach/message.h`);
+  it works with `-DCMAKE_OSX_SYSROOT=.../MacOSX27.sdk`. GCC also needs
+  `-include algorithm` until ALPSCore#667 is merged, and
+  `MAXENT_BUILD_UTILITIES=OFF` because MacPorts' Boost.ProgramOptions is built
+  against libc++.
+* Warnings (clean build, `-Wall -Wextra -Wpedantic`): 51 with Clang, all in
+  Maxent sources (37 sign-compare, 10 unused-variable, 1 each unused-parameter,
+  reorder, misleading-indentation, deprecated). GCC additionally reports 46
+  `-Wmaybe-uninitialized` inside libstdc++ headers (known false positives at
+  `-O3`). These are the targets for 2.3.
 
 * One top-level `cmake_minimum_required(VERSION 3.22)`, matching ALPS 3.0. Subdirectories drop their own `cmake_minimum_required`/`project()` or become proper subprojects.
 * `set(CMAKE_CXX_STANDARD 17)`, `CMAKE_CXX_STANDARD_REQUIRED ON`, `CMAKE_CXX_EXTENSIONS OFF`.
@@ -547,3 +577,4 @@ make -j8 && ctest     # 6/6 executables, 35 cases pass, ~9 s
 | 2026-09-23 | 2.0 | Dry run of the reference generation. Confirmed that CLI overrides (`--NFREQ=…`) work with parameter files. Found 11 (not 10) example runs, a filename-case bug in `examples/Legendre/in.param` (fixed), and B16. Fast-set sizes agreed. |
 | 2026-09-23 | 2.0 | Reference generation started: baseline worktree at `6ba7250` + `baseline.patch`, GSL build; 56 cases (11 full, 11 fast, 29 targeted, 4 CLI, components) deterministic (two runs: 1209 datasets, 0 differences). Found B7b, B17, B18. Confirmed B3 (GCC on arm64: `unrecognized command-line option '-msse2'`). ALPSCore does not build with GCC 15 (missing `<algorithm>` in `params_impl.hpp`); fix and upstream PR delegated. Variant builds (-O0, LAPACK, clang 22, GCC 15) for tolerance measurement. |
 | 2026-09-23 | 2.0 | **Step 2.0 done.** `test/regression/`: 56 cases (11 full, 11 fast, 29 targeted, 4 CLI, components), 1165 datasets, 4.7 MB of references, deterministic. Tolerances measured with four variant builds (-O0, LAPACK, clang 22, GCC 15); all pass. Detection check: the pre-B7 kernel is caught. GSL→Boost Legendre quadrature validated to 2e-16. Found B19 (minimizer divergence). ALPSCore GCC fix submitted as ALPSCore/ALPSCore#667. Not yet in CTest (step 2.1). |
+| 2026-09-23 | 2.1 | **Step 2.1 done.** Build-only source fix committed; CMake rewritten (3.22...4.2, project version 2.0.0, C++17, default Release, `maxent::core` target, `MAXENT_*` options, GoogleTest 1.18.0 via FetchContent, regression suite in CTest, presets, GNUInstallDirs). Bit-identical to the references. See §2.1 for notes. |

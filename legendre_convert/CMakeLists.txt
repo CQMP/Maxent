@@ -1,13 +1,6 @@
-cmake_minimum_required(VERSION 2.8)
-project(legendre_convert)
+# SPDX-License-Identifier: MIT
+find_package(Boost 1.70 CONFIG REQUIRED COMPONENTS program_options)
 
 add_executable(legendre_convert legendre_convert.cpp)
-
-set(CMAKE_CXX_FLAGS  "-W -Wno-sign-compare -O2 -g")
-set(boost_req program_options)
-find_package (Boost 1.54.0 COMPONENTS ${boost_req} REQUIRED)
-message(STATUS "Found Boost includes: ${Boost_INCLUDE_DIRS}" )
-message(STATUS "Found Boost libs: ${Boost_LIBRARIES}" )
-target_include_directories(legendre_convert PUBLIC ${Boost_INCLUDE_DIRS})
-target_link_libraries(legendre_convert ${ALPSCore_LIBRARIES} ${Boost_LIBRARIES})
-install(TARGETS legendre_convert DESTINATION bin)
+target_link_libraries(legendre_convert PRIVATE Boost::headers Boost::program_options maxent_warnings)
+install(TARGETS legendre_convert RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

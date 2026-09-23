@@ -361,7 +361,7 @@ void MaxEntSimulation::evaluate(){
 // 
 vector_type MaxEntSimulation::levenberg_marquardt(vector_type u, const double alpha) const
 {
-  using namespace boost::numeric;
+
   double mu = 1e-18;
   const double nu = 1.3;
   double Q1=0.;

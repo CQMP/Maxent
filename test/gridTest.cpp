@@ -11,7 +11,7 @@
 
 #include "../src/maxent.hpp"
 #include "../src/maxent_grid.hpp"
-#include "gtest.h"
+#include <gtest/gtest.h>
 #include <fstream>
 
 //these tests only make sure the grids are initiallized
