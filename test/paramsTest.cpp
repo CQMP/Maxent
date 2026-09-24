@@ -125,6 +125,24 @@ TEST(Parameters,DataInFileWithTrailingBlankLines){
   std::remove(pf.c_str());
 }
 
+TEST(Parameters,RejectsIncompleteFinalDataRecord){
+  std::string pf=alps::temporary_filename("in_file.dat");
+  write_minimal_input_file(pf);
+  {
+    std::ofstream tempfile(pf.c_str(), std::ios::app);
+    tempfile << "5 0.6\n"; // Missing the error-bar column.
+  }
+
+  alps::params p;
+  MaxEntSimulation::define_parameters(p);
+  p["BETA"]=2;
+  p["DATA"]=pf;
+  p["NDAT"] = 6;
+
+  EXPECT_THROW(ContiParameters c(p), std::runtime_error);
+  std::remove(pf.c_str());
+}
+
 TEST(Parameters,MaxentParams){
     //set up parameters
 	alps::params p;
