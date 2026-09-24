@@ -13,7 +13,6 @@
 #include <fstream>
 #include <random>
 #include <boost/program_options.hpp>
-#include <boost/math/special_functions/factorials.hpp>
 #include <boost/math/special_functions/legendre.hpp> //needed for Legendre transform
 #include <boost/math/special_functions/bessel.hpp> 
 
@@ -35,7 +34,10 @@ double tl(int l, int p){
         double qsum =1;
         for(int q=-p+2;q<p;q++)
             qsum*=l+q;
-        return std::pow(-1.0,p)*2*std::sqrt(2*l+1)*qsum/bmth::factorial<double>(p-1);
+        double factorial = 1.0;
+        for(int factor=2;factor<p;factor++)
+            factorial*=factor;
+        return std::pow(-1.0,p)*2*std::sqrt(2*l+1)*qsum/factorial;
     }
 }
 ///G(i\omega)=\sumT_{n\ell}G_\ell

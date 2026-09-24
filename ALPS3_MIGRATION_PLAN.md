@@ -394,7 +394,8 @@ unchanged. A text-input regression covers trailing blank lines.
 2. **Done 2026-09-24:** replace Boost.Random by `<random>`. The `mt19937` engine gives identical
    numbers; the normal variates differ (different algorithm), which is
    harmless because the error estimate is seeded from the clock.
-3. Replace `boost::math::factorial` by a product (only small arguments occur).
+3. **Done 2026-09-24:** replace `boost::math::factorial` by a product (only
+   small arguments occur).
 4. Replace `boost::math::legendre_p` by the standard three-term recurrence.
    `std::legendre` is not an option: libc++ (AppleClang) does not implement the
    C++17 special math functions.
