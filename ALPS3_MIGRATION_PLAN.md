@@ -391,7 +391,7 @@ unchanged. A text-input regression covers trailing blank lines.
    `legendre_convert`, with a reference from the current Boost build. It covers
    the transform, tail enforcement, back-continuation, and Matsubara
    convergence.
-2. Replace Boost.Random by `<random>`. The `mt19937` engine gives identical
+2. **Done 2026-09-24:** replace Boost.Random by `<random>`. The `mt19937` engine gives identical
    numbers; the normal variates differ (different algorithm), which is
    harmless because the error estimate is seeded from the clock.
 3. Replace `boost::math::factorial` by a product (only small arguments occur).

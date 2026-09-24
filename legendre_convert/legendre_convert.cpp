@@ -11,11 +11,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <random>
 #include <boost/program_options.hpp>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include <boost/random/variate_generator.hpp>
-#include <boost/random.hpp>
 #include <boost/math/special_functions/factorials.hpp>
 #include <boost/math/special_functions/legendre.hpp> //needed for Legendre transform
 #include <boost/math/special_functions/bessel.hpp> 
@@ -243,19 +240,12 @@ struct argstruct{
  };
 ///genereate a normally distrubted noisy vector. 
 //i.e. output[i] = normally dist number with mean=data[i] and stddev=err[i]
-vector_type generateGaussNoise(vector_type data, vector_type err,boost::mt19937 &rng){
-    
-    typedef boost::variate_generator<boost::mt19937&,boost::normal_distribution<> > ran_gen;
-    //notice the & in the first template argument and function rng argument.
-    //If we omit this, it will compile and run
-    //however, the numbers will be less(/not) random b/c it will copy the generator
-    //each time, outputting the mean with some noise, rather than truly random
-    
+vector_type generateGaussNoise(vector_type data, vector_type err,std::mt19937 &rng){
     const int N = data.size();
     vector_type data_noise(N);
     for(int i=0;i<N;i++){
-        boost::normal_distribution<> s(data[i],err[i]);
-        data_noise[i] = ran_gen(rng,s)();
+        std::normal_distribution<> distribution(data[i],err[i]);
+        data_noise[i] = distribution(rng);
     }
     return data_noise;
 }
@@ -268,7 +258,7 @@ return_type bootstrap(double (*f)(vector_type,void*),
     //and determinging the variation on the output
     std::vector<double> newData(maxit);
     std::cout << std::setprecision(14);
-    boost::mt19937 rng;
+    std::mt19937 rng;
     rng.seed(static_cast<unsigned int>(std::time(0)));
     for(int i=0;i<maxit;i++){
          vector_type temp_data= generateGaussNoise(data, err,rng);
