@@ -37,6 +37,14 @@ made by `make_inputs.py`: Im G = -pi A of `u0_frequency` and Im Sigma of
 `self_u1` (average spectra from these references), and the analytic Re G of a
 unit Gaussian spectrum.
 
+## GSL removed (step 2.2, 2026-09-24)
+
+The references were generated with GSL (Legendre kernel integration, `kk`
+spline). GSL has since been removed without changing any reference: the closed
+form of the Legendre kernel reproduces the GSL kernels in `components.h5` to
+3.3e-16 relative, all Legendre cases pass, and the new `kk` spline reproduces
+the `kk` references bit for bit.
+
 ## Determinism
 
 Two independent generations with the reference build were compared with

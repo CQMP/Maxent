@@ -8,7 +8,7 @@ endif()
 
 include(GNUInstallDirs)
 # Installed programs keep the directories of their shared dependencies
-# (ALPSCore, GSL, Boost) in their RPATH.
+# (ALPSCore, HDF5, Boost) in their RPATH.
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -40,7 +40,6 @@ if(NOT Boost_FOUND)
     "found. Pass -DBoost_DIR=<dir containing BoostConfig.cmake> or add its prefix to CMAKE_PREFIX_PATH.")
 endif()
 find_package(Eigen3 3.3 CONFIG REQUIRED)
-find_package(GSL REQUIRED)
 
 set(HAVE_BLAS 0)
 set(HAVE_LAPACK 0)
@@ -72,7 +71,7 @@ target_include_directories(maxent_core PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/config>)
 target_link_libraries(maxent_core
-  PUBLIC ${ALPSCore_LIBRARIES} Boost::headers Eigen3::Eigen GSL::gsl
+  PUBLIC ${ALPSCore_LIBRARIES} Boost::headers Eigen3::Eigen
   PRIVATE maxent_warnings)
 if(MAXENT_USE_LAPACK)
   target_link_libraries(maxent_core PUBLIC LAPACK::LAPACK)

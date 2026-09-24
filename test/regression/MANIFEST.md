@@ -116,6 +116,6 @@ Total compared datasets: 1183 in 59 cases.
 
 ## Known limitations
 
-* The Legendre example is extremely ill-conditioned (minimal chi2 ~ 1e-17): rounding-level differences in the kernel change its alpha probabilities and Ng by up to 3e-3 and 3e-2 between compilers, so its end-to-end tolerances are loose. Kernel changes are caught by the Legendre kernel matrices in `components.h5`, compared at 1e-14. (Check: replacing GSL by Boost Gauss-Kronrod reproduces the Legendre kernels to 2e-16.)
+* The Legendre example is extremely ill-conditioned (minimal chi2 ~ 1e-17): rounding-level differences in the kernel change its alpha probabilities and Ng by up to 3e-3 and 3e-2 between compilers, so its end-to-end tolerances are loose. Kernel changes are caught by the Legendre kernel matrices in `components.h5`, compared at 1e-14. (Checks: Boost Gauss-Kronrod quadrature and, since step 2.2, the closed form used in maxent_kernel.cpp reproduce the GSL Legendre kernels of the references to 2e-16 and 3.3e-16.)
 * `-O0` builds take more than 30 minutes for the full `legendre` case.
 * `*.spex.dat`, `*.fits.dat` and `*.booterr.dat` are not compared (see README.md).
