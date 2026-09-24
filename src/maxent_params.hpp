@@ -106,7 +106,7 @@ public:
 
 private:
   ///The default model
-  boost::shared_ptr<DefaultModel> Default_;
+  std::shared_ptr<DefaultModel> Default_;
   matrix_type U_;
   matrix_type Vt_;
   matrix_type Sigma_;

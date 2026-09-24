@@ -11,13 +11,13 @@
 
 #include "maxent_grid.hpp"
 #include<cmath>
-#include <boost/algorithm/string.hpp>    
+#include "maxent_string.hpp"
 
 grid::grid(const alps::params &p):
 nfreq_(p["NFREQ"]),
 t_array_(nfreq_+1){
   std::string p_f_grid = p["FREQUENCY_GRID"];
-  boost::to_lower(p_f_grid);
+  to_lower(p_f_grid);
    double cut = p["CUT"];
   if (p_f_grid =="lorentzian") {
     initialize_lorentzian_grid(cut);
@@ -37,7 +37,7 @@ t_array_(nfreq_+1){
     initialize_linear_grid();
   }
   else
-    boost::throw_exception(std::invalid_argument("No valid frequency grid specified"));
+    throw std::invalid_argument("No valid frequency grid specified");
 }
 void grid::initialize_linear_grid() {
   for (int i = 0; i < nfreq_+1; ++i)
@@ -62,8 +62,7 @@ void grid::initialize_logarithmic_grid(double t_min) {
 
 void grid::initialize_quadratic_grid(double spread) {
   if (spread < 1)
-    boost::throw_exception(
-        std::invalid_argument("the parameter SPREAD must be greater than 1"));
+    throw std::invalid_argument("the parameter SPREAD must be greater than 1");
 
   std::vector<double> temp(nfreq_);
   double t = 0;

@@ -94,7 +94,7 @@ void dump_grid(const std::string &name, const std::string &grid_name, int nfreq)
 void dump_model(const std::string &name, alps::params p, double omega_min, double omega_max) {
   p["OMEGA_MIN"] = omega_min;
   p["OMEGA_MAX"] = omega_max;
-  boost::shared_ptr<DefaultModel> model = make_default_model(p, "DEFAULT_MODEL");
+  std::shared_ptr<DefaultModel> model = make_default_model(p, "DEFAULT_MODEL");
   std::vector<double> omega, d, x, omega_of_x;
   for (int i = 0; i < 41; ++i) {
     omega.push_back(omega_min + (omega_max - omega_min) * (i + 0.5) / 41);

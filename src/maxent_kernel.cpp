@@ -11,8 +11,7 @@
 
 #include "maxent_kernel.hpp"
 #include <cmath>
-#include <boost/algorithm/string.hpp>    
-#include <boost/lexical_cast.hpp>
+#include "maxent_string.hpp"
 
 
 kernel::kernel(alps::params &p, const vector_type& freq, vector_type &inputGrid):
@@ -26,8 +25,8 @@ K_(ndat_,nfreq_)
   K_=matrix_type::Zero(ndat_,nfreq_);
   std::string dataspace_name = p["DATASPACE"];
   std::string kernel_name = p["KERNEL"];
-  boost::to_lower(dataspace_name);
-  boost::to_lower(kernel_name);
+  to_lower(dataspace_name);
+  to_lower(kernel_name);
   bool ph_symmetry=p["PARTICLE_HOLE_SYMMETRY"];
   std::cout<<"using kernel "<<kernel_name<<" in domain "<<dataspace_name;
   if(ph_symmetry) std::cout<<" with ph symmetry"; else std::cout<<" without ph symmetry"; std::cout<<std::endl;
@@ -42,7 +41,7 @@ K_(ndat_,nfreq_)
     if(p.defined("TAU_1")){
         std::cout<<"Using param direct input tau points"<<std::endl;
         for(int i=0;i<ndat_;i++){
-          tau_points_[i]=p["TAU_"+boost::lexical_cast<std::string>(i)];
+          tau_points_[i]=p["TAU_"+std::to_string(i)];
         }
     }
     //legacy tau points in param file
@@ -50,9 +49,9 @@ K_(ndat_,nfreq_)
       std::cout<<"Using param input tau points"<<std::endl;
       tau_points_[0]=p["TAU_0"];
       for(int i=1;i<ndat_;i++)
-        p.define<double>("TAU_"+boost::lexical_cast<std::string>(i),"");
+        p.define<double>("TAU_"+std::to_string(i),"");
       for(int i=1;i<ndat_;i++){
-        tau_points_[i]=p["TAU_"+boost::lexical_cast<std::string>(i)];
+        tau_points_[i]=p["TAU_"+std::to_string(i)];
       }
     }
     else{

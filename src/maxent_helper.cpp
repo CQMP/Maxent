@@ -11,15 +11,13 @@
 
 #include "maxent.hpp"
 #include <alps/config.hpp> // needed to set up correct bindings
-#include <boost/math/special_functions/fpclassify.hpp> //needed for boost::math::isnan
+#include <cmath>
 #include <Eigen/Eigenvalues>
 #include <Eigen/Cholesky>
 #include "maxent_backcont.hpp"
 
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include <boost/random/variate_generator.hpp>
-#include <boost/random.hpp>
+#include <random>
+#include "maxent_string.hpp"
 //NOTE: size1= rows; size2=columns
 
 MaxEntHelper::MaxEntHelper(alps::params& p) :
@@ -39,9 +37,9 @@ MaxEntParameters(p) , def_(nfreq()), text_output(p["TEXT_OUTPUT"])
 void MaxEntHelper::checkDefaultModel(const vector_type &D) const{
     for(int i=0;i<D.size();i++){
         double Di=D(i);
-        if(Di==0 || boost::math::isnan(Di))
+        if(Di==0 || std::isnan(Di))
           throw std::logic_error("Error: Default model point = 0 at omega="
-                                +boost::lexical_cast<std::string>(omega_coord(i)));
+                                +to_string_exact(omega_coord(i)));
     }
 }
 
@@ -362,7 +360,7 @@ void MaxEntHelper::generateCovariantErr(const vector_type& A, const double alpha
       A_u(i) = sqrt(A(i));
     A_u = u*A_u;
 
-    boost::mt19937 rng;
+    std::mt19937 rng;
     rng.seed(static_cast<unsigned int>(std::time(0)));
 
     std::vector<vector_type> noise_vecs;
@@ -387,19 +385,12 @@ void MaxEntHelper::generateCovariantErr(const vector_type& A, const double alpha
   }
 }
 
-vector_type MaxEntHelper::generateGaussNoise(vector_type data, vector_type err,boost::mt19937 &rng){
-    
-    typedef boost::variate_generator<boost::mt19937&,boost::normal_distribution<> > ran_gen;
-    //notice the & in the first template argument and function rng argument.
-    //If we omit this, it will compile and run
-    //however, the numbers will be less(/not) random b/c it will copy the generator
-    //each time, outputting the mean with some noise, rather than truly random
-    
+vector_type MaxEntHelper::generateGaussNoise(vector_type data, vector_type err,std::mt19937 &rng){
     const int N = data.size();
     vector_type data_noise(N);
     for(int i=0;i<N;i++){
-        boost::normal_distribution<> s(data[i],err[i]); //
-        data_noise[i] = ran_gen(rng,s)();
+        std::normal_distribution<double> s(data[i],err[i]);
+        data_noise[i] = s(rng);
     }
     return data_noise;
 }

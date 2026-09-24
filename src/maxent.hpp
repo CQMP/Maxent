@@ -14,7 +14,7 @@
 #include <fstream>
 #include "maxent_matrix_def.hpp"
 #include "maxent_params.hpp"
-#include <boost/random/mersenne_twister.hpp>
+#include <random>
 
 struct ofstream_ : std::ofstream{
     explicit ofstream_(std::streamsize precision=10){
@@ -74,7 +74,7 @@ private:
   vector_type def_;
   ///check that the default model is non-zero
   void checkDefaultModel(const vector_type &D) const;
-  vector_type generateGaussNoise(vector_type data, vector_type err,boost::mt19937 &rng);
+  vector_type generateGaussNoise(vector_type data, vector_type err,std::mt19937 &rng);
 protected:
   bool text_output;
 };

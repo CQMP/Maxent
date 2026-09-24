@@ -15,10 +15,7 @@
 #include <Eigen/SVD>
 #include <Eigen/Eigenvalues>
 #include <alps/hdf5/vector.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/math/special_functions/legendre.hpp> //needed for Legendre transform
-namespace bmth = boost::math;
+#include "maxent_string.hpp"
 
   // We provide a file with data points and error bars, the latter are used only if
   // COVARIANCE_MATRIX is not set. The format is
@@ -47,13 +44,12 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
   std::string fname = p["DATA"];
   std::ifstream datstream(fname.c_str());
   if (!datstream){
-    boost::throw_exception(
-        std::invalid_argument("could not open data text file: " + fname+". data should be specified in parameter DATA"));
+    throw std::invalid_argument("could not open data text file: " + fname+". data should be specified in parameter DATA");
   }
   int datIn =0; //counts up to ndat
   int expectedDatIn = 0;
   std::string dataspace = p["DATASPACE"].as<std::string>();
-  boost::to_lower(dataspace);
+  to_lower(dataspace);
   if(dataspace == "time" || dataspace == "legendre" || p["PARTICLE_HOLE_SYMMETRY"]==true){
     while (datstream) {
       double index, X_i, dX_i;
@@ -101,7 +97,7 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
   //check for user error
   if(expectedDatIn<ndat()){
     throw std::runtime_error(
-        std::string("The NDAT value ("+boost::lexical_cast<std::string>(ndat_) 
+        std::string("The NDAT value ("+std::to_string(ndat_) 
                     +") is not <= the elements in your input file ("
                     +p["DATA"].as<std::string>()+")"));
   }
@@ -149,18 +145,18 @@ void ContiParameters::read_data_from_param_file(const alps::params& p) {
         << std::endl;
 
   for (int i = 0; i < ndat(); ++i) {
-    if (!p.exists("X_" + boost::lexical_cast<std::string>(i))) {
-      throw std::runtime_error("parameter X_"+ boost::lexical_cast<std::string>(i)+ " missing!");
+    if (!p.exists("X_" + std::to_string(i))) {
+      throw std::runtime_error("parameter X_"+ std::to_string(i)+ " missing!");
     }
-    y_(i) = static_cast<double>(p["X_" + boost::lexical_cast<std::string>(i)])
+    y_(i) = static_cast<double>(p["X_" + std::to_string(i)])
         / static_cast<double>(p["NORM"]);
     if (p["COVARIANCE_MATRIX"]=="") {
-      if (!p.exists("SIGMA_" + boost::lexical_cast<std::string>(i))) {
+      if (!p.exists("SIGMA_" + std::to_string(i))) {
         throw std::runtime_error(
-            std::string("parameter SIGMA_"+boost::lexical_cast<std::string>(i)+ " missing! "));
+            std::string("parameter SIGMA_"+std::to_string(i)+ " missing! "));
       }
       sigma_(i) = static_cast<double>(p["SIGMA_"
-          + boost::lexical_cast<std::string>(i)])
+          + std::to_string(i)])
           / static_cast<double>(p["NORM"]);
     }
   }
@@ -172,7 +168,7 @@ y_(ndat_),sigma_(ndat_),K_(),grid_(p),inputGrid_(ndat_)
 {
   //note: T_=1/beta now taken care of elsewhere
   if (ndat_<4) 
-    boost::throw_exception(std::invalid_argument("NDAT too small"));
+    throw std::invalid_argument("NDAT too small");
 
 
   if (p.defined("DATA") && p["DATA"].as<std::string>() != "") {
@@ -186,10 +182,10 @@ y_(ndat_),sigma_(ndat_),K_(),grid_(p),inputGrid_(ndat_)
       //if using input file with X_i, need to define them first
       for (int i = 1; i < ndat(); ++i) {
         //first check for explictly assigned
-        std::string x_str = "X_"+boost::lexical_cast<std::string>(i);
+        std::string x_str = "X_"+std::to_string(i);
         if(!p.defined(x_str)){
           p.define<double>(x_str,"");
-          p.define<double>("SIGMA_"+boost::lexical_cast<std::string>(i),"");
+          p.define<double>("SIGMA_"+std::to_string(i),"");
         }
       }
     read_data_from_param_file(p);
@@ -214,9 +210,8 @@ void ContiParameters::read_covariance_matrix_from_text_file(
   std::cerr << "Reading covariance matrix\n";
   std::ifstream covstream(fname.c_str());
   if (!covstream)
-    boost::throw_exception(
-        std::invalid_argument(
-            "could not open covariance matrix file: " + fname));
+    throw std::invalid_argument(
+            "could not open covariance matrix file: " + fname);
 
   int i, j;
   double covariance;
@@ -330,8 +325,7 @@ void MaxEntParameters::singular_value_decompose_kernel(bool verbose,
     ns_ = (S[s] >= prec) ? s + 1 : ns_;
   }
   if (ns() == 0)
-    boost::throw_exception(
-        std::logic_error("all singular values smaller than the precision"));
+    throw std::logic_error("all singular values smaller than the precision");
   
 }
 void MaxEntParameters::check_high_frequency_limit(const vector_type& y,const kernel_type kt){
