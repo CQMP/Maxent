@@ -4,6 +4,16 @@ Every regeneration of files in `reference/` is logged here: date, commit,
 reason, affected cases, and the largest difference to the previous
 references (from `compare.py --report`). Newest entry first.
 
+## 2026-09-24: command-line failures return nonzero (B1)
+
+* **Source:** `modernize/step2.3c`, based on merge commit `454f7ee`.
+* **Reason:** expected behavior change: Maxent now returns status 1 on errors
+  and reports standard exceptions with `e.what()` instead of Boost diagnostic
+  formatting.
+* **Cases:** `cli_missing_beta` only. Exit status changed from 0 to 1; stderr
+  changed from the multi-line Boost diagnostic to
+  `Caught Exception: Critical parameters not defined`.
+
 ## 2026-09-24: legendre_convert reference added
 
 * **Source:** `modernize/step2` merge commit `a57f150`; the utility is still

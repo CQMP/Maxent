@@ -408,8 +408,8 @@ Boost boundaries for now.
 
 **2.3C: command-line behavior** (updates the CLI references on purpose)
 
-* B1: non-zero exit code on errors, together with `boost::diagnostic_information`
-  → `e.what()` (moved here from 2.2).
+* **Done 2026-09-24:** B1: non-zero exit code on errors, together with
+  `boost::diagnostic_information` → `e.what()` (moved here from 2.2).
 * B16: accept `half-lorentzian` as well as `half lorentzian`, and show the real
   `CUT` default in `--help.grids`.
 * B10: a `SEED` parameter for the bootstrap errors (moved here from 2.2).

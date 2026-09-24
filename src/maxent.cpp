@@ -11,11 +11,11 @@
 
 #include "maxent.hpp"
 #include <alps/utilities/fs/remove_extensions.hpp>
-#include <boost/exception/diagnostic_information.hpp> 
 
 
 int main(int argc,const char** argv)
 {
+  try {
   alps::params parms(argc,argv); 
   MaxEntSimulation::define_parameters(parms);
   //other help messages
@@ -95,7 +95,6 @@ int main(int argc,const char** argv)
   else
     basename=parms["BASENAME"].as<std::string>();
   
-  try{
         if(exitEarly){
           throw std::runtime_error("Critical parameters not defined");
         }
@@ -163,11 +162,14 @@ int main(int argc,const char** argv)
           my_sim.run();
           my_sim.evaluate();
         }
+    return 0;
   }
     catch(const std::exception &e){
-        std::cerr << "Caught Exception " << boost::diagnostic_information(e);
+        std::cerr << "Caught Exception: " << e.what() << '\n';
+        return 1;
     }
     catch(...){
-        std::cerr << "Caught Exception" << boost::current_exception_diagnostic_information();
+        std::cerr << "Caught unknown exception\n";
+        return 1;
     }
 }

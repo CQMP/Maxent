@@ -73,7 +73,7 @@ CLI = [
     ("cli_help",         ["--help"],        "--help output"),
     ("cli_help_models",  ["--help.models"], "--help.models output"),
     ("cli_help_grids",   ["--help.grids"],  "--help.grids output"),
-    ("cli_missing_beta", None,              "error output when BETA is missing (B1: exit code is 0)"),
+    ("cli_missing_beta", None,              "error output and failing exit status when BETA is missing"),
 ]
 
 
@@ -115,7 +115,7 @@ def all_cases():
     for name, args, covers in CLI:
         if args is None:
             cases.append(dict(name=name, set="cli", inputs="test/regression/inputs/" + name,
-                              param="case.param", args=[], covers=covers, flags=["B1"],
+                              param="case.param", args=[], covers=covers, flags=[],
                               expect="exception"))
         else:
             cases.append(dict(name=name, set="cli", inputs=None, param=None,
