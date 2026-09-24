@@ -35,7 +35,7 @@ MaxEntParameters(p) , def_(nfreq()), text_output(p["TEXT_OUTPUT"])
 /// this is needed for transform_into_singular_space
 /// to work safely
 void MaxEntHelper::checkDefaultModel(const vector_type &D) const{
-    for(int i=0;i<D.size();i++){
+    for(Eigen::Index i=0;i<D.size();i++){
         double Di=D(i);
         if(Di==0 || std::isnan(Di))
           throw std::logic_error("Error: Default model point = 0 at omega="
@@ -181,7 +181,7 @@ double MaxEntHelper::chi2(const vector_type& A) const
   vector_type del_G = maxent_prec_prod(K(), A) - y();
   
   /*std::cout<<"in computation of chi2:"<<std::endl;
-   for(int i=0;i<y().size();++i){
+   for(Eigen::Index i=0;i<y().size();++i){
    std::cout<<i<<" "<<maxent_prec_prod(K(), A)[i]<<" "<<y()[i]<<std::endl;
    }*/
   
@@ -196,7 +196,7 @@ void MaxEntHelper::print_chi2(const vector_type& A, std::ostream &os) const
   vector_type backcont=maxent_prec_prod(K(), A);
   vector_type defaultm=maxent_prec_prod(K(), Default());
   os<<"#first column: index (Matsubara frequency). second column: fitted function. third: input data. fourth: default model."<<std::endl;
-  for(int i=0;i<y().size();++i){
+  for(Eigen::Index i=0;i<y().size();++i){
     os<<i<<" "<<backcont[i]<<" "<<y()[i]<<" "<<defaultm[i]<<std::endl;
   }
   os<<std::endl;
@@ -250,19 +250,19 @@ void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A_in,const dou
     ext_back = G*norm;
     if(text_output){
       if(ph_sym){
-        for(int n=0; n<G.size();n++){
+        for(Eigen::Index n=0; n<G.size();n++){
           os << pp->inputGrid(n) << " " << G(n)*norm << std::endl;
         }
       }
       else{
-        for(int n=0;n<G.size();n+=2){
+        for(Eigen::Index n=0;n<G.size();n+=2){
           os << pp->inputGrid(n/2) << " " << G(n)*norm << " " << G(n+1)*norm << std::endl;
         }
       }
     }
     //scale y by error then determine 'error' of integral
     vector_type y_scaled = y();
-    for(int i=0;i<y_scaled.size();i++){
+    for(Eigen::Index i=0;i<y_scaled.size();i++){
       y_scaled(i) *= sigma(i);
     }
     double max_err = bc.max_error(G,y_scaled); 
@@ -291,7 +291,7 @@ void determineVariance(std::vector<vector_type> &in,vector_type &mean, vector_ty
   }
   mean /= in.size();
   //compute stddev  
-  for(int i=0;i<mean.size();i++){
+  for(Eigen::Index i=0;i<mean.size();i++){
     double stddev =0;
     double mean_i = mean(i);
     for(std::size_t v=0;v<in.size();v++){

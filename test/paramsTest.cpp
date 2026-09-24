@@ -371,9 +371,14 @@ TEST(Parameters,CovarianceDataInFile){
   p["DATA"]=pf;
   p["NDAT"] = 5;
   p["COVARIANCE_MATRIX"]=cov;
+  p["DATASPACE"]="frequency";
+  p["PARTICLE_HOLE_SYMMETRY"]=true;
 
   //MaxEntParameters handles covariance scaling
+  testing::internal::CaptureStderr();
   MaxEntParameters c(p);
+  const std::string diagnostics = testing::internal::GetCapturedStderr();
+  EXPECT_NE(diagnostics.find("The high frequency limit is not 1!"), std::string::npos);
   EXPECT_EQ(c.ndat(),5);
   EXPECT_EQ(c.T(),0.5);
 
