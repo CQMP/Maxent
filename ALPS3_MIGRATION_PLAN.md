@@ -190,6 +190,7 @@ confirmed it numerically.
 | B19 | `src/maxent_simulation.cpp` (`levenberg_marquardt`) | The minimizer can diverge. Reproducer: `test/regression/inputs/t_model_quadratic_rise_exp_decay` with `--LAMBDA=1`: from the second α on, Q ≈ 1e26 and norm ≈ 1e8, every α hits `MAX_IT` (258 s); with `--MAX_IT=100` it stops with `Q=NaN, something went wrong`. Also diverges with the quadratic grid and with `OMEGA_MIN=0.2`, so it is not caused by the default model vanishing at ω=0. `LAMBDA=2` converges. Needs step-size control / a trust region. |
 | B20 | `pade/pade_arbitrary_degree/` | Pade does not compile: missing `#include <iostream>`, ALPSCore changed `params::help_requested()`, and `std::complex<mpf_class>` is not supported by libc++ (the standard only allows `std::complex` of floating-point types). Left off (D7). **Resolved 2026-09-23 by removing Pade (D7).** |
 | B21 | `src/` (logging) | Progress and diagnostic messages go to `std::cerr` (25 places in `src/`) with no convention and no verbosity control (issue #46, open since 2018; the old PR #47 `cerr -> cout` was closed as outdated on 2026-09-23). Decide a convention (results/progress to `cout`, warnings/errors to `cerr`), add a verbosity setting, and update the CLI regression references deliberately (they record stdout/stderr). |
+| B22 | `src/maxent_helper.cpp` (`log_prob`, `chi_scale_factor`) | Performance: for large NFREQ the run time is dominated by dense NFREQ x NFREQ work per alpha (`K^T K`, a Cholesky factorization of an NFREQ x NFREQ matrix in `log_prob`); the Legendre example (NFREQ=5000) takes ~57 s. These determinants/eigenvalues could be computed in the singular space (ns x ns). Not a correctness issue; candidate for a later optimization with the regression suite as the safety net. |
 
 ---
 
@@ -311,6 +312,26 @@ ASan+UBSan with no sanitizer reports), clang 22 and GCC 15. Notes:
 
 ### 2.2 Dependency reduction
 
+**Done 2026-09-24** (branch `modernize/step2.2`). Decisions: the Legendre kernel
+uses its **closed form**; `kk` got regression cases first; the `e.what()` error
+text, the `SEED` parameter and the old ublas code moved to 2.3.
+
+* `kk` regression cases added (3 cases, references from the GSL build); `kk`
+  writes 17 significant digits.
+* `kk`: GSL spline replaced by a natural cubic spline with the same algorithm;
+  references reproduced **bit for bit** (serial and OpenMP), same speed.
+* Legendre kernel in closed form, `K = -sqrt(2l+1) beta (-1)^l i_l(a) / (2 cosh a)`
+  with `a = beta omega / 2`, from scaled modified spherical Bessel functions. It
+  reproduces the GSL kernels to **3.3e-16**; no reference changed. GSL removed
+  from the build.
+* Boost utilities replaced by the standard library (`shared_ptr`,
+  `lexical_cast`, `throw_exception`, `to_lower`, `isnan`, Boost.Random);
+  bit-identical results.
+* Remaining Boost: Boost.Math (header-only) in the core,
+  `diagnostic_information` (2.3), `program_options` in the utilities.
+* Warnings: 51 → 44. The Legendre example runtime is unchanged (~57-60 s):
+  the kernel was never the bottleneck (B22).
+
 | Item | Action | Notes |
 |---|---|---|
 | `cmake/FindGSL.cmake` | Delete; it uses the deprecated `EXEC_PROGRAM` (CMake dev warnings). If GSL stays anywhere, use CMake's built-in `FindGSL` → `GSL::gsl`. | |
@@ -330,7 +351,11 @@ After this step, the core library's only Boost dependency is header-only Boost.M
 
 ### 2.3 Code fixes
 
-* Fix B1 through B20 (§1.6), including B7b. B21 (logging convention and verbosity) can go here or into a later step; it changes the CLI regression references on purpose. B5, B6 and B7 change reachable behavior, so each gets its own commit with a before/after test.
+* Fix B1 through B20 (§1.6), including B7b. B21 (logging convention and verbosity) can go here or into a later step; it changes the CLI regression references on purpose.
+* Moved here from 2.2 (they change the CLI references on purpose): replace
+  `boost::diagnostic_information` by `e.what()` (with B1), add a `SEED`
+  parameter for the bootstrap (B10), and delete the commented-out ublas and
+  LAPACK-bindings code. B5, B6 and B7 change reachable behavior, so each gets its own commit with a before/after test.
 * Remove all `using namespace boost::numeric;` lines, `#include <alps/config.hpp>`, dead commented-out ublas and lapack-bindings code, and the unused `alps::cast`.
 * Make `eigen_hdf5.hpp`/`eigen_lapack.hpp` functions `inline`, or move them into `.cpp` files (B8).
 * Use `Eigen::Index` for loop indices (B14). Consider `BDCSVD` in place of `JacobiSVD` (B11); that one is a numerics change and needs checking against the references.
@@ -540,7 +565,7 @@ Recommended path:
 | D3 | Eigen as a new ALPS dependency, or port numerics to ublas/LAPACK | step 4/5 | Keep Eigen (header-only; find, else FetchContent). A port would be large and risky. |
 | D4 | Location in ALPS: `applications/maxent` vs `tool/maxent` | step 5 | `applications/maxent` (it is a full application with utilities and tests) |
 | D5 | Test framework inside ALPS: keep gtest vs `add_alps_test`/Boost.Test | step 2 (framework choice), step 5 | Keep gtest for unit tests and use `add_alps_test` for example regressions. Ask ALPS maintainers whether a fetched gtest is acceptable. |
-| D6 | GSL in `kk`: replace or keep optional | step 2 | Replace (small spline), so the whole package is GSL-free |
+| D6 | GSL in `kk`: replace or keep optional | step 2 | **Resolved 2026-09-24:** replaced by a natural cubic spline (same algorithm, bit-identical results). GSL is no longer used anywhere. |
 | D7 | Pade: keep (GMP dependency), fix up, or drop | step 2 | **Resolved 2026-09-23: removed.** Pade (all 13 files, including the five unbuilt ones) is deleted, together with `MAXENT_BUILD_PADE` and its README section. |
 | D8 | Install GSL locally once to produce the original Legendre reference outputs | step 2.0 | **Resolved 2026-09-23:** GSL 2.8 installed via MacPorts (`/opt/local`) and detected by `cmake/FindGSL.cmake`. |
 | D9 | Rebuild the stale local ALPSCore install | step 2 | **Resolved 2026-09-23:** `~/Projects/ALPSCore` switched to `master` (`3606edfb`, = v2.3.3 + merge; CMake package still reports 2.2.0), built in `build-master/` (C++17, MPI on, Boost 1.88, HDF5 2.1.1, RelWithDebInfo), 135/135 ALPSCore tests pass, clean install to `~/Projects/ALPSCore/install`. The install now also ships gtest/gmock 1.16. |
@@ -589,3 +614,4 @@ make -j8 && ctest     # 6/6 executables, 35 cases pass, ~9 s
 | 2026-09-23 | 2.2 prep | Ready for step 2.2: `modernize/step2` at `ccc3be4` builds against ALPSCore `master` `8d2ed3a9` (C++17, Boost 1.88, found without `Boost_DIR`); 39/39 tests, regression bit-identical (920 + 237 datasets). Note: `~/Projects/ALPSCore/install` currently holds a C++11/Boost 1.81 build that Maxent rejects; use an install of current `master`. |
 | 2026-09-23 | repo | Closed two outdated PRs: #35 (SpM notes, superseded by #45) and #47 (`cerr -> cout`, 2018). Issue #46 (logging to `cerr`) stays open; recorded as B21. |
 | 2026-09-23 | 2.x | Pade removed (D7), on branch `modernize/remove-pade`: `pade/` (13 files: 6 built, 5 unbuilt alternatives, header, CMake), `MAXENT_BUILD_PADE`, and the README section. It required GMP (`mpf_class`, 256-bit default precision) and did not compile (B20). |
+| 2026-09-24 | 2.2 | Step 2.2 done on `modernize/step2.2`: kk regression cases, kk spline, closed-form Legendre kernel (GSL removed), Boost utilities → std. No reference changed; 41/41 tests. ALPSCore#668 merged (GoogleTest 1.18, not installed, CMake 3.16). Found B22 (performance). |
