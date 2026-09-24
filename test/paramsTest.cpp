@@ -143,6 +143,27 @@ TEST(Parameters,RejectsIncompleteFinalDataRecord){
   std::remove(pf.c_str());
 }
 
+TEST(Parameters,RejectsIncompleteFinalComplexDataRecord){
+  std::string pf=alps::temporary_filename("in_file.dat");
+  {
+    std::ofstream tempfile(pf.c_str());
+    tempfile << "0 0.1 0.01 -0.2 0.02\n"
+             << "1 0.3 0.03 -0.4 0.04\n"
+             << "2 0.5 0.05 -0.6\n"; // Missing the imaginary error bar.
+  }
+
+  alps::params p;
+  MaxEntSimulation::define_parameters(p);
+  p["BETA"]=2;
+  p["DATA"]=pf;
+  p["DATASPACE"]="frequency";
+  p["PARTICLE_HOLE_SYMMETRY"]=false;
+  p["NDAT"] = 6;
+
+  EXPECT_THROW(ContiParameters c(p), std::runtime_error);
+  std::remove(pf.c_str());
+}
+
 TEST(Parameters,MaxentParams){
     //set up parameters
 	alps::params p;
