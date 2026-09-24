@@ -361,29 +361,57 @@ and Boost.Math in `legendre_convert`.
 
 ### 2.3 Code fixes
 
-* Fix B1 through B20 (§1.6), including B7b. B21 (logging convention and verbosity) can go here or into a later step; it changes the CLI regression references on purpose.
-* Moved here from 2.2 (they change the CLI references on purpose): replace
-  `boost::diagnostic_information` by `e.what()` (with B1), add a `SEED`
-  parameter for the bootstrap (B10), and delete the commented-out ublas and
-  LAPACK-bindings code.
-* `legendre_convert` (decided 2026-09-24), in this order:
-  1. Add regression cases for `legendre_convert` first (it has no tests), with
-     references from the current Boost build, like the `kk` cases in 2.2.
-  2. Replace Boost.Random by `<random>`. The `mt19937` engine gives identical
-     numbers; the normal variates differ (different algorithm), which is
-     harmless because the error estimate is seeded from the clock.
-  3. Replace `boost::math::factorial` by a product (only small arguments
-     occur).
-  4. Replace `boost::math::legendre_p` by the standard three-term recurrence.
-     `std::legendre` is not an option: libc++ (AppleClang) does not implement
-     the C++17 special math functions.
-  Keep `boost::math::sph_bessel` (also missing in libc++; our own version
-  would need careful checking at large l and argument) and `program_options`
-  (no standard equivalent). B5, B6 and B7 change reachable behavior, so each gets its own commit with a before/after test.
-* Remove all `using namespace boost::numeric;` lines, `#include <alps/config.hpp>`, dead commented-out ublas and lapack-bindings code, and the unused `alps::cast`.
-* Make `eigen_hdf5.hpp`/`eigen_lapack.hpp` functions `inline`, or move them into `.cpp` files (B8).
-* Use `Eigen::Index` for loop indices (B14). Consider `BDCSVD` in place of `JacobiSVD` (B11); that one is a numerics change and needs checking against the references.
-* Keep the `MaxEntSimulation` public getters stable, because the tests use them.
+Grouped by what each item does to the regression references (agreed
+2026-09-24). One PR per group, in this order, each with a Copilot review.
+Already done elsewhere: B2, B3 (2.1), B7 (`xi_bose_bugfix`), B20 (Pade removed).
+
+**2.3A: no change to results** (references must stay bit-identical)
+
+* Fix all compiler warnings (44 at the start of 2.3): B14 (`std::size_t` vs
+  `Eigen::Index` loops), B12 (member initialization order), unused variables,
+  misleading indentation, B13 (deprecated `params::get_origin_name()`; the
+  default `BASENAME` must not change). Then turn on `MAXENT_WERROR` in the `dev`
+  preset.
+* B8: make the functions in `eigen_hdf5.hpp`/`eigen_lapack.hpp` `inline`.
+* B4: the size check in `Backcont::max_error` (inverted `NDEBUG` guard).
+* B5, B6: remove the unreachable kernel branches.
+* B9: the data-file reading loop (`while (datstream)` reads past EOF); same
+  results for valid files, plus a test with trailing blank lines.
+* Remove the commented-out ublas and LAPACK-bindings code, `<alps/config.hpp>`
+  includes and the unused `alps::cast`.
+
+**2.3B: `legendre_convert`** (decided 2026-09-24), in this order:
+
+1. Add regression cases for `legendre_convert` first (it has no tests), with
+   references from the current Boost build, like the `kk` cases in 2.2.
+2. Replace Boost.Random by `<random>`. The `mt19937` engine gives identical
+   numbers; the normal variates differ (different algorithm), which is
+   harmless because the error estimate is seeded from the clock.
+3. Replace `boost::math::factorial` by a product (only small arguments occur).
+4. Replace `boost::math::legendre_p` by the standard three-term recurrence.
+   `std::legendre` is not an option: libc++ (AppleClang) does not implement the
+   C++17 special math functions.
+
+Keep `boost::math::sph_bessel` (also missing in libc++; our own version would
+need careful checking at large l and argument) and `program_options` (no
+standard equivalent).
+
+**2.3C: command-line behavior** (updates the CLI references on purpose)
+
+* B1: non-zero exit code on errors, together with `boost::diagnostic_information`
+  → `e.what()` (moved here from 2.2).
+* B16: accept `half-lorentzian` as well as `half lorentzian`, and show the real
+  `CUT` default in `--help.grids`.
+* B10: a `SEED` parameter for the bootstrap errors (moved here from 2.2).
+
+**2.3D: numerical changes** (each its own commit and `REFERENCE_CHANGES.md` entry)
+
+* B7b: time-bosonic kernel: use the ω→0 limit only at ω = 0.
+* B15: remove the `float` casts in the log grid.
+* B11 (optional): `BDCSVD` instead of `JacobiSVD`; measure against the
+  references before deciding.
+
+Keep the `MaxEntSimulation` public getters stable, because the tests use them.
 
 ### 2.4 Hygiene and CI
 
@@ -405,6 +433,17 @@ This is the last task of step 2, still on ALPSCore:
 1. **Parameters seam:** introduce `maxent::params`, Maxent's own class (§4.1). Every `alps::params` use in `src/` goes through it. At the end of step 2 it can still wrap `alps::params`.
 2. **HDF5 seam:** move all archive access into `maxent_io_hdf5.{hpp,cpp}`, with functions such as `write_vector(path, Eigen::VectorXd)`, `read_vector(path)` and `write_params(...)`. Nothing else includes `<alps/hdf5...>`.
 3. Tests use `std::filesystem::temp_directory_path()` in place of `alps::temporary_filename`.
+
+### 2.6 Physics and algorithms (after 2.3–2.5)
+
+Moved out of 2.3 (2026-09-24) because they are physics or algorithm changes
+rather than cleanup; each needs its own decision:
+
+* B17: Legendre bosonic kernel (currently the fermionic formula).
+* B18: default grid when `OMEGA_MIN=0` (change the default, or warn).
+* B19: minimizer divergence (step-size control or a trust region).
+* B21: logging convention and verbosity (issue #46).
+* B22: performance of the core at large NFREQ.
 
 **Step 2 acceptance:**
 
