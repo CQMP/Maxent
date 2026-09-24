@@ -31,6 +31,9 @@ public:
   : x_(x), y_(y), c_(x.size(), 0.) {
     const std::size_t n = x.size();
     if (n < 3 || y.size() != n) throw std::invalid_argument("spline needs at least 3 points and matching x and y");
+    // like gsl_spline_init: the grid must be strictly increasing
+    for (std::size_t i = 0; i + 1 < n; ++i)
+      if (!(x[i + 1] > x[i])) throw std::invalid_argument("spline: x values must be strictly increasing");
     const std::size_t m = n - 2;  // interior points
     std::vector<double> diag(m), offdiag(m), rhs(m);
     for (std::size_t i = 0; i < m; ++i) {
