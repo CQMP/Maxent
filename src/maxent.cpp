@@ -11,7 +11,6 @@
 
 #include "maxent.hpp"
 #include <alps/utilities/fs/remove_extensions.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/exception/diagnostic_information.hpp> 
 
 
@@ -112,14 +111,14 @@ int main(int argc,const char** argv)
             std::cout<<"Performing " << nruns <<" runs" <<std::endl;
 	          //ALPSCore requires all params are defined
  	          for(int i=0;i<nruns;i++)
-		          parms.define<std::string>("RUN_" + boost::lexical_cast<std::string>(i),"Run");
+		          parms.define<std::string>("RUN_" + std::to_string(i),"Run");
             //vectors to hold spectra
             std::vector<vector_type> max_spectra(nruns);
             std::vector<vector_type> av_spectra(nruns);
 
             vector_type omega_grid;
             for(int i=0;i<nruns;i++){
-                std::string currModel = parms["RUN_" + boost::lexical_cast<std::string>(i)];
+                std::string currModel = parms["RUN_" + std::to_string(i)];
                 parms["DEFAULT_MODEL"]= currModel;
                 
                 //run a simulation with the new default model.

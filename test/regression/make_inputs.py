@@ -15,6 +15,9 @@ Spectra (all normalized to 1 on the support Maxent sees):
   S3  2 N(0, 1.5) restricted to omega >= 0          (bosonic, OMEGA_MIN=0)
   S4  N(2.5, 0.5) on omega >= 0 (T=0, OMEGA_MIN=0)
 
+The kk inputs come from the maxent references (Im parts) or analytically from
+a Gaussian spectrum (Re part, needs scipy for the Dawson function).
+
 Cases with OMEGA_MIN=0 use FREQUENCY_GRID=linear: the default Lorentzian grid is
 centered at (OMEGA_MIN+OMEGA_MAX)/2 and has almost no points near omega=0.
 """
@@ -306,6 +309,19 @@ def make(name, case_dir):
         grid = {"lorentzian": "lorentzian", "half_lorentzian": '"half lorentzian"',
                 "quadratic": "quadratic", "log": "log", "linear": "linear"}[name[len("t_grid_"):]]
         base_frequency_ph(case_dir, name, [("FREQUENCY_GRID", grid)])
+    elif name in ("kk_imag_to_real_green", "kk_imag_to_real_self"):
+        source, dataset, scale = {
+            "kk_imag_to_real_green": ("u0_frequency", "files/in.out.avspec.dat", -np.pi),
+            "kk_imag_to_real_self": ("self_u1", "files/in.out.avspec_self.dat", 1.0),
+        }[name]
+        with h5py.File(HERE / "reference" / f"{source}.h5", "r") as f:
+            spec = f[dataset][()]
+        write_columns(case_dir / "input.dat", spec[:, 0], scale * spec[:, 1])
+    elif name == "kk_real_to_imag":
+        from scipy.special import dawsn
+        w = np.linspace(-10, 10, 401)
+        # Re G of a normalized Gaussian spectrum (sigma 1): sqrt(2)/sigma D(w/(sqrt(2) sigma))
+        write_columns(case_dir / "input.dat", w, np.sqrt(2) * dawsn(w / np.sqrt(2)))
     elif name == "cli_missing_beta":
         write_param(case_dir, [("NDAT", 4), ("X_0", 0.1), ("X_1", 0.2), ("X_2", 0.3), ("X_3", 0.4),
                                ("SIGMA_0", 0.5), ("SIGMA_1", 0.5), ("SIGMA_2", 0.5), ("SIGMA_3", 0.5)])

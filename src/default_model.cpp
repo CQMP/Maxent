@@ -11,7 +11,7 @@
 
 #include "default_model.hpp"
 #include <fstream>
-#include <boost/algorithm/string.hpp>
+#include "maxent_string.hpp"
 
 
 
@@ -20,7 +20,7 @@ TabFunction::TabFunction(const alps::params& p, std::string const& name){
   std::string p_name = p[name].as<std::string>();
   std::ifstream defstream(p_name.c_str());
   if (!defstream)
-    boost::throw_exception(std::invalid_argument("could not open default model file: "+p[name].as<std::string>()));
+    throw std::invalid_argument("could not open default model file: "+p[name].as<std::string>());
   double om, D;
   std::string line;
   while (getline(defstream, line)) {
@@ -33,7 +33,7 @@ TabFunction::TabFunction(const alps::params& p, std::string const& name){
   double omega_max = p["OMEGA_MAX"];
   double omega_min = p.exists("OMEGA_MIN") ? p["OMEGA_MIN"] : -omega_max; //we had a 0 here in the bosonic case. That's not a good idea if you're continuing symmetric functions like chi(omega)/omega. Change omega_min to zero manually if you need it.
   if(Omega_[0]>omega_min || Omega_.back()<omega_max)
-      boost::throw_exception(std::logic_error(std::logic_error("Input range outside of default model")));
+      throw std::logic_error(std::logic_error("Input range outside of default model"));
     
   if (Omega_[0]!=omega_min || Omega_.back()!=omega_max){
     std::cout<<"Omega[ 0] "<<Omega_[0]<<" omega min: "<<omega_min<<std::endl;
@@ -64,7 +64,7 @@ double TabFunction::operator()(const double omega) {
 }
 
 
-GeneralDefaultModel::GeneralDefaultModel(const alps::params& p, boost::shared_ptr<Model> mod)
+GeneralDefaultModel::GeneralDefaultModel(const alps::params& p, std::shared_ptr<Model> mod)
 : DefaultModel(p)
 , Mod(mod)
 , ntab(5001)
@@ -121,72 +121,72 @@ double GeneralDefaultModel::norm() {
   return sum;
 }
 
-boost::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, std::string const& name){
+std::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, std::string const& name){
   std::string p_name = parms[name].as<std::string>();
-  boost::to_lower(p_name);
+  to_lower(p_name);
   if (p_name == "flat") {
     std::cout << "Using flat default model" << std::endl;
-    return boost::shared_ptr<DefaultModel>(new FlatDefaultModel(parms));
+    return std::shared_ptr<DefaultModel>(new FlatDefaultModel(parms));
   }
   else if (p_name == "gaussian") {
     std::cout << "Using Gaussian default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new Gaussian(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    std::shared_ptr<Model> Mod(new Gaussian(parms));
+    return std::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
   else if (p_name == "twogaussians" || p_name == "two gaussians") {
     std::cout << "Using sum of two Gaussians default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new TwoGaussians(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    std::shared_ptr<Model> Mod(new TwoGaussians(parms));
+    return std::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
   else if (p_name == "shifted gaussian" || p_name == "shiftedgaussian") {
     std::cout << "Using shifted Gaussian default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new ShiftedGaussian(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    std::shared_ptr<Model> Mod(new ShiftedGaussian(parms));
+    return std::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
   else if (p_name == "double gaussian" || p_name == "doublegaussian") {
     std::cout << "Using double Gaussian default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new DoubleGaussian(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    std::shared_ptr<Model> Mod(new DoubleGaussian(parms));
+    return std::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
   else if (p_name == "general double gaussian" || p_name == "generaldoublegaussian") {
     std::cout << "Using general double Gaussian default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new GeneralDoubleGaussian(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    std::shared_ptr<Model> Mod(new GeneralDoubleGaussian(parms));
+    return std::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
   else if (p_name == "linear rise exp decay" || p_name == "linearriseexpdecay") {
     std::cout << "Using linear rise exponential decay default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new LinearRiseExpDecay(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    std::shared_ptr<Model> Mod(new LinearRiseExpDecay(parms));
+    return std::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
   else if (p_name == "quadratic rise exp decay" || p_name == "quadraticriseexpdecay") {
     std::cout << "Using quadratic rise exponential decay default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new QuadraticRiseExpDecay(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    std::shared_ptr<Model> Mod(new QuadraticRiseExpDecay(parms));
+    return std::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
   else if (p_name == "lorentzian") {
     std::cout << "Using Lorentzian default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new Lorentzian(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    std::shared_ptr<Model> Mod(new Lorentzian(parms));
+    return std::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
   else if (p_name == "twolorentzians" || p_name == "two lorentzians") {
     std::cout << "Using sum of two Lorentzians default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new TwoLorentzians(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    std::shared_ptr<Model> Mod(new TwoLorentzians(parms));
+    return std::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
   else if (p_name == "shifted lorentzian" || p_name == "shiftedlorentzian") {
     std::cout << "Using shifted Lorentzian default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new ShiftedLorentzian(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    std::shared_ptr<Model> Mod(new ShiftedLorentzian(parms));
+    return std::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
   else if (p_name == "double lorentzian" || p_name == "doublelorentzian") {
     std::cout << "Using double Lorentzian default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new DoubleLorentzian(parms));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    std::shared_ptr<Model> Mod(new DoubleLorentzian(parms));
+    return std::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
   else { 
     std::cout << "Using tabulated default model" << std::endl;
-    boost::shared_ptr<Model> Mod(new TabFunction(parms, name));
-    return boost::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
+    std::shared_ptr<Model> Mod(new TabFunction(parms, name));
+    return std::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
 }
 

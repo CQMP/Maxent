@@ -11,13 +11,8 @@
 
 #include "maxent_kernel.hpp"
 #include <cmath>
-#include <boost/algorithm/string.hpp>    
-#include <boost/lexical_cast.hpp>
-#include <boost/math/special_functions/legendre.hpp>    //for Legendre kernel
-#include <boost/math/special_functions/factorials.hpp>  //for Legendre kernel
-#include <gsl/gsl_integration.h>                        //for Legendre Kernel
+#include "maxent_string.hpp"
 
-namespace bmth = boost::math;
 
 kernel::kernel(alps::params &p, const vector_type& freq, vector_type &inputGrid):
 ndat_(p["NDAT"]),
@@ -30,8 +25,8 @@ K_(ndat_,nfreq_)
   K_=matrix_type::Zero(ndat_,nfreq_);
   std::string dataspace_name = p["DATASPACE"];
   std::string kernel_name = p["KERNEL"];
-  boost::to_lower(dataspace_name);
-  boost::to_lower(kernel_name);
+  to_lower(dataspace_name);
+  to_lower(kernel_name);
   bool ph_symmetry=p["PARTICLE_HOLE_SYMMETRY"];
   std::cout<<"using kernel "<<kernel_name<<" in domain "<<dataspace_name;
   if(ph_symmetry) std::cout<<" with ph symmetry"; else std::cout<<" without ph symmetry"; std::cout<<std::endl;
@@ -46,7 +41,7 @@ K_(ndat_,nfreq_)
     if(p.defined("TAU_1")){
         std::cout<<"Using param direct input tau points"<<std::endl;
         for(int i=0;i<ndat_;i++){
-          tau_points_[i]=p["TAU_"+boost::lexical_cast<std::string>(i)];
+          tau_points_[i]=p["TAU_"+std::to_string(i)];
         }
     }
     //legacy tau points in param file
@@ -54,9 +49,9 @@ K_(ndat_,nfreq_)
       std::cout<<"Using param input tau points"<<std::endl;
       tau_points_[0]=p["TAU_0"];
       for(int i=1;i<ndat_;i++)
-        p.define<double>("TAU_"+boost::lexical_cast<std::string>(i),"");
+        p.define<double>("TAU_"+std::to_string(i),"");
       for(int i=1;i<ndat_;i++){
-        tau_points_[i]=p["TAU_"+boost::lexical_cast<std::string>(i)];
+        tau_points_[i]=p["TAU_"+std::to_string(i)];
       }
     }
     else{
@@ -247,72 +242,57 @@ void kernel::set_kernel_type(const std::string &dataspace_name, const std::strin
   }
 
 }
-struct integrand_params {int l; double omega;double T_;};
+namespace {
 
-///Integrand of the Legendre Kernel for GSL integration
-double  legendre_kernel_integrand(double x, void * params){
-    double tau = x;
-    //parms = [l,omega,T_]
-    integrand_params *p = (integrand_params *)params;
-    int l = p->l;
-    double omega = p->omega;
-    double T_ = p->T_;
-    //std::cout<< l<< std::endl;
-    return bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+std::exp(-omega/T_));
+/// Scaled modified spherical Bessel functions of the first kind,
+/// s[l] = i_l(x) exp(-x) for l = 0..lmax-1 and x >= 0.
+/// The ratios f_l = i_l/i_{l-1} satisfy f_l = x/(2l+1 + x f_{l+1}); this
+/// continued fraction is evaluated downward from an order N that is doubled
+/// until f_1..f_{lmax-1} converge, and i_0(x) exp(-x) = (1 - exp(-2x))/(2x).
+/// Only products and sums of positive numbers occur, so there is no
+/// cancellation for any x.
+std::vector<double> scaled_spherical_bessel_i(int lmax, double x) {
+  std::vector<double> s(lmax, 0.);
+  if (lmax == 0) return s;
+  s[0] = x == 0. ? 1. : -std::expm1(-2. * x) / (2. * x);
+  if (x == 0. || lmax == 1) return s;
+  std::vector<double> f(lmax, 0.), f_prev;
+  for (int n = lmax + 20 + 2 * static_cast<int>(std::ceil(x));; n *= 2) {
+    double fl = 0.;
+    for (int l = n; l >= 1; --l) {
+      fl = x / (2 * l + 1 + x * fl);
+      if (l < lmax) f[l] = fl;
+    }
+    bool converged = !f_prev.empty();
+    for (int l = 1; converged && l < lmax; ++l)
+      converged = std::abs(f[l] - f_prev[l]) <= 1e-16 * std::abs(f[l]);
+    if (converged) break;
+    f_prev = f;
+  }
+  for (int l = 1; l < lmax; ++l) s[l] = s[l - 1] * f[l];
+  return s;
 }
-void kernel::setup_legendre_kernel(const alps::params &p, const vector_type& freq,const int lmax){
-    if(lmax>boost::math::max_factorial<double>::value)
-        throw std::runtime_error("lmax is greater than boost factorial precision");
-    
-    const double PI = std::acos(-1);
-    const std::complex<double> CONE(0,1);
-    //recall that ndat()=lmax
 
-    int N = 20000/2;
-    gsl_integration_workspace *w = gsl_integration_workspace_alloc (1000);
-    
-    for(int l=0;l<lmax;l++){
-        for(int j=0;j<nfreq_;j++){
-            double I=1;
-            double I1=0;
-            double omega =freq[j];
-            double h = (1/T_-0)/(2*N);
-            //int Pl(x(tau))*exp(-tau*omega)/(1\pm exp(-beta*omega))
-            
-            //Simpsons with
-            //Simpson's method of integrations
-            //eval endpoints
-            /*I1 += bmth::legendre_p(l, 1.0)*std::exp(-0*omega)/(1+sign*std::exp(-omega/T_));
-            I1 += bmth::legendre_p(l, -1.0)*std::exp(-omega/T_)/(1+sign*std::exp(-omega/T_));
-            for(int i=1;i<N;i++){
-                double tau = 0 + 2*i*h;
-                I1+=2*bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+std::exp(-omega/T_));
-            }
-            for(int i=1;i<N+1;i++){
-                double tau= 0+ (2*i-1)*h;
-                I1+=4*bmth::legendre_p(l, 2*tau*T_-1)*std::exp(-tau*omega)/(1+std::exp(-omega/T_));
-            }
-            I1*=h/3;//*/
-            
-            double a = 0;
-            double b = 1/T_;
-            double epsabs=1.49e-08; //python default resolution
-            double epsrel=1.49e-08;
-            double result,err;
-            size_t nval,limit=500;
-            
-            gsl_function F;
-            F.function = &legendre_kernel_integrand;
+}  // namespace
 
-            integrand_params p = {l,omega,T_};
-            F.params = &p;
-
-            gsl_integration_qag(&F, a,b,epsabs,epsrel, limit, GSL_INTEG_GAUSS61, w, &result, &err);
-            I1=result; 
-            
-            K_(l,j) = -sqrt(2*l+1)*I1;
+/// Legendre kernel
+///   K(l, omega) = -sqrt(2l+1) int_0^beta P_l(2 tau/beta - 1) exp(-tau omega) / (1 + exp(-beta omega)) dtau
+/// in closed form: with a = beta omega / 2,
+///   int_0^beta P_l(2 tau/beta - 1) exp(-tau omega) dtau = beta exp(-a) (-1)^l i_l(a),
+/// so K(l, omega) = -sqrt(2l+1) beta (-1)^l i_l(a) / (2 cosh a). With i_l(-x) = (-1)^l i_l(x)
+/// this is evaluated as -sqrt(2l+1) beta sigma_l [i_l(|a|) exp(-|a|)] / (1 + exp(-2|a|)),
+/// sigma_l = (-1)^l for a > 0 and 1 otherwise, which stays finite for any beta omega.
+/// (The same kernel is used for the bosonic case, B17.)
+void kernel::setup_legendre_kernel(const alps::params &/*p*/, const vector_type& freq, const int lmax){
+    const double beta = 1. / T_;
+    for (int j = 0; j < nfreq_; ++j) {
+        const double a = 0.5 * beta * freq[j];
+        const double x = std::abs(a);
+        const std::vector<double> s = scaled_spherical_bessel_i(lmax, x);
+        const double denominator = 1. + std::exp(-2. * x);
+        for (int l = 0; l < lmax; ++l) {
+            const double sign = (a > 0. && l % 2 == 1) ? -1. : 1.;
+            K_(l, j) = -std::sqrt(2. * l + 1.) * beta * sign * s[l] / denominator;
         }
     }
-    gsl_integration_workspace_free (w);
 }
-

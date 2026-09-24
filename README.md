@@ -16,7 +16,6 @@ Table of Contents
         * [Boost](#boost)
         * [ALPSCore](#alpscore)
         * [Eigen3](#eigen3)
-        * [GSL](#gsl)
         * [LAPACK (Optional)](#lapack-optional)
     * [Installation](#installation)
       * [Tests](#tests)
@@ -46,9 +45,6 @@ ALPSCore needs to be properly installed, see [ALPSCore library](https://github.c
 
 #### Eigen3
 For our linear algebra routines we use Eigen3 version >=3.3. CMake finds it through its `Eigen3Config.cmake`; if it is not in a standard location, add its prefix to `CMAKE_PREFIX_PATH` or set `-DEigen3_DIR=/path/to/share/eigen3/cmake`.
-
-#### GSL
-Maxent requires the GNU Scientific Library (GSL), which can be found [here](https://www.gnu.org/software/gsl/). The choice of BLAS library (the included CBLAS or an external ATLAS/BLAS/etc) does not matter here as the only the integration library is used. If it is not in a standard location, use `-DGSL_ROOT_DIR=/path/to/gsl/prefix`.
 
 #### LAPACK (Optional)
 Eigen3 has a good SVD routine, but can be very slow for a large kernel.
@@ -188,7 +184,7 @@ Maxent creats a default model on a grid between [0,1]
 
 # Utilities
 ## Kramers-Kronig
-Requires: [GSL](http://www.gnu.org/software/gsl/), Boost
+Requires: Boost
 ## Legendre Convert
 Requires: Boost
 

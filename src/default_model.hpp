@@ -14,7 +14,7 @@
 #include <math.h>
 #include <alps/params.hpp>
 #include <iostream>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 
 //Note the slightly crooked structure here:
@@ -313,7 +313,7 @@ class GeneralDefaultModel : public DefaultModel
 {
 public:
 
-  GeneralDefaultModel(const alps::params& p, boost::shared_ptr<Model> mod);
+  GeneralDefaultModel(const alps::params& p, std::shared_ptr<Model> mod);
 
   ///given a number x between 0 and 1, find the frequency omega belonging to x.
   double omega(const double x) const;
@@ -326,7 +326,7 @@ public:
   double x(const double t) const;
 
 private:
-  boost::shared_ptr<Model> Mod;
+  std::shared_ptr<Model> Mod;
   const int ntab;
   std::vector<double> xtab; //xtab has an equidistantly tabulated discretized model function
 
@@ -335,4 +335,4 @@ private:
 
 
 
-boost::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, std::string const& name);
+std::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, std::string const& name);

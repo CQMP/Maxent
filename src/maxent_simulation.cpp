@@ -12,7 +12,7 @@
 #include "maxent.hpp"
 #include <alps/config.hpp> // needed to set up correct bindings
 #include <alps/hdf5/vector.hpp>
-#include <boost/math/special_functions/fpclassify.hpp> //needed for boost::math::isnan
+#include <cmath>
 #include <Eigen/LU>
 #include "eigen_hdf5.hpp"
 #include <iomanip>
@@ -369,7 +369,7 @@ vector_type MaxEntSimulation::levenberg_marquardt(vector_type u, const double al
   int it2 = 0;
   for (; it<max_it; it++) {
     vector_type delta;
-    if(boost::math::isnan(Q1))
+    if(std::isnan(Q1))
         throw std::logic_error("Q=NaN, something went wrong");
     for (it2=0; it2<max_it; ++it2) {
       //compute change vector delta to u
