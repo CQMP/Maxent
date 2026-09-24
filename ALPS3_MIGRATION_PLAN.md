@@ -418,15 +418,18 @@ Boost boundaries for now.
   defaulting to 0 for reproducibility (moved here from 2.2). Added the
   `t_generate_err` regression reference for the deterministic output.
 
-**2.3D: numerical changes** (each its own commit and `REFERENCE_CHANGES.md` entry)
+**2.3D: numerical changes — Done 2026-09-24** (each accepted change its own
+commit and `REFERENCE_CHANGES.md` entry)
 
 * **Done 2026-09-24:** B7b: time-bosonic kernel uses the ω→0 limit only
   at ω = 0. Updated the targeted and component references.
 * **Done 2026-09-24:** B15: replaced the log-grid `float` casts with explicit
   `double` conversions. Existing grids are bit-identical (the integer values
   used by the tests and normal runs are exactly representable as `float`).
-* B11 (optional): `BDCSVD` instead of `JacobiSVD`; measure against the
-  references before deciding.
+* **Measured 2026-09-24; keep `JacobiSVD`:** `BDCSVD` did not improve the
+  large Legendre case (57.49 s, effectively unchanged), while its different
+  singular vectors changed the deterministic bootstrap-error result by about
+  3%. The optional B11 change therefore has no demonstrated benefit here.
 
 Keep the `MaxEntSimulation` public getters stable, because the tests use them.
 
