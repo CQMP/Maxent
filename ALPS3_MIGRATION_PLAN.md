@@ -387,19 +387,24 @@ unchanged. A text-input regression covers trailing blank lines.
 
 **2.3B: `legendre_convert`** (decided 2026-09-24), in this order:
 
-1. Add regression cases for `legendre_convert` first (it has no tests), with
-   references from the current Boost build, like the `kk` cases in 2.2.
-2. Replace Boost.Random by `<random>`. The `mt19937` engine gives identical
+1. **Done 2026-09-24:** add a deterministic regression case for
+   `legendre_convert`, with a reference from the current Boost build. It covers
+   the transform, tail enforcement, back-continuation, and Matsubara
+   convergence.
+2. **Done 2026-09-24:** replace Boost.Random by `<random>`. The `mt19937` engine gives identical
    numbers; the normal variates differ (different algorithm), which is
    harmless because the error estimate is seeded from the clock.
-3. Replace `boost::math::factorial` by a product (only small arguments occur).
-4. Replace `boost::math::legendre_p` by the standard three-term recurrence.
+3. **Done 2026-09-24:** replace `boost::math::factorial` by a product (only
+   small arguments occur).
+4. **Done 2026-09-24:** replace `boost::math::legendre_p` by the standard
+   three-term recurrence.
    `std::legendre` is not an option: libc++ (AppleClang) does not implement the
    C++17 special math functions.
 
 Keep `boost::math::sph_bessel` (also missing in libc++; our own version would
 need careful checking at large l and argument) and `program_options` (no
-standard equivalent).
+standard equivalent). Reconfirmed 2026-09-24: these are intentional retained
+Boost boundaries for now.
 
 **2.3C: command-line behavior** (updates the CLI references on purpose)
 

@@ -28,6 +28,7 @@ set(unit_tests
   backcontTest
   default_modelTest
   gridTest
+  legendreConvertTest
   paramFailureTest
   paramsTest
   simulationTest)

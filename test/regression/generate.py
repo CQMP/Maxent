@@ -4,7 +4,8 @@
 
     python3 test/regression/generate.py --maxent build/maxent --out /tmp/results \
         [--sets fast,targeted,cli] [--cases REGEX] [--components build/dump_components] \
-        [--kk build/kk/kk] [--provenance prov.json] [--jobs 8]
+        [--kk build/kk/kk] [--legendre-convert build/legendre_convert/legendre_convert] \
+        [--provenance prov.json] [--jobs 8]
 
 For every case one HDF5 file <out>/<case>.h5 is written:
   /files/<output file>          every output of the run: datasets of *.out.h5 files are
@@ -164,10 +165,13 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--maxent", required=True, type=Path)
     ap.add_argument("--out", required=True, type=Path)
-    ap.add_argument("--sets", default="fast,targeted,cli", help="comma-separated: full,fast,targeted,cli,kk")
+    ap.add_argument("--sets", default="fast,targeted,cli",
+                    help="comma-separated: full,fast,targeted,cli,kk,legendre_convert")
     ap.add_argument("--cases", default=".*", help="regular expression on case names")
     ap.add_argument("--components", type=Path, help="dump_components binary (adds components.h5)")
     ap.add_argument("--kk", type=Path, help="kk binary (needed for the 'kk' set)")
+    ap.add_argument("--legendre-convert", type=Path,
+                    help="legendre_convert binary (needed for the 'legendre_convert' set)")
     ap.add_argument("--provenance", type=Path, help="JSON file with provenance key/values")
     ap.add_argument("--jobs", type=int, default=8)
     ap.add_argument("--timeout", type=float, default=TIMEOUT, help="seconds per case (default %(default)s)")
@@ -180,9 +184,11 @@ def main():
     programs = {"maxent": args.maxent.resolve()}
     if args.kk:
         programs["kk"] = args.kk.resolve()
+    if args.legendre_convert:
+        programs["legendre_convert"] = args.legendre_convert.resolve()
     missing = sorted({c["program"] for c in selected} - set(programs))
     if missing:
-        ap.error(f"selected cases need --{missing[0]}")
+        ap.error(f"selected cases need --{missing[0].replace('_', '-')}")
 
     results = []
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:

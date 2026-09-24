@@ -53,6 +53,20 @@ if(MAXENT_BUILD_UTILITIES)
             ${CMAKE_CURRENT_SOURCE_DIR}/reference ${results} --sets kk)
   set_tests_properties(regression_kk_generate PROPERTIES FIXTURES_SETUP regression_kk LABELS regression-fast)
   set_tests_properties(regression_kk_compare PROPERTIES FIXTURES_REQUIRED regression_kk LABELS regression-fast)
+
+  set(results ${CMAKE_CURRENT_BINARY_DIR}/results-legendre-convert)
+  add_test(NAME regression_legendre_convert_generate
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/generate.py
+            --maxent $<TARGET_FILE:maxent>
+            --legendre-convert $<TARGET_FILE:legendre_convert>
+            --out ${results} --sets legendre_convert)
+  add_test(NAME regression_legendre_convert_compare
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/compare.py
+            ${CMAKE_CURRENT_SOURCE_DIR}/reference ${results} --sets legendre_convert)
+  set_tests_properties(regression_legendre_convert_generate PROPERTIES
+    FIXTURES_SETUP regression_legendre_convert LABELS regression-fast)
+  set_tests_properties(regression_legendre_convert_compare PROPERTIES
+    FIXTURES_REQUIRED regression_legendre_convert LABELS regression-fast)
 endif()
 if(MAXENT_REGRESSION_FULL)
   maxent_regression_test(full full regression-full)

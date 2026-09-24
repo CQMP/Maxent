@@ -9,21 +9,39 @@
 *
 *****************************************************************************/
 
-#include <iostream>
+#include <cmath>
+#include <complex>
+#include <ctime>
 #include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <random>
+#include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "gaussian_noise.hpp"
 #include <boost/program_options.hpp>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include <boost/random/variate_generator.hpp>
-#include <boost/random.hpp>
-#include <boost/math/special_functions/factorials.hpp>
-#include <boost/math/special_functions/legendre.hpp> //needed for Legendre transform
 #include <boost/math/special_functions/bessel.hpp> 
 
 typedef std::vector<double> vector_type;
 typedef std::pair<double,double> return_type;
 typedef std::complex<double> Complex ;
 namespace bmth = boost::math;
+
+double legendre_polynomial(int l, double x){
+    if(l == 0)
+        return 1.0;
+    double p_lm2 = 1.0;
+    double p_lm1 = x;
+    for(int n=2;n<=l;n++){
+        const double p_l = ((2*n-1)*x*p_lm1-(n-1)*p_lm2)/n;
+        p_lm2 = p_lm1;
+        p_lm1 = p_l;
+    }
+    return p_lm1;
+}
 
 
 ///E8 of Boehnke, et al
@@ -38,7 +56,10 @@ double tl(int l, int p){
         double qsum =1;
         for(int q=-p+2;q<p;q++)
             qsum*=l+q;
-        return std::pow(-1.0,p)*2*std::sqrt(2*l+1)*qsum/bmth::factorial<double>(p-1);
+        double factorial = 1.0;
+        for(int factor=2;factor<p;factor++)
+            factorial*=factor;
+        return std::pow(-1.0,p)*2*std::sqrt(2*l+1)*qsum/factorial;
     }
 }
 ///G(i\omega)=\sumT_{n\ell}G_\ell
@@ -83,13 +104,13 @@ double generateGl(const vector_type &gtau,const vector_type &tau_points, int l,d
 
     	--ndat_;
     	double dtau = tau_points[1]-tau_points[0];
-    	gsum+=gtau[0]*bmth::legendre_p(l,2*tau_points[0]/beta-1.0);
+        gsum+=gtau[0]*legendre_polynomial(l,2*tau_points[0]/beta-1.0);
 	    for(int i=1;i<ndat_/2;i++)
-	    	gsum+=2*gtau[2*i]*bmth::legendre_p(l,2*tau_points[2*i]/beta-1);
+        gsum+=2*gtau[2*i]*legendre_polynomial(l,2*tau_points[2*i]/beta-1);
 	    for(int i=1;i<ndat_/2+1;i++)
-	    	gsum+=4*gtau[2*i-1]*bmth::legendre_p(l,2*tau_points[2*i-1]/beta-1);
+        gsum+=4*gtau[2*i-1]*legendre_polynomial(l,2*tau_points[2*i-1]/beta-1);
 
-	    gsum+=gtau[ndat_]*bmth::legendre_p(l,2*tau_points[ndat_]/beta-1.0);
+	    gsum+=gtau[ndat_]*legendre_polynomial(l,2*tau_points[ndat_]/beta-1.0);
 	    gsum*= dtau/3;
     }
     else{
@@ -97,22 +118,22 @@ double generateGl(const vector_type &gtau,const vector_type &tau_points, int l,d
 		//Riemann sums
 	    /*for(int i=0;i<ndat_-1;i++){
 	        double dtau = tau_points[i+1]-tau_points[i];
-	        gsum+=dtau*(bmth::legendre_p(l, 2*tau_points[i]/beta-1)*gtau[i]);
+	        gsum+=dtau*(legendre_polynomial(l, 2*tau_points[i]/beta-1)*gtau[i]);
 	    }
 	    //endpoint:
 	    double dtau=tau_points[ndat_-1]-tau_points[ndat_-2];
-	    gsum+=dtau*(bmth::legendre_p(l, 2*tau_points[ndat_-1]/beta-1)*gtau[ndat_-1]);*/
+	    gsum+=dtau*(legendre_polynomial(l, 2*tau_points[ndat_-1]/beta-1)*gtau[ndat_-1]);*/
 
 	    //trapezoidal rule
     /*    double dtau = tau_points[1]-tau_points[0];
-	    gsum+=dtau*(bmth::legendre_p(l, 2*tau_points[0]/beta-1)*gtau[0]);
+	    gsum+=dtau*(legendre_polynomial(l, 2*tau_points[0]/beta-1)*gtau[0]);
         
         for(int i=1;i<ndat_-1;i++){
         	 double dtau = tau_points[i+1]-tau_points[i];
-	        gsum+=2*dtau*(bmth::legendre_p(l, 2*tau_points[i]/beta-1)*gtau[i]);
+	        gsum+=2*dtau*(legendre_polynomial(l, 2*tau_points[i]/beta-1)*gtau[i]);
         }
      	dtau = tau_points[ndat_-1]-tau_points[ndat_-2];
-        gsum+=dtau*(bmth::legendre_p(l, 2*tau_points[ndat_-1]/beta-1)*gtau[ndat_-1]);
+        gsum+=dtau*(legendre_polynomial(l, 2*tau_points[ndat_-1]/beta-1)*gtau[ndat_-1]);
         gsum/=2; */
         //try Simpson's rule within ndat-1 region, then trapezoidal for endpoint
 
@@ -122,25 +143,25 @@ double generateGl(const vector_type &gtau,const vector_type &tau_points, int l,d
         double gsum1=0.0,gsum2=0.0;
         ndat_-=2;
         double dtau = tau_points[1]-tau_points[0];
-    	gsum1+=gtau[0]*bmth::legendre_p(l,2*tau_points[0]/beta-1.0);
+        gsum1+=gtau[0]*legendre_polynomial(l,2*tau_points[0]/beta-1.0);
 	    for(int i=1;i<ndat_/2;i++)
-	    	gsum1+=2*gtau[2*i]*bmth::legendre_p(l,2*tau_points[2*i]/beta-1);
+        gsum1+=2*gtau[2*i]*legendre_polynomial(l,2*tau_points[2*i]/beta-1);
 	    for(int i=1;i<ndat_/2+1;i++)
-	    	gsum1+=4*gtau[2*i-1]*bmth::legendre_p(l,2*tau_points[2*i-1]/beta-1);
+        gsum1+=4*gtau[2*i-1]*legendre_polynomial(l,2*tau_points[2*i-1]/beta-1);
 
-	    gsum1+=gtau[ndat_]*bmth::legendre_p(l,2*tau_points[ndat_]/beta-1.0);
+	    gsum1+=gtau[ndat_]*legendre_polynomial(l,2*tau_points[ndat_]/beta-1.0);
 	    gsum1*= dtau/3;
 	    
       //-----------------------
       ndat_++;
       dtau = tau_points[1]-tau_points[0];
-      gsum2+=gtau[0]*bmth::legendre_p(l,2*tau_points[0]/beta-1.0);
+      gsum2+=gtau[0]*legendre_polynomial(l,2*tau_points[0]/beta-1.0);
       for(int i=2;i<ndat_/2;i++)
-        gsum2+=2*gtau[2*i]*bmth::legendre_p(l,2*tau_points[2*i]/beta-1);
+        gsum2+=2*gtau[2*i]*legendre_polynomial(l,2*tau_points[2*i]/beta-1);
       for(int i=2;i<ndat_/2+1;i++)
-        gsum2+=4*gtau[2*i-1]*bmth::legendre_p(l,2*tau_points[2*i-1]/beta-1);
+        gsum2+=4*gtau[2*i-1]*legendre_polynomial(l,2*tau_points[2*i-1]/beta-1);
 
-      gsum2+=gtau[ndat_]*bmth::legendre_p(l,2*tau_points[ndat_]/beta-1.0);
+      gsum2+=gtau[ndat_]*legendre_polynomial(l,2*tau_points[ndat_]/beta-1.0);
       gsum1*= dtau/3;
       //----------------------
       gsum = (gsum1+gsum2)/2;
@@ -155,7 +176,7 @@ double Gt(const vector_type &gl_in, double tau, double beta ){
     double gsum = 0.0;
     int N = gl_in.size();
     for(int l=0;l<N;l++){
-    	gsum+=std::sqrt(2*l+1)/beta*bmth::legendre_p(l,2.0*tau/beta-1.0)*gl_in[l];
+        gsum+=std::sqrt(2*l+1)/beta*legendre_polynomial(l,2.0*tau/beta-1.0)*gl_in[l];
     }
     return gsum;
 }
@@ -241,24 +262,6 @@ struct argstruct{
         double beta;int l;double tau; 
         std::pair<double,double> tails; vector_type *tau_points;
  };
-///genereate a normally distrubted noisy vector. 
-//i.e. output[i] = normally dist number with mean=data[i] and stddev=err[i]
-vector_type generateGaussNoise(vector_type data, vector_type err,boost::mt19937 &rng){
-    
-    typedef boost::variate_generator<boost::mt19937&,boost::normal_distribution<> > ran_gen;
-    //notice the & in the first template argument and function rng argument.
-    //If we omit this, it will compile and run
-    //however, the numbers will be less(/not) random b/c it will copy the generator
-    //each time, outputting the mean with some noise, rather than truly random
-    
-    const int N = data.size();
-    vector_type data_noise(N);
-    for(int i=0;i<N;i++){
-        boost::normal_distribution<> s(data[i],err[i]);
-        data_noise[i] = ran_gen(rng,s)();
-    }
-    return data_noise;
-}
 ///Generalized bootstrap routine. Requires the non-linear function to be
 // f(vector_type v,void *arg) where *arg is most easily a struct
 return_type bootstrap(double (*f)(vector_type,void*),
@@ -268,7 +271,7 @@ return_type bootstrap(double (*f)(vector_type,void*),
     //and determinging the variation on the output
     std::vector<double> newData(maxit);
     std::cout << std::setprecision(14);
-    boost::mt19937 rng;
+    std::mt19937 rng;
     rng.seed(static_cast<unsigned int>(std::time(0)));
     for(int i=0;i<maxit;i++){
          vector_type temp_data= generateGaussNoise(data, err,rng);

@@ -1,6 +1,8 @@
 {
   "description": "Rules are matched in order against '<case>:<dataset>'; the first match applies. A dataset passes if max|a-b| <= atol + rtol * max|reference|. Values are about 10x the largest difference observed between the reference build and four variant builds of the same source (AppleClang -O0, LAPACK SVD, clang 22, GCC 15), rounded up; see PROVENANCE.md. The Legendre example is extremely ill-conditioned (minimal chi2 ~ 1e-17) and gets looser rules for its alpha probabilities and Ng.",
   "rules": [
+    {"pattern": "^legendre_convert_transform:", "atol": 1e-14, "rtol": 1e-12,
+     "why": "direct utility regression; allows only rounding-level variation"},
     {"pattern": ":cli/", "atol": 0, "rtol": 0,
      "why": "command-line output and exit code must not change"},
     {"pattern": ":log/scalars/(n_singular|max_it_warnings)$", "atol": 0, "rtol": 0,

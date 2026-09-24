@@ -4,6 +4,16 @@ Every regeneration of files in `reference/` is logged here: date, commit,
 reason, affected cases, and the largest difference to the previous
 references (from `compare.py --report`). Newest entry first.
 
+## 2026-09-24: legendre_convert reference added
+
+* **Source:** `modernize/step2` merge commit `a57f150`; the utility is still
+  the original Boost implementation.
+* **Reason:** `legendre_convert` had no tests; a reference was added before
+  replacing Boost.Random, `factorial`, and `legendre_p` (plan step 2.3B).
+* **Cases:** 1 new (`legendre_convert_transform`). No existing reference changed.
+* **Coverage:** transform, tail enforcement, back-continuation, and Matsubara
+  convergence. Zero input errors make the clock-seeded bootstrap deterministic.
+
 ## 2026-09-24: kk references added
 
 * **Commit:** `811b3c6` (see [`PROVENANCE.md`](PROVENANCE.md), kk section).
