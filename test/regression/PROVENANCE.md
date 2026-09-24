@@ -27,6 +27,16 @@ every reference file.
 | Platform | macOS 26.7 (25G229), arm64 |
 | Tools | Python 3.14, numpy 2.5.2, h5py 3.16.0, CMake 4.2.1 |
 
+## kk references (added 2026-09-24)
+
+The three `kk_*` references were generated from commit `811b3c6` (kk writing
+17 significant digits, otherwise unchanged; spline from GSL 2.8
+`gsl_interp_cspline`), Release build (`-O3 -DNDEBUG -std=c++17`), AppleClang 21,
+against ALPSCore `8d2ed3a9`. Two generations were bit-identical. The inputs are
+made by `make_inputs.py`: Im G = -pi A of `u0_frequency` and Im Sigma of
+`self_u1` (average spectra from these references), and the analytic Re G of a
+unit Gaussian spectrum.
+
 ## Determinism
 
 Two independent generations with the reference build were compared with

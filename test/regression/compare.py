@@ -107,7 +107,7 @@ def main():
     ap.add_argument("reference", type=Path)
     ap.add_argument("result", type=Path)
     ap.add_argument("--cases", default=".*", help="regular expression on case names")
-    ap.add_argument("--sets", help="comma-separated sets to compare (full,fast,targeted,cli,components); "
+    ap.add_argument("--sets", help="comma-separated sets to compare (full,fast,targeted,cli,kk,components); "
                                    "default: all")
     ap.add_argument("--tolerances", type=Path, default=HERE / "tolerances.json")
     ap.add_argument("--report", action="store_true", help="print all differences, never fail")

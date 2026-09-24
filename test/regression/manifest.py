@@ -22,6 +22,7 @@ SET_TITLES = [
     ("targeted", "Targeted cases (synthetic inputs, see make_inputs.py)"),
     ("cli", "Command-line snapshots"),
     ("full", "Full set (examples as shipped, opt-in)"),
+    ("kk", "kk utility"),
     ("components", "Components"),
 ]
 

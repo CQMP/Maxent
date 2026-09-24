@@ -43,6 +43,17 @@ function(maxent_regression_test name sets label)
 endfunction()
 
 maxent_regression_test(fast fast,targeted,cli regression-fast)
+if(MAXENT_BUILD_UTILITIES)
+  set(results ${CMAKE_CURRENT_BINARY_DIR}/results-kk)
+  add_test(NAME regression_kk_generate
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/generate.py
+            --maxent $<TARGET_FILE:maxent> --kk $<TARGET_FILE:kk> --out ${results} --sets kk)
+  add_test(NAME regression_kk_compare
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/compare.py
+            ${CMAKE_CURRENT_SOURCE_DIR}/reference ${results} --sets kk)
+  set_tests_properties(regression_kk_generate PROPERTIES FIXTURES_SETUP regression_kk LABELS regression-fast)
+  set_tests_properties(regression_kk_compare PROPERTIES FIXTURES_REQUIRED regression_kk LABELS regression-fast)
+endif()
 if(MAXENT_REGRESSION_FULL)
   maxent_regression_test(full full regression-full)
 endif()

@@ -4,7 +4,7 @@
 
     python3 test/regression/generate.py --maxent build/maxent --out /tmp/results \
         [--sets fast,targeted,cli] [--cases REGEX] [--components build/dump_components] \
-        [--provenance prov.json] [--jobs 8]
+        [--kk build/kk/kk] [--provenance prov.json] [--jobs 8]
 
 For every case one HDF5 file <out>/<case>.h5 is written:
   /files/<output file>          every output of the run: datasets of *.out.h5 files are
@@ -102,7 +102,7 @@ def pack_scalars(h5, log):
     grp.create_dataset("max_it_warnings", data=np.int64(log.count("reached max_it")))
 
 
-def run_case(case, maxent, outdir, provenance, timeout=TIMEOUT):
+def run_case(case, programs, outdir, provenance, timeout=TIMEOUT):
     out = outdir / f"{case['name']}.h5"
     with tempfile.TemporaryDirectory(prefix="maxent-reg-") as tmp:
         workdir = Path(tmp) / "work"
@@ -111,16 +111,19 @@ def run_case(case, maxent, outdir, provenance, timeout=TIMEOUT):
         else:
             workdir.mkdir()
         before = {p.relative_to(workdir).as_posix() for p in workdir.rglob("*")}
-        cmd = [str(maxent)] + ([case["param"]] if case["param"] else []) + case["args"]
+        cmd = [str(programs[case["program"]])] + ([case["param"]] if case["param"] else []) + case["args"]
         p, seconds = run(cmd, workdir, timeout)
+        # maxent always exits with 0 (B1) and reports errors as 'Caught Exception';
+        # the other programs report failure through their exit code
         status = "timeout" if p.returncode is None else \
-            "exception" if "Caught Exception" in p.stderr else "ok"
+            "exception" if "Caught Exception" in p.stderr else \
+            "failed" if case["program"] != "maxent" and p.returncode != 0 else "ok"
         with h5py.File(out, "w") as h5:
             for key in ("name", "set", "covers"):
                 h5.attrs[key] = case[key]
             h5.attrs["inputs"] = case["inputs"] or ""
             h5.attrs["flags"] = json.dumps(case["flags"])
-            h5.attrs["command"] = json.dumps(["maxent"] + cmd[1:])
+            h5.attrs["command"] = json.dumps([case["program"]] + cmd[1:])
             h5.attrs["runtime_seconds"] = seconds
             h5.attrs["status"] = status
             h5.attrs["expect"] = case["expect"]
@@ -161,9 +164,10 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--maxent", required=True, type=Path)
     ap.add_argument("--out", required=True, type=Path)
-    ap.add_argument("--sets", default="fast,targeted,cli", help="comma-separated: full,fast,targeted,cli")
+    ap.add_argument("--sets", default="fast,targeted,cli", help="comma-separated: full,fast,targeted,cli,kk")
     ap.add_argument("--cases", default=".*", help="regular expression on case names")
     ap.add_argument("--components", type=Path, help="dump_components binary (adds components.h5)")
+    ap.add_argument("--kk", type=Path, help="kk binary (needed for the 'kk' set)")
     ap.add_argument("--provenance", type=Path, help="JSON file with provenance key/values")
     ap.add_argument("--jobs", type=int, default=8)
     ap.add_argument("--timeout", type=float, default=TIMEOUT, help="seconds per case (default %(default)s)")
@@ -173,11 +177,16 @@ def main():
     selected = [c for c in all_cases() if c["set"] in sets and re.search(args.cases, c["name"])]
     provenance = json.loads(args.provenance.read_text()) if args.provenance else {}
     args.out.mkdir(parents=True, exist_ok=True)
-    maxent = args.maxent.resolve()
+    programs = {"maxent": args.maxent.resolve()}
+    if args.kk:
+        programs["kk"] = args.kk.resolve()
+    missing = sorted({c["program"] for c in selected} - set(programs))
+    if missing:
+        ap.error(f"selected cases need --{missing[0]}")
 
     results = []
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
-        futures = [pool.submit(run_case, c, maxent, args.out, provenance, args.timeout)
+        futures = [pool.submit(run_case, c, programs, args.out, provenance, args.timeout)
                    for c in selected]
         if args.components:
             futures.append(pool.submit(run_components, args.components.resolve(), args.out, provenance))
