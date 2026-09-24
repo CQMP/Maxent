@@ -337,22 +337,27 @@ text, the `SEED` parameter and the old ublas code moved to 2.3.
 * Warnings: 51 → 44. The Legendre example runtime is unchanged (~57-60 s):
   the kernel was never the bottleneck (B22).
 
-| Item | Action | Notes |
-|---|---|---|
-| `cmake/FindGSL.cmake` | Delete; it uses the deprecated `EXEC_PROGRAM` (CMake dev warnings). If GSL stays anywhere, use CMake's built-in `FindGSL` → `GSL::gsl`. | |
-| GSL (core, one `gsl_integration_qag` call) | Replace with `boost::math::quadrature::gauss_kronrod` (header-only; ALPS ships Boost anyway) | **Validated in 2.0:** `boost::math::quadrature::gauss_kronrod<double,61>` reproduces the GSL Legendre kernels to 2e-16 (machine precision). **Performance:** the Legendre example takes 55 s with GSL and 111 s with the naive Boost swap; the replacement must at least match GSL. Profile it, cache `legendre_p` via recurrence, use an adaptive depth, or parallelize over (l, j). |
-| GSL (`kk`, cubic spline) | Replace with a small natural-cubic-spline implementation, or `boost::math::interpolators::cardinal_cubic_b_spline` (needs a uniform grid; check), or keep GSL optional for `kk` only | Decide per [§6](#6-open-decisions) D6. |
-| `boost::shared_ptr` | `std::shared_ptr` / `std::unique_ptr` (the default model is owned uniquely) | mechanical |
-| `boost::lexical_cast<std::string>(int)` | `std::to_string` | mechanical |
-| `boost::math::isnan` | `std::isnan` | mechanical |
-| `boost::throw_exception` | `throw` | mechanical |
-| `boost::to_lower` | a local `to_lower` helper | trivial |
-| `boost::random` | `<random>` (`std::mt19937`, `std::normal_distribution`), with a `SEED` parameter (fixes B10) | changes the bootstrap output stream, which is acceptable |
-| `boost::diagnostic_information` | `e.what()` | |
-| `boost::math::{legendre_p, factorial, sph_bessel}` | **keep** | header-only; C++17 `std::legendre`/`std::sph_bessel` are missing from libc++ |
-| `boost::program_options` (utilities) | keep for now | ALPS 3.0 builds `program_options` from its bundled Boost |
+The table below is the original plan for 2.2, with the outcome of each item.
 
-After this step, the core library's only Boost dependency is header-only Boost.Math.
+| Item | Planned action | Done (2026-09-24) |
+|---|---|---|
+| `cmake/FindGSL.cmake` | Delete (deprecated `EXEC_PROGRAM`) | Deleted in 2.1. |
+| GSL (core, one `gsl_integration_qag` call) | Replace with `boost::math::quadrature::gauss_kronrod` | **Closed form instead** (decision): scaled modified spherical Bessel functions, reproduces the GSL kernels to 3.3e-16. Gauss–Kronrod was checked in 2.0 (2e-16) but not used. GSL removed from the build. |
+| GSL (`kk`, cubic spline) | Own natural cubic spline, or keep GSL optional (D6) | Own natural cubic spline, same algorithm as GSL; bit-identical results (D6 resolved). |
+| `boost::shared_ptr` | `std::shared_ptr` | Done. |
+| `boost::lexical_cast<std::string>(int)` | `std::to_string` | Done; `to_string_exact` (17 digits) for the one `double`. |
+| `boost::math::isnan` | `std::isnan` | Done. |
+| `boost::throw_exception` | `throw` | Done. |
+| `boost::to_lower` | local helper | Done (`src/maxent_string.hpp`). |
+| `boost::random` | `<random>`, plus a `SEED` parameter (B10) | `<random>` done in the core; the `SEED` parameter moved to 2.3 (changes `--help`). |
+| `boost::diagnostic_information` | `e.what()` | Moved to 2.3 (changes the error text, with B1). |
+| `boost::math::{legendre_p, factorial, sph_bessel}` | keep | No longer used in the core. Kept in `legendre_convert`; `legendre_p` and `factorial` get replaced there in 2.3. |
+| `boost::program_options` (utilities) | keep | Kept. |
+
+After this step, the core library's only direct Boost use is
+`boost::diagnostic_information`, which goes in 2.3. Boost remains in the
+utilities: `program_options` in `kk` and `legendre_convert`, and Boost.Random
+and Boost.Math in `legendre_convert`.
 
 ### 2.3 Code fixes
 

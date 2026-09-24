@@ -54,7 +54,7 @@ python3 test/regression/generate.py --maxent build/maxent \
     --components build/test/regression/dump_components --out /tmp/maxent-results \
     [--kk build/kk/kk] [--sets fast,targeted,cli,full,kk] [--cases REGEX]
 python3 test/regression/compare.py test/regression/reference /tmp/maxent-results \
-    [--sets fast,targeted,cli,components] [--cases REGEX]
+    [--sets fast,targeted,cli,kk,components] [--cases REGEX]
 ```
 
 `compare.py` exits with status 1 if any case fails. `--report` prints the
