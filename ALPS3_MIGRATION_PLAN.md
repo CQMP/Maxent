@@ -416,7 +416,8 @@ Boost boundaries for now.
   `half lorentzian`, and show the real `CUT` default in `--help.grids`.
 * **Done 2026-09-24:** B10: a `SEED` parameter for the bootstrap errors,
   defaulting to 0 for reproducibility (moved here from 2.2). Added the
-  `t_generate_err` regression reference for the deterministic output.
+  `t_generate_err` regression reference for the deterministic default and
+  `t_generate_err_seed` to verify that an explicit non-default seed is used.
 
 **2.3D: numerical changes — Done 2026-09-24** (each accepted change its own
 commit and `REFERENCE_CHANGES.md` entry)

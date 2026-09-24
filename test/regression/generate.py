@@ -114,12 +114,18 @@ def run_case(case, programs, outdir, provenance, timeout=TIMEOUT):
         before = {p.relative_to(workdir).as_posix() for p in workdir.rglob("*")}
         cmd = [str(programs[case["program"]])] + ([case["param"]] if case["param"] else []) + case["args"]
         p, seconds = run(cmd, workdir, timeout)
-        # Maxent's expected failure cases are classified as exceptions; any
-        # other program's nonzero exit is a generic failure. Exit status is
-        # authoritative so diagnostic wording cannot hide a failed command.
-        status = "timeout" if p.returncode is None else \
-            "exception" if case["program"] == "maxent" and p.returncode != 0 else \
-            "failed" if p.returncode != 0 else "ok"
+        # An expected Maxent exception has both the documented exit status and
+        # diagnostic signature. Crashes and other nonzero exits remain generic
+        # failures rather than accidentally satisfying an exception case.
+        if p.returncode is None:
+            status = "timeout"
+        elif (case["program"] == "maxent" and p.returncode == 1
+              and "Caught Exception:" in p.stderr):
+            status = "exception"
+        elif p.returncode != 0:
+            status = "failed"
+        else:
+            status = "ok"
         with h5py.File(out, "w") as h5:
             for key in ("name", "set", "covers"):
                 h5.attrs[key] = case[key]

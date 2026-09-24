@@ -4,6 +4,14 @@ Every regeneration of files in `reference/` is logged here: date, commit,
 reason, affected cases, and the largest difference to the previous
 references (from `compare.py --report`). Newest entry first.
 
+## 2026-09-24: explicit bootstrap seed coverage
+
+* **Source:** `modernize/step2.3c` after commit `8b2ff05`.
+* **Reason:** added review-requested coverage proving that a non-default
+  `SEED` value is parsed and used, rather than only testing the default.
+* **Cases:** added `t_generate_err_seed` with `SEED=1234`, including
+  `booterr.dat`. No existing reference changed.
+
 ## 2026-09-24: log-grid float casts removed (B15)
 
 * **Source:** `modernize/step2.3c` after commit `b1d7c8b`.

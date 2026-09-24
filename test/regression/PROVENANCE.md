@@ -59,7 +59,10 @@ passed.
 `t_generate_err.h5` was generated from `modernize/step2.3c` after commit
 `379b2f0`, using the Release build with AppleClang 21, libc++, C++17, and the
 local ALPSCore installation. It uses the new default `SEED=0`; two independent
-generations were identical. The reference includes `case.out.booterr.dat`.
+generations were identical. `t_generate_err_seed.h5` was added after commit
+`8b2ff05` with explicit `SEED=1234`; its bootstrap values differ from the
+default-seed reference, so the case detects an ignored `SEED` parameter. Both
+references include `case.out.booterr.dat`.
 
 ## Time-bosonic references updated (B7b, 2026-09-24)
 
@@ -72,9 +75,12 @@ cover a negative first frequency and the exact ω=0 branch.
 
 ## Determinism
 
-Two independent generations with the reference build were compared with
-`compare.py --report`: all 1165 datasets (1157 numeric, 8 text) in 56 cases
-were bit-identical.
+For the initial 2026-09-23 baseline, two independent generations were compared
+with `compare.py --report`: all 1165 datasets (1157 numeric, 8 text) in the
+original 56 cases were bit-identical. After the subsequently documented
+reference additions and updates, the current inventory is 1236 compared
+datasets (1228 numeric, 8 text) in 62 cases; see `MANIFEST.md` for the generated
+current count.
 
 ## Variant builds (tolerance measurement)
 

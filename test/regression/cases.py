@@ -67,6 +67,7 @@ TARGETED = [
     ("t_grid_log",            "grid: log", []),
     ("t_grid_linear",         "grid: linear", []),
     ("t_generate_err",         "bootstrap error bars with the default SEED=0", []),
+    ("t_generate_err_seed",    "bootstrap error bars with explicit SEED=1234", []),
     ("t_model_runs",          "MODEL_RUNS=2 (flat, gaussian): per-model outputs and varspec", []),
 ]
 
