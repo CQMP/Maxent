@@ -422,7 +422,9 @@ Boost boundaries for now.
 
 * **Done 2026-09-24:** B7b: time-bosonic kernel uses the ω→0 limit only
   at ω = 0. Updated the targeted and component references.
-* B15: remove the `float` casts in the log grid.
+* **Done 2026-09-24:** B15: replaced the log-grid `float` casts with explicit
+  `double` conversions. Existing grids are bit-identical (the integer values
+  used by the tests and normal runs are exactly representable as `float`).
 * B11 (optional): `BDCSVD` instead of `JacobiSVD`; measure against the
   references before deciding.
 

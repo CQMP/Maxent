@@ -4,6 +4,14 @@ Every regeneration of files in `reference/` is logged here: date, commit,
 reason, affected cases, and the largest difference to the previous
 references (from `compare.py --report`). Newest entry first.
 
+## 2026-09-24: log-grid float casts removed (B15)
+
+* **Source:** `modernize/step2.3c` after commit `b1d7c8b`.
+* **Reason:** log-grid intermediates now remain explicitly in double
+  precision instead of passing integer indices through `float`.
+* **Cases:** `t_grid_log` and both log-grid component sizes were measured.
+  They are bit-identical, so no reference was regenerated.
+
 ## 2026-09-24: time-bosonic zero-frequency limit corrected (B7b)
 
 * **Source:** `modernize/step2.3c` after commit `46b5610`.
