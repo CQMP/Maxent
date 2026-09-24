@@ -169,7 +169,7 @@ int main(int argc,const char** argv)
         return 1;
     }
     catch(...){
-        std::cerr << "Caught unknown exception\n";
+        std::cerr << "Caught Exception: unknown exception\n";
         return 1;
     }
 }
