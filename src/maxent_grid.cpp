@@ -22,7 +22,7 @@ t_array_(nfreq_+1){
   if (p_f_grid =="lorentzian") {
     initialize_lorentzian_grid(cut);
   }
-  else if (p_f_grid=="half lorentzian") {
+  else if (p_f_grid=="half lorentzian" || p_f_grid=="half-lorentzian") {
     initialize_half_lorentzian_grid(cut);
   }
   else if (p_f_grid=="quadratic") {
@@ -98,7 +98,6 @@ void grid::initialize_lorentzian_grid(double cut) {
   for (int i = 0; i < nfreq_ + 1; ++i)
     t_array_[i] = (temp[i] - temp[0]) / (temp[temp.size() - 1] - temp[0]);
 }
-
 
 
 

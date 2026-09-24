@@ -306,7 +306,7 @@ def make(name, case_dir):
         else:
             base_frequency_ph(case_dir, name, options)
     elif name.startswith("t_grid_"):
-        grid = {"lorentzian": "lorentzian", "half_lorentzian": '"half lorentzian"',
+        grid = {"lorentzian": "lorentzian", "half_lorentzian": "half-lorentzian",
                 "quadratic": "quadratic", "log": "log", "linear": "linear"}[name[len("t_grid_"):]]
         base_frequency_ph(case_dir, name, [("FREQUENCY_GRID", grid)])
     elif name in ("kk_imag_to_real_green", "kk_imag_to_real_self"):

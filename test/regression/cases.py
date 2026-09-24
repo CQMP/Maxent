@@ -62,7 +62,7 @@ TARGETED = [
     ("t_model_quadratic_rise_exp_decay", "default model: quadratic rise exp decay (T=0 kernel, OMEGA_MIN=0)", []),
     ("t_model_tabulated",     "default model: tabulated file", []),
     ("t_grid_lorentzian",     "grid: lorentzian", []),
-    ("t_grid_half_lorentzian", "grid: half lorentzian", ["B16 (help text says 'half-lorentzian')"]),
+    ("t_grid_half_lorentzian", "grid: half-lorentzian alias", []),
     ("t_grid_quadratic",      "grid: quadratic", []),
     ("t_grid_log",            "grid: log", []),
     ("t_grid_linear",         "grid: linear", []),
@@ -120,7 +120,7 @@ def all_cases():
         else:
             cases.append(dict(name=name, set="cli", inputs=None, param=None,
                               args=args, covers=covers,
-                              flags=["B16"] if name == "cli_help_grids" else [],
+                              flags=[],
                               expect="ok"))
     for name, direction, covers in KK:
         cases.append(dict(name=name, set="kk", program="kk", inputs="test/regression/inputs/" + name,

@@ -62,8 +62,8 @@ int main(int argc,const char** argv)
     std::cout << "For more information see examples/grids.pdf\n"              << std::endl;
     std::cout <<std::left << std::setw(15)<< "Grid Name"      <<'\t' << "option=default" << std::endl;
     std::cout <<std::left << std::setw(15)<< "========="      <<'\t' << "==============" << std::endl;
-    std::cout <<std::left << std::setw(15)<< "lorentzian"     <<'\t' << "CUT=0.1" << "\n"
-              <<std::left << std::setw(15)<< "half-lorentzian"<<'\t' << "CUT=0.1" << "\n"
+    std::cout <<std::left << std::setw(15)<< "lorentzian"     <<'\t' << "CUT=0.01" << "\n"
+              <<std::left << std::setw(15)<< "half-lorentzian"<<'\t' << "CUT=0.01" << "\n"
               <<std::left << std::setw(15)<< "quadratic"      <<'\t' << "SPREAD=4" << "\n"
               <<std::left << std::setw(15)<< "log"            <<'\t' << "LOG_MIN=0.0001" << "\n"
               <<std::left << std::setw(15)<< "linear"         <<'\t' << "---" << std::endl;

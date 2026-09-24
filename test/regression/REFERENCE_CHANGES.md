@@ -4,6 +4,16 @@ Every regeneration of files in `reference/` is logged here: date, commit,
 reason, affected cases, and the largest difference to the previous
 references (from `compare.py --report`). Newest entry first.
 
+## 2026-09-24: grid spelling and help corrected (B16)
+
+* **Source:** `modernize/step2.3c`, based on merge commit `454f7ee`.
+* **Reason:** expected help-text correction: `--help.grids` now reports the
+  actual `CUT=0.01` default. The documented `half-lorentzian` spelling is now
+  accepted as an alias for `half lorentzian`.
+* **Cases:** `cli_help_grids` text only. The targeted half-Lorentzian case now
+  uses the hyphenated alias and remains within its existing numerical
+  tolerance; no numerical reference was regenerated.
+
 ## 2026-09-24: command-line failures return nonzero (B1)
 
 * **Source:** `modernize/step2.3c`, based on merge commit `454f7ee`.

@@ -6,4 +6,4 @@ DATASPACE=frequency
 KERNEL=fermionic
 PARTICLE_HOLE_SYMMETRY=true
 DATA="data.dat"
-FREQUENCY_GRID="half lorentzian"
+FREQUENCY_GRID=half-lorentzian
