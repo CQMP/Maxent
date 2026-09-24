@@ -39,7 +39,10 @@ if(NOT Boost_FOUND)
   message(FATAL_ERROR "Boost ${ALPSCore_BOOST_VERSION} (the version ALPSCore was built with) was not "
     "found. Pass -DBoost_DIR=<dir containing BoostConfig.cmake> or add its prefix to CMAKE_PREFIX_PATH.")
 endif()
-find_package(Eigen3 3.3 CONFIG REQUIRED)
+find_package(Eigen3 CONFIG REQUIRED)
+if(Eigen3_VERSION VERSION_LESS 3.3)
+  message(FATAL_ERROR "Eigen 3.3 or newer is required (found ${Eigen3_VERSION})")
+endif()
 
 set(HAVE_BLAS 0)
 set(HAVE_LAPACK 0)

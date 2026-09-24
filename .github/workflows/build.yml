@@ -71,7 +71,7 @@ jobs:
           python -m pip install "numpy>=1.26" "h5py>=3.10"
       - name: Cache Boost and ALPSCore
         id: cache-dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ${{ runner.temp }}/boost
@@ -155,7 +155,7 @@ jobs:
           python -m pip install "numpy>=1.26" "h5py>=3.10"
       - name: Cache ALPSCore
         id: cache-alpscore
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ runner.temp }}/alpscore-install
           key: maxent-alpscore-${{ runner.os }}-${{ runner.arch }}-appleclang-${{ hashFiles('alpscore/**') }}
