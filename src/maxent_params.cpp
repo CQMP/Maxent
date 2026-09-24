@@ -378,6 +378,7 @@ MaxEntParameters::MaxEntParameters(alps::params& p) :
     decompose_covariance_matrix(p);
   }
 
+  // This diagnostic applies to both diagonal errors and covariance input.
   check_high_frequency_limit(y(),k_type);
 
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, 
@@ -398,6 +399,5 @@ MaxEntParameters::MaxEntParameters(alps::params& p) :
   //compute Ut and 
   compute_minimal_chi2();
 }
-
 
 

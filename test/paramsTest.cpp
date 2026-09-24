@@ -223,6 +223,7 @@ TEST(Parameters,HighFrequencyCheck){
     p["SHIFT"]=2.0;
     
     std::complex<double> G;
+    testing::internal::CaptureStderr();
     for(int i=0;i<numModels;i++){
         p["DEFAULT_MODEL"] = models[i];
         MaxEntParameters c(p);
@@ -238,6 +239,8 @@ TEST(Parameters,HighFrequencyCheck){
 
         EXPECT_TRUE(std::abs(1+limit)<.1);
     }
+    const std::string diagnostics = testing::internal::GetCapturedStderr();
+    EXPECT_NE(diagnostics.find("The high frequency limit is not 1!"), std::string::npos);
 }
 
 TEST(Parameters,HDF5ContiParams){
