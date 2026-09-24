@@ -103,7 +103,7 @@ Rules are matched in order against '<case>:<dataset>'; the first match applies. 
 
 | Pattern (case:dataset) | atol | rtol | Why |
 |---|---|---|---|
-| `^legendre_convert:` | 1e-14 | 1e-12 | direct utility regression; allows only rounding-level variation |
+| `^legendre_convert_transform:` | 1e-14 | 1e-12 | direct utility regression; allows only rounding-level variation |
 | `:cli/` | 0 | 0 | command-line output and exit code must not change |
 | `:log/scalars/(n_singular|max_it_warnings)$` | 0 | 0 | counts; identical in all variants |
 | `:log/scalars/minimal_chi2$` | 1e-12 | 1e-06 | values below ~1e-12 are rounding noise (observed relative differences up to 1 at 1e-17) |

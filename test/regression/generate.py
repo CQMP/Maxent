@@ -188,7 +188,7 @@ def main():
         programs["legendre_convert"] = args.legendre_convert.resolve()
     missing = sorted({c["program"] for c in selected} - set(programs))
     if missing:
-        ap.error(f"selected cases need --{missing[0]}")
+        ap.error(f"selected cases need --{missing[0].replace('_', '-')}")
 
     results = []
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:

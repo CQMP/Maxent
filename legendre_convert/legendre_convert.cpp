@@ -9,9 +9,17 @@
 *
 *****************************************************************************/
 
-#include <iostream>
+#include <cmath>
+#include <complex>
+#include <ctime>
 #include <fstream>
+#include <iomanip>
+#include <iostream>
 #include <random>
+#include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
 #include <boost/program_options.hpp>
 #include <boost/math/special_functions/bessel.hpp> 
 
@@ -258,8 +266,12 @@ vector_type generateGaussNoise(vector_type data, vector_type err,std::mt19937 &r
     const int N = data.size();
     vector_type data_noise(N);
     for(int i=0;i<N;i++){
-        std::normal_distribution<> distribution(data[i],err[i]);
-        data_noise[i] = distribution(rng);
+        if(err[i] == 0.0)
+            data_noise[i] = data[i];
+        else{
+            std::normal_distribution<> distribution(data[i],err[i]);
+            data_noise[i] = distribution(rng);
+        }
     }
     return data_noise;
 }
