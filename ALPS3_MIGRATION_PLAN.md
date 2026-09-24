@@ -360,7 +360,21 @@ After this step, the core library's only Boost dependency is header-only Boost.M
 * Moved here from 2.2 (they change the CLI references on purpose): replace
   `boost::diagnostic_information` by `e.what()` (with B1), add a `SEED`
   parameter for the bootstrap (B10), and delete the commented-out ublas and
-  LAPACK-bindings code. B5, B6 and B7 change reachable behavior, so each gets its own commit with a before/after test.
+  LAPACK-bindings code.
+* `legendre_convert` (decided 2026-09-24), in this order:
+  1. Add regression cases for `legendre_convert` first (it has no tests), with
+     references from the current Boost build, like the `kk` cases in 2.2.
+  2. Replace Boost.Random by `<random>`. The `mt19937` engine gives identical
+     numbers; the normal variates differ (different algorithm), which is
+     harmless because the error estimate is seeded from the clock.
+  3. Replace `boost::math::factorial` by a product (only small arguments
+     occur).
+  4. Replace `boost::math::legendre_p` by the standard three-term recurrence.
+     `std::legendre` is not an option: libc++ (AppleClang) does not implement
+     the C++17 special math functions.
+  Keep `boost::math::sph_bessel` (also missing in libc++; our own version
+  would need careful checking at large l and argument) and `program_options`
+  (no standard equivalent). B5, B6 and B7 change reachable behavior, so each gets its own commit with a before/after test.
 * Remove all `using namespace boost::numeric;` lines, `#include <alps/config.hpp>`, dead commented-out ublas and lapack-bindings code, and the unused `alps::cast`.
 * Make `eigen_hdf5.hpp`/`eigen_lapack.hpp` functions `inline`, or move them into `.cpp` files (B8).
 * Use `Eigen::Index` for loop indices (B14). Consider `BDCSVD` in place of `JacobiSVD` (B11); that one is a numerics change and needs checking against the references.
