@@ -23,6 +23,7 @@ SET_TITLES = [
     ("cli", "Command-line snapshots"),
     ("full", "Full set (examples as shipped, opt-in)"),
     ("kk", "kk utility"),
+    ("legendre_convert", "legendre_convert utility"),
     ("components", "Components"),
 ]
 

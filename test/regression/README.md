@@ -33,6 +33,7 @@ result, and is flagged in [`MANIFEST.md`](MANIFEST.md).
 | `cli` | `--help`, `--help.models`, `--help.grids`, missing `BETA` | instant | command-line behavior |
 | `full` | the 11 example runs as shipped | about 1 min (Legendre dominates) | opt-in |
 | `kk` | the `kk` utility on 3 inputs (Im G and Im Σ from the references, an analytic Re G) | seconds | registered when `MAXENT_BUILD_UTILITIES=ON` |
+| `legendre_convert` | deterministic transform, tails, back-continuation and Matsubara convergence | instant | protects the utility before Boost replacements |
 | components | `components.h5` from `dump_components` | instant | building blocks |
 
 ## Running
@@ -52,9 +53,10 @@ them against `reference/`. By hand:
 ```bash
 python3 test/regression/generate.py --maxent build/maxent \
     --components build/test/regression/dump_components --out /tmp/maxent-results \
-    [--kk build/kk/kk] [--sets fast,targeted,cli,full,kk] [--cases REGEX]
+    [--kk build/kk/kk] [--legendre-convert build/legendre_convert/legendre_convert] \
+    [--sets fast,targeted,cli,full,kk,legendre_convert] [--cases REGEX]
 python3 test/regression/compare.py test/regression/reference /tmp/maxent-results \
-    [--sets fast,targeted,cli,kk,components] [--cases REGEX]
+    [--sets fast,targeted,cli,kk,legendre_convert,components] [--cases REGEX]
 ```
 
 `compare.py` exits with status 1 if any case fails. `--report` prints the

@@ -45,6 +45,15 @@ form of the Legendre kernel reproduces the GSL kernels in `components.h5` to
 3.3e-16 relative, all Legendre cases pass, and the new `kk` spline reproduces
 the `kk` references bit for bit.
 
+## legendre_convert reference (added 2026-09-24)
+
+`legendre_convert_transform.h5` was generated from `modernize/step2` merge
+commit `a57f150` using AppleClang 21, C++17, Boost 1.88, and ALPSCore
+`560ae112`. The utility source was unchanged from the Boost implementation.
+Its synthetic Gaussian-spectrum input has zero error bars, so the clock-seeded
+bootstrap is deterministic; three consecutive generate-and-compare runs
+passed.
+
 ## Determinism
 
 Two independent generations with the reference build were compared with

@@ -5,8 +5,8 @@ Each case is a dict with:
   name      unique case name (also the reference file name)
   set       'full' (shipped examples), 'fast' (examples, reduced size),
             'targeted' (synthetic inputs), 'cli' (command-line snapshots),
-            'kk' (the kk utility)
-  program   'maxent' (default) or 'kk'
+            'kk' (the kk utility), or 'legendre_convert'
+  program   'maxent' (default), 'kk', or 'legendre_convert'
   inputs    directory with the input files, relative to the repository root
   param     parameter file inside `inputs` (None for 'cli' cases)
   args      extra command-line arguments (overrides or CLI flags)
@@ -86,6 +86,19 @@ KK = [
 ]
 
 
+LEGENDRE_CONVERT = [
+    dict(name="legendre_convert_transform", set="legendre_convert",
+         program="legendre_convert",
+         inputs="test/regression/inputs/legendre_convert_transform",
+         param=None,
+         args=["--beta=5", "--input_gtau_file=input.dat", "--output_gl_file=Gl.dat",
+               "--tail1=1", "--tail2=0", "--lmax=12", "--maxit=10", "--backcontinue",
+               "--plot_convergence=12", "--maxn=3", "--noerr"],
+         covers="legendre_convert: transform, tails, back-continuation, and Matsubara convergence",
+         flags=[], expect="ok"),
+]
+
+
 def all_cases():
     cases = []
     for name, directory, param, covers in EXAMPLES:
@@ -113,6 +126,7 @@ def all_cases():
         cases.append(dict(name=name, set="kk", program="kk", inputs="test/regression/inputs/" + name,
                           param=None, args=["--input_file=input.dat", "--output_file=output.dat", direction],
                           covers="kk: " + covers, flags=[], expect="ok"))
+    cases.extend(LEGENDRE_CONVERT)
     for c in cases:
         c.setdefault("program", "maxent")
     return cases

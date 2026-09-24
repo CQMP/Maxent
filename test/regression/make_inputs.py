@@ -322,6 +322,13 @@ def make(name, case_dir):
         w = np.linspace(-10, 10, 401)
         # Re G of a normalized Gaussian spectrum (sigma 1): sqrt(2)/sigma D(w/(sqrt(2) sigma))
         write_columns(case_dir / "input.dat", w, np.sqrt(2) * dawsn(w / np.sqrt(2)))
+    elif name == "legendre_convert_transform":
+        # Zero error bars make the clock-seeded bootstrap deterministic.  The
+        # data remain nontrivial and exercise all Legendre orders in the test.
+        w, q, a = spectrum("S1")
+        tau = np.linspace(0, BETA, 33)
+        gtau = transform(k_time_fermionic(tau, w), a, q)
+        write_columns(case_dir / "input.dat", tau, gtau, np.zeros_like(gtau))
     elif name == "cli_missing_beta":
         write_param(case_dir, [("NDAT", 4), ("X_0", 0.1), ("X_1", 0.2), ("X_2", 0.3), ("X_3", 0.4),
                                ("SIGMA_0", 0.5), ("SIGMA_1", 0.5), ("SIGMA_2", 0.5), ("SIGMA_3", 0.5)])
