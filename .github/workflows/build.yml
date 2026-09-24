@@ -1,0 +1,198 @@
+name: Maxent CI
+
+on:
+  push:
+    branches:
+      - master
+      - modernize/step2
+  pull_request:
+    branches:
+      - master
+      - modernize/step2
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  BOOST_VERSION: "1.91.0"
+  BOOST_VERSION_U: "1_91_0"
+
+jobs:
+  linux-build:
+    name: >-
+      Maxent / ${{ matrix.plat.os }} / ${{ matrix.plat.c_compiler }}-${{ matrix.plat.c_version }} /
+      ${{ matrix.plat.variant }}
+    runs-on: ${{ matrix.plat.os }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        plat:
+          # Match the compiler installation conventions used by ALPS 3.0 CI.
+          - { os: ubuntu-22.04, comp_pack: "gcc-11 g++-11", c_compiler: gcc, cxx_compiler: g++, c_version: 11, variant: strict }
+          - { os: ubuntu-24.04, comp_pack: "gcc-13 g++-13", c_compiler: gcc, cxx_compiler: g++, c_version: 13, variant: strict }
+          - { os: ubuntu-24.04, comp_pack: "gcc-15 g++-15", c_compiler: gcc, cxx_compiler: g++, c_version: 15, variant: strict }
+          - { os: ubuntu-22.04, comp_pack: "clang-15", c_compiler: clang, cxx_compiler: clang++, c_version: 15, variant: strict }
+          - { os: ubuntu-24.04, comp_pack: "clang-19", c_compiler: clang, cxx_compiler: clang++, c_version: 19, variant: strict }
+          - { os: ubuntu-24.04, comp_pack: "gcc-13 g++-13", c_compiler: gcc, cxx_compiler: g++, c_version: 13, variant: lapack, lapack: true }
+          - { os: ubuntu-24.04, comp_pack: "clang-19", c_compiler: clang, cxx_compiler: clang++, c_version: 19, variant: asan-ubsan, sanitizers: true }
+          - { os: ubuntu-24.04, comp_pack: "gcc-13 g++-13", c_compiler: gcc, cxx_compiler: g++, c_version: 13, variant: alps-flags, alps_flags: true }
+
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check out ALPSCore
+        uses: actions/checkout@v7
+        with:
+          repository: ALPSCore/ALPSCore
+          path: alpscore
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Install dependencies
+        timeout-minutes: 20
+        run: |
+          printf 'Acquire::Retries "3";\nAcquire::http::Timeout "30";\nAcquire::https::Timeout "30";\n' \
+            | sudo tee /etc/apt/apt.conf.d/99ci-timeouts > /dev/null
+          sudo apt-get update
+          sudo apt-get install -y liblapack-dev libblas-dev libopenmpi-dev libhdf5-serial-dev libeigen3-dev
+          if [[ "${{ matrix.plat.c_compiler }}" == "clang" && "${{ matrix.plat.c_version }}" -ge 19 ]]; then
+            wget -nv --tries=3 --timeout=60 -O /tmp/llvm.sh https://apt.llvm.org/llvm.sh
+            sudo bash /tmp/llvm.sh "${{ matrix.plat.c_version }}" all
+          else
+            if [[ "${{ matrix.plat.c_compiler }}" == "gcc" && "${{ matrix.plat.c_version }}" -ge 15 ]]; then
+              sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+              sudo apt-get update
+            fi
+            sudo apt-get install -y ${{ matrix.plat.comp_pack }}
+          fi
+          python -m pip install --upgrade pip
+          python -m pip install "numpy>=1.26" "h5py>=3.10"
+      - name: Cache Boost and ALPSCore
+        id: cache-dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ runner.temp }}/boost
+            ${{ runner.temp }}/alpscore-install
+          key: >-
+            maxent-deps-${{ runner.os }}-${{ runner.arch }}-${{ matrix.plat.c_compiler }}-${{ matrix.plat.c_version }}-
+            boost-${{ env.BOOST_VERSION }}-${{ hashFiles('alpscore/**') }}
+      - name: Build Boost and ALPSCore
+        if: steps.cache-dependencies.outputs.cache-hit != 'true'
+        env:
+          CC: ${{ matrix.plat.c_compiler }}-${{ matrix.plat.c_version }}
+          CXX: ${{ matrix.plat.cxx_compiler }}-${{ matrix.plat.c_version }}
+        run: |
+          wget -nv --tries=3 --timeout=60 --waitretry=10 \
+            "https://archives.boost.io/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION_U}.tar.gz"
+          tar -xzf "boost_${BOOST_VERSION_U}.tar.gz"
+          cd "boost_${BOOST_VERSION_U}"
+          ./bootstrap.sh --prefix="${RUNNER_TEMP}/boost" --with-libraries=program_options
+          ./b2 -j 2 install
+          cd ..
+          cmake -S alpscore -B alpscore-build \
+            -DTesting=OFF \
+            -DALPS_CXX_STD=c++17 \
+            -DBoost_ROOT="${RUNNER_TEMP}/boost" \
+            -DCMAKE_PREFIX_PATH="${RUNNER_TEMP}/boost" \
+            -DCMAKE_INSTALL_PREFIX="${RUNNER_TEMP}/alpscore-install"
+          cmake --build alpscore-build -j 2
+          cmake --install alpscore-build
+      - name: Configure Maxent
+        env:
+          CC: ${{ matrix.plat.c_compiler }}-${{ matrix.plat.c_version }}
+          CXX: ${{ matrix.plat.cxx_compiler }}-${{ matrix.plat.c_version }}
+        run: |
+          extra_flags=""
+          if [[ "${{ matrix.plat.sanitizers || false }}" == "true" ]]; then
+            extra_flags="-fsanitize=address,undefined -fno-omit-frame-pointer"
+          elif [[ "${{ matrix.plat.alps_flags || false }}" == "true" ]]; then
+            extra_flags="-fpermissive -DBOOST_NO_AUTO_PTR -DBOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF -DBOOST_TIMER_ENABLE_DEPRECATED"
+          fi
+          cmake -S . -B build/ci \
+            -DCMAKE_BUILD_TYPE=${{ matrix.plat.sanitizers && 'Debug' || 'Release' }} \
+            -DCMAKE_PREFIX_PATH="${RUNNER_TEMP}/alpscore-install;${RUNNER_TEMP}/boost" \
+            -DALPSCore_DIR="${RUNNER_TEMP}/alpscore-install/share/ALPSCore" \
+            -DBoost_ROOT="${RUNNER_TEMP}/boost" \
+            -DMAXENT_USE_LAPACK=${{ matrix.plat.lapack && 'ON' || 'OFF' }} \
+            -DMAXENT_WERROR=ON \
+            -DCMAKE_CXX_FLAGS="${extra_flags}" \
+            -DCMAKE_EXE_LINKER_FLAGS="${extra_flags}"
+      - name: Build Maxent
+        run: cmake --build build/ci -j 2
+      - name: Test Maxent
+        env:
+          ASAN_OPTIONS: detect_leaks=1
+          UBSAN_OPTIONS: print_stacktrace=1
+        run: ctest --test-dir build/ci --output-on-failure
+      - name: Upload test logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-logs-${{ matrix.plat.c_compiler }}-${{ matrix.plat.c_version }}-${{ matrix.plat.variant }}
+          path: build/ci/Testing/Temporary/**
+
+  macos-build:
+    name: Maxent / macos-15 / AppleClang / strict
+    runs-on: macos-15
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check out ALPSCore
+        uses: actions/checkout@v7
+        with:
+          repository: ALPSCore/ALPSCore
+          path: alpscore
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Install dependencies
+        timeout-minutes: 30
+        run: |
+          brew install boost eigen hdf5 open-mpi
+          python -m pip install --upgrade pip
+          python -m pip install "numpy>=1.26" "h5py>=3.10"
+      - name: Cache ALPSCore
+        id: cache-alpscore
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/alpscore-install
+          key: >-
+            maxent-alpscore-${{ runner.os }}-${{ runner.arch }}-appleclang-
+            ${{ hashFiles('alpscore/**') }}
+      - name: Build ALPSCore
+        if: steps.cache-alpscore.outputs.cache-hit != 'true'
+        env:
+          CC: /usr/bin/clang
+          CXX: /usr/bin/clang++
+        run: |
+          cmake -S alpscore -B alpscore-build \
+            -DTesting=OFF \
+            -DALPS_CXX_STD=c++17 \
+            -DCMAKE_PREFIX_PATH="$(brew --prefix)" \
+            -DCMAKE_INSTALL_PREFIX="${RUNNER_TEMP}/alpscore-install"
+          cmake --build alpscore-build -j "$(sysctl -n hw.ncpu)"
+          cmake --install alpscore-build
+      - name: Configure Maxent
+        env:
+          CC: /usr/bin/clang
+          CXX: /usr/bin/clang++
+        run: |
+          cmake -S . -B build/ci \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="${RUNNER_TEMP}/alpscore-install;$(brew --prefix)" \
+            -DALPSCore_DIR="${RUNNER_TEMP}/alpscore-install/share/ALPSCore" \
+            -DMAXENT_WERROR=ON
+      - name: Build Maxent
+        run: cmake --build build/ci -j "$(sysctl -n hw.ncpu)"
+      - name: Test Maxent
+        run: ctest --test-dir build/ci --output-on-failure
+      - name: Upload test logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-logs-macos-15-appleclang
+          path: build/ci/Testing/Temporary/**
