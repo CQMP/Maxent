@@ -310,7 +310,8 @@ def make(name, case_dir):
                 "quadratic": "quadratic", "log": "log", "linear": "linear"}[name[len("t_grid_"):]]
         base_frequency_ph(case_dir, name, [("FREQUENCY_GRID", grid)])
     elif name in ("t_generate_err", "t_generate_err_seed"):
-        wn, y = freq_ph_data(name)
+        # Keep the scientific input identical so the two cases isolate SEED.
+        wn, y = freq_ph_data("t_generate_err")
         write_columns(case_dir / "data.dat", wn, y, np.full_like(y, NOISE))
         entries = [("BETA", BETA), ("NFREQ", 40), ("N_ALPHA", 8),
                    ("NDAT", wn.size), ("DATASPACE", "frequency"),

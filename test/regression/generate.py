@@ -62,6 +62,17 @@ def run(cmd, cwd, timeout=TIMEOUT):
     return p, time.monotonic() - t0
 
 
+def classify_status(program, returncode, stderr):
+    """Classify command completion without mistaking crashes for exceptions."""
+    if returncode is None:
+        return "timeout"
+    if program == "maxent" and returncode == 1 and "Caught Exception:" in stderr:
+        return "exception"
+    if returncode != 0:
+        return "failed"
+    return "ok"
+
+
 def pack_outputs(h5, workdir, before):
     files = h5.create_group("files")
     for path in sorted(workdir.rglob("*")):
@@ -117,15 +128,7 @@ def run_case(case, programs, outdir, provenance, timeout=TIMEOUT):
         # An expected Maxent exception has both the documented exit status and
         # diagnostic signature. Crashes and other nonzero exits remain generic
         # failures rather than accidentally satisfying an exception case.
-        if p.returncode is None:
-            status = "timeout"
-        elif (case["program"] == "maxent" and p.returncode == 1
-              and "Caught Exception:" in p.stderr):
-            status = "exception"
-        elif p.returncode != 0:
-            status = "failed"
-        else:
-            status = "ok"
+        status = classify_status(case["program"], p.returncode, p.stderr)
         with h5py.File(out, "w") as h5:
             for key in ("name", "set", "covers"):
                 h5.attrs[key] = case[key]

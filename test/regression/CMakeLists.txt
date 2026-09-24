@@ -27,6 +27,10 @@ if(NOT have_python_modules)
   return()
 endif()
 
+add_test(NAME regression_harness_unit
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_generate.py)
+set_tests_properties(regression_harness_unit PROPERTIES LABELS unit)
+
 function(maxent_regression_test name sets label)
   set(results ${CMAKE_CURRENT_BINARY_DIR}/results-${name})
   add_test(NAME regression_${name}_generate

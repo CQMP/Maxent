@@ -1,9 +1,10 @@
 # Provenance of the references
 
-The references in `reference/` were generated on 2026-09-23 from the
+Most references in `reference/` were generated on 2026-09-23 from the
 **original numerics** of Maxent, before any modernization of the code.
-The same information is stored as `provenance.*` attributes at the root of
-every reference file.
+References added or deliberately regenerated later are identified in the
+dated sections below and in `REFERENCE_CHANGES.md`. Corresponding provenance
+is stored as `provenance.*` attributes at each reference root.
 
 ## Source
 

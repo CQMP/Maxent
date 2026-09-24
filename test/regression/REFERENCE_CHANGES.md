@@ -10,7 +10,9 @@ references (from `compare.py --report`). Newest entry first.
 * **Reason:** added review-requested coverage proving that a non-default
   `SEED` value is parsed and used, rather than only testing the default.
 * **Cases:** added `t_generate_err_seed` with `SEED=1234`, including
-  `booterr.dat`. No existing reference changed.
+  `booterr.dat`. It uses the exact input of the default-seed case, isolating
+  the seed as the only cause of bootstrap differences. No existing reference
+  changed.
 
 ## 2026-09-24: log-grid float casts removed (B15)
 
