@@ -210,6 +210,9 @@ alps::params p;
 
   //sensibility check
   EXPECT_EQ(G.size(),ndat);
+#ifndef NDEBUG
+  EXPECT_THROW(bc.max_error(G, vector_type::Zero(ndat + 1)), std::runtime_error);
+#endif
 
   //check that backcont is right to first order
   const double threshold = 0.1;

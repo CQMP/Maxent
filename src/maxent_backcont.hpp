@@ -11,7 +11,6 @@
 
 #pragma once
 #include "maxent.hpp"
-#include <alps/config.hpp> // needed to set up correct bindings
 
 ///This class contains necessities to analytically continue a 
 //real function to the imaginary axis

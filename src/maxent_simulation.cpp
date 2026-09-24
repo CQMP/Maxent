@@ -10,7 +10,6 @@
 *****************************************************************************/
 
 #include "maxent.hpp"
-#include <alps/config.hpp> // needed to set up correct bindings
 #include <alps/hdf5/vector.hpp>
 #include <cmath>
 #include <Eigen/LU>
@@ -27,8 +26,8 @@ MaxEntSimulation::MaxEntSimulation(alps::params &parms)
 , self(parms["SELF"])
 , make_back(parms["BACKCONTINUE"])
 , gen_err(parms["GENERATE_ERR"])
-, qvec((int)parms["N_ALPHA"])
 , nfreq(parms["NFREQ"].as<int>())
+, qvec((int)parms["N_ALPHA"])
 {
   std::string bn=parms["BASENAME"]; name=bn+'.';
 
@@ -36,7 +35,7 @@ MaxEntSimulation::MaxEntSimulation(alps::params &parms)
   const double alpha_min = parms["ALPHA_MIN"];                                          //Smallest value of \alpha that is tried
   const double alpha_max = parms["ALPHA_MAX"];                                          //Largest  value of \alpha that is tried
   alpha[0] = alpha_max;
-  for (std::size_t a=1; a<alpha.size(); ++a)                                            //These are all the alpa values on a log grid
+  for (Eigen::Index a=1; a<alpha.size(); ++a)                                            //These are all the alpa values on a log grid
     alpha[a] =  alpha[a-1] * std::pow(alpha_min/alpha_max, 1./double(alpha.size()-1));
 }
 ///define parameter defaults
@@ -123,7 +122,7 @@ void MaxEntSimulation::run()
   }
   //this loop is the 'core' of the maxent program: iterate over all alphas, compute the spectra, normalization, and probabilities
   //loop over all alpha values
-  for (std::size_t a=0; a<alpha.size(); ++a) {
+  for (Eigen::Index a=0; a<alpha.size(); ++a) {
     std::cerr << "alpha it: " << a << "\t";
     //fitting procedure for 'u'
     u = levenberg_marquardt(u, alpha[a]);
@@ -133,7 +132,7 @@ void MaxEntSimulation::run()
     std::cerr << "norm: " << transform_into_real_space(u).sum() << "\t";
     if (text_output) {
       spectral_function_file<<"# alpha: "<<alpha[a]<<std::endl;
-      for (std::size_t i=0; i<A.size(); ++i)
+      for (Eigen::Index i=0; i<A.size(); ++i)
         spectral_function_file << omega_coord(i) << " " << A[i] << "\n";
       spectral_function_file << "\n";
     }
@@ -149,7 +148,7 @@ void MaxEntSimulation::run()
     qvec(a)=Q(u,alpha[a]); 
   }
     omegaGrid.resize(nfreq);
-    for(std::size_t i=0;i<nfreq;i++)
+    for(Eigen::Index i=0;i<omegaGrid.size();i++)
 	    omegaGrid(i)=omega_coord(i);
 }
   //everything from here on down is evaluation.
@@ -157,13 +156,13 @@ void MaxEntSimulation::evaluate(){
   if (text_output) {
     ofstream_ chi_squared_file;
     chi_squared_file.open((name+"chi2.dat").c_str());
-    for (std::size_t a=0; a<chi_sq.size(); ++a){
+    for (Eigen::Index a=0; a<chi_sq.size(); ++a){
       chi_squared_file << alpha[a] << " " << chi_sq[a] << std::endl;
     }
   }
   int a_chi = 0;
   double diff = std::abs(chi_sq[0]-ndat());
-  for (std::size_t a=1; a<chi_sq.size(); ++a) {
+  for (Eigen::Index a=1; a<chi_sq.size(); ++a) {
     double diff_new = std::abs(chi_sq[a]-ndat());
     if (diff_new < diff) {
       diff = diff_new;
@@ -176,11 +175,10 @@ void MaxEntSimulation::evaluate(){
   if (text_output){
     ofstream_ chispec_file;
     chispec_file.open((name+"chispec.dat").c_str());
-    for (std::size_t i=0; i<spectra[0].size(); ++i){
+    for (Eigen::Index i=0; i<spectra[0].size(); ++i){
       chispec_file << omega_coord(i) << " " << spectra[a_chi][i]*norm << " " << def[i]*norm << std::endl;
     }
   }
-  //boost::numeric::ublas::vector<double>::const_iterator max_lprob = std::max_element(lprob.begin(), lprob.end());  
   //const int max_a = max_lprob-lprob.begin();
   int max_a,nothing; double max_lprob;
   max_lprob=lprob.maxCoeff(&max_a,&nothing);
@@ -191,14 +189,14 @@ void MaxEntSimulation::evaluate(){
 	ar << alps::make_pvp("/alpha/values",alpha);
 
   vector_type om(spectra[0].size());
-  for (int i=0;i<om.size();i++) om[i] = omega_coord(i);        
+  for (Eigen::Index i=0;i<om.size();i++) om[i] = omega_coord(i);
   ar<<alps::make_pvp("/spectrum/omega",om);
 
   //output 'maximum' spectral function (classical maxent metod)
   if (text_output){
     ofstream_ maxspec_file;
     maxspec_file.open((name+"maxspec.dat").c_str());
-    for (std::size_t i=0; i<spectra[0].size(); ++i)
+    for (Eigen::Index i=0; i<spectra[0].size(); ++i)
       maxspec_file << omega_coord(i) << " " << spectra[max_a][i]*norm << " " << def[i]*norm << std::endl;
   }
 	
@@ -208,37 +206,37 @@ void MaxEntSimulation::evaluate(){
   ar << alps::make_pvp("/spectrum/maximum",maxspec);
   
 	vector_type prob(lprob.size());
-  for (std::size_t a=0; a<prob.size(); ++a) 
+  for (Eigen::Index a=0; a<prob.size(); ++a)
     prob[a] = exp(lprob[a]-max_lprob);
   double probnorm = 0;
-  for (std::size_t a=0; a<prob.size()-1; ++a) 
+  for (Eigen::Index a=0; a<prob.size()-1; ++a)
     probnorm += 0.5*(prob[a]+prob[a+1])*(alpha[a]-alpha[a+1]);
   prob /= probnorm;
   ar << alps::make_pvp("/alpha/probability",prob);
   if (text_output){
     ofstream_ prob_str;
     prob_str.open((name+"prob.dat").c_str());
-    for (std::size_t a=0; a<prob.size(); ++a) {
+    for (Eigen::Index a=0; a<prob.size(); ++a) {
       prob_str << alpha[a] << "\t" << prob[a] << "\n";
     }
   }
   postprobdef = 0;
-  for (std::size_t a=0; a<lprob.size()-1; ++a) 
+  for (Eigen::Index a=0; a<lprob.size()-1; ++a)
     postprobdef += 0.5*(exp(lprob[a])+exp(lprob[a+1]))*(alpha[a]-alpha[a+1]);
   std::cout << "posterior probability of the default model: " << postprobdef << std::endl;
 
   //compute 'average' spectral function (Brian's method)
   avspec.resize(spectra[0].size());
-  for (std::size_t i=0; i<avspec.size(); ++i) {
+  for (Eigen::Index i=0; i<avspec.size(); ++i) {
     avspec[i] = 0.;
-    for (std::size_t a=0; a<prob.size()-1; ++a) 
+    for (Eigen::Index a=0; a<prob.size()-1; ++a)
       avspec[i] += 0.5*(prob[a]*spectra[a][i] +prob[a+1]*spectra[a+1][i])*(alpha[a]-alpha[a+1]);
   }
   //Estimate the variance for the spectrum
   vector_type varspec(spectra[0].size());
-  for (std::size_t i=0; i<varspec.size(); ++i) {
+  for (Eigen::Index i=0; i<varspec.size(); ++i) {
     varspec[i] = 0.;
-    for (std::size_t a=0; a<prob.size()-1; ++a)
+    for (Eigen::Index a=0; a<prob.size()-1; ++a)
       varspec[i] += 0.5*(prob[a]*(spectra[a][i]-avspec[i])*(spectra[a][i]-avspec[i]) + prob[a+1]*(spectra[a+1][i]-avspec[i])*(spectra[a+1][i]-avspec[i]))*(alpha[a]-alpha[a+1]);
   }
   avspec *= norm;
@@ -247,7 +245,7 @@ void MaxEntSimulation::evaluate(){
   if (text_output){
     ofstream_ avspec_file;
     avspec_file.open((name+"avspec.dat").c_str());
-    for (std::size_t  i=0; i<avspec.size(); ++i)
+    for (Eigen::Index i=0; i<avspec.size(); ++i)
       avspec_file << omega_coord(i) << " " << avspec[i] << " " << def[i]*norm << std::endl;
   }
   ar << alps::make_pvp("/spectrum/average",avspec);
@@ -265,13 +263,13 @@ void MaxEntSimulation::evaluate(){
     ofstream_ maxspec_anom_str;maxspec_anom_str.open((name+"maxspec_anom.dat").c_str());
     ofstream_ avspec_anom_str; avspec_anom_str.open((name+"avspec_anom.dat").c_str());
     vector_type spec(avspec.size());
-    for (std::size_t  i=0; i<avspec.size(); ++i){ 
+    for (Eigen::Index i=0; i<avspec.size(); ++i){
       //if(omega_coord(i)>=0.)
       spec[i] = avspec[i]*omega_coord(i)*M_PI;
       avspec_anom_str << omega_coord(i) << " " << spec[i]<<std::endl;
     }
     ar << alps::make_pvp("/spectrum/anomalous/average",spec);
-    for (std::size_t i=0; i<spectra[0].size(); ++i){
+    for (Eigen::Index i=0; i<spectra[0].size(); ++i){
       //if(omega_coord(i)>=0.)
       spec[i] = spectra[max_a][i]*norm*omega_coord(i)*M_PI;
       maxspec_anom_str << omega_coord(i) << " " << spec[i] << std::endl;
@@ -280,24 +278,24 @@ void MaxEntSimulation::evaluate(){
   }
   if(Kernel_type=="bosonic"){ //for the anomalous function: use A(Omega_)=Im chi(Omega_)/(pi Omega_) (as for anomalous)
     vector_type spec(avspec.size());
-    for (std::size_t  i=0; i<avspec.size(); ++i){
+    for (Eigen::Index i=0; i<avspec.size(); ++i){
       spec[i] = avspec[i]*omega_coord(i);
     }
     if (text_output) {
       ofstream_ avspec_anom_str;avspec_anom_str.open((name+"maxspec_bose.dat").c_str());
-      for (std::size_t  i=0; i<avspec.size(); ++i){
+      for (Eigen::Index i=0; i<avspec.size(); ++i){
         //if(omega_coord(i)>=0.)
         avspec_anom_str << omega_coord(i) << " " << spec[i]<<std::endl;
       }
     }
     ar << alps::make_pvp("/spectrum/bosonic/average",spec);
-    for (std::size_t i=0; i<spectra[0].size(); ++i){
+    for (Eigen::Index i=0; i<spectra[0].size(); ++i){
       //if(omega_coord(i)>=0.)
       spec[i] = spectra[max_a][i]*norm*omega_coord(i);
     }
     if (text_output) {
       ofstream_ maxspec_anom_str;maxspec_anom_str.open((name+"avspec_bose.dat").c_str());
-      for (std::size_t i=0; i<spectra[0].size(); ++i){
+      for (Eigen::Index i=0; i<spectra[0].size(); ++i){
         maxspec_anom_str << omega_coord(i) << " " << spec[i] << std::endl;
       }
     }
@@ -316,13 +314,13 @@ void MaxEntSimulation::evaluate(){
     ofstream_ maxspec_self_str;maxspec_self_str.open((name+"maxspec_self.dat").c_str());
     ofstream_ avspec_self_str; avspec_self_str.open((name+"avspec_self.dat").c_str());
     ofstream_ chispec_self_str; chispec_self_str.open((name+"chispec_self.dat").c_str());
-    for (std::size_t  i=0; i<avspec.size(); ++i){ 
+    for (Eigen::Index i=0; i<avspec.size(); ++i){
       avspec_self_str << omega_coord(i) << " " << -avspec[i]*M_PI<< " " << -def[i]*norm*M_PI<<std::endl;
     }
-    for (std::size_t i=0; i<spectra[0].size(); ++i){
+    for (Eigen::Index i=0; i<spectra[0].size(); ++i){
       maxspec_self_str << omega_coord(i) << " " << -spectra[max_a][i]*norm*M_PI<< " " << -def[i]*norm*M_PI << std::endl;
     }
-    for (std::size_t  i=0; i<specchi.size(); ++i){ 
+    for (Eigen::Index i=0; i<specchi.size(); ++i){
       chispec_self_str << omega_coord(i) << " " << -specchi[i]*M_PI<< " " << -def[i]*norm*M_PI<<std::endl;
     }
     //for public facing variables
@@ -407,13 +405,12 @@ vector_type MaxEntSimulation::levenberg_marquardt(vector_type u, const double al
 vector_type MaxEntSimulation::iteration(vector_type u, const double alpha, const double mu) const
 {
   matrix_type M = left_side(u);
-  for (std::size_t i=0; i<M.rows(); ++i) 
+  for (Eigen::Index i=0; i<M.rows(); ++i)
     M(i,i) += alpha + mu;
   vector_type b = right_side(u) + alpha*u;
   matrix_type B(b.size(),1);
-  for (std::size_t i=0; i<M.rows(); ++i) 
+  for (Eigen::Index i=0; i<M.rows(); ++i)
     B(i,0) = -b[i];
-   //bindings::lapack::gesv(M, ipiv, B);
   //NOTE: gesv uses LU decomp, but we can switch to a safe QR routine as well
   matrix_type Bp = M.lu().solve(B);
   //may need a transposeInPlace();

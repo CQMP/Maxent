@@ -87,8 +87,6 @@ K_(ndat_,nfreq_)
         }
       }
     }
-    else if(ktype_== time_fermionic_legendre_kernel || ktype_==time_bosonic_legendre_kernel)
-        setup_legendre_kernel(p,freq,ndat_);
     //for zero temperature, only positive frequency matters
     else if (ktype_ == time_boris_kernel) {
       for (int i=0; i<ndat_; ++i) {
@@ -98,15 +96,6 @@ K_(ndat_,nfreq_)
           K_(i,j) = -std::exp(-omega*tau);
         }
       }
-    }
-    else if(ktype_==time_fermionic_kernel){
-        for (int i=0; i<ndat_; ++i) {
-						double tau=tau_points_[i];
-            for (int j=0; j<nfreq_; ++j) {
-                double omega = freq[j];
-                K_(i,j) =  -1.;
-            }
-        }
     }
     else if(ktype_==frequency_fermionic_ph_kernel) {
     for (int i=0; i<ndat_; ++i) {
@@ -201,15 +190,9 @@ void kernel::set_kernel_type(const std::string &dataspace_name, const std::strin
 
   if(dtype_==time_dataspace){
     if(kernel_name=="fermionic")
-            if(dtype_==legendre_dataspace)
-                ktype_=time_fermionic_legendre_kernel;
-            else
-                ktype_=time_fermionic_kernel;
+      ktype_=time_fermionic_kernel;
     else if(kernel_name=="bosonic")
-            if(dtype_==legendre_dataspace)
-                ktype_=time_bosonic_legendre_kernel;
-            else
-                ktype_=time_bosonic_kernel;
+      ktype_=time_bosonic_kernel;
     else if(kernel_name=="tzero")
       ktype_=time_boris_kernel;
     else throw std::invalid_argument("unknown kernel name. In the time domain it should be fermionic, bosonic, or tzero.");

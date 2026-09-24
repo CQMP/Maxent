@@ -324,7 +324,7 @@ double GtBoot(vector_type gl_in, void *arg){
 //************************
 int main(int argc, char**argv){
 	namespace po = boost::program_options;
-	double beta,c1,c2,c3;
+	double beta,c1,c2;
 	int lmax,numConvergence,maxit,maxn;
 	bool backcontinue = false,enforceTailOff = false,enforceErrCheck=true,continueMatsubara=false;
 	std::string input_gtau_filename,gl_filename;

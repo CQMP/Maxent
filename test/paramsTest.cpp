@@ -101,6 +101,30 @@ std::string pf=alps::temporary_filename("in_file.dat");
   std::remove(pf.c_str());
 }
 
+TEST(Parameters,DataInFileWithTrailingBlankLines){
+  std::string pf=alps::temporary_filename("in_file.dat");
+  write_minimal_input_file(pf);
+  {
+    std::ofstream tempfile(pf.c_str(), std::ios::app);
+    tempfile << "\n\n";
+  }
+
+  alps::params p;
+  MaxEntSimulation::define_parameters(p);
+  p["BETA"]=2;
+  p["DATA"]=pf;
+  p["NDAT"] = 5;
+
+  ContiParameters c(p);
+  EXPECT_EQ(c.ndat(),5);
+  for(int i=0;i<c.ndat();i++){
+    EXPECT_NEAR(c.y(i),(i+1)*0.1,1e-10);
+    EXPECT_EQ(c.sigma(i),0.5);
+  }
+
+  std::remove(pf.c_str());
+}
+
 TEST(Parameters,MaxentParams){
     //set up parameters
 	alps::params p;
@@ -402,4 +426,3 @@ TEST(Parameters,CovarianceHDF5Params){
   }
   std::remove(tf.c_str());
 }
-

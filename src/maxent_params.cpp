@@ -11,7 +11,6 @@
 
 #include "maxent.hpp"
 #include "eigen_lapack.hpp"
-#include <alps/config.hpp> // needed to set up correct bindings
 #include <Eigen/SVD>
 #include <Eigen/Eigenvalues>
 #include <alps/hdf5/vector.hpp>
@@ -51,9 +50,8 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
   std::string dataspace = p["DATASPACE"].as<std::string>();
   to_lower(dataspace);
   if(dataspace == "time" || dataspace == "legendre" || p["PARTICLE_HOLE_SYMMETRY"]==true){
-    while (datstream) {
-      double index, X_i, dX_i;
-      datstream >> index >> X_i >> dX_i;
+    double index, X_i, dX_i;
+    while (datstream >> index >> X_i >> dX_i) {
       if (datIn < ndat()) {
         inputGrid_(datIn) = index;
         y_(datIn) = X_i / static_cast<double>(p["NORM"]);
@@ -62,7 +60,6 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
       }
       expectedDatIn++;
     }
-    expectedDatIn-=1;
   }
   else{
     if(ndat()%2 != 0){
@@ -71,9 +68,8 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
                   << std::endl;
         throw std::runtime_error("Your NDAT is odd!");\
     }
-    while (datstream) {
-      double index, X_i_re, dX_i_re, X_i_im, dX_i_im;
-      datstream >> index >> X_i_re >> dX_i_re >> X_i_im >> dX_i_im;
+    double index, X_i_re, dX_i_re, X_i_im, dX_i_im;
+    while (datstream >> index >> X_i_re >> dX_i_re >> X_i_im >> dX_i_im) {
       if (datIn < ndat()) {
         inputGrid_(datIn) = index;
         inputGrid_(datIn+1) = index; 
@@ -83,11 +79,8 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
         sigma_(datIn+1) = dX_i_im / static_cast<double>(p["NORM"]);
         datIn+=2;
       }
-      expectedDatIn++;
+      expectedDatIn+=2;
     }
-    //fix for matsubara length
-    expectedDatIn*=2;
-    expectedDatIn-=1;
   }
   if(p["COVARIANCE_MATRIX"]!="") {
     std::string fname = p["COVARIANCE_MATRIX"];
@@ -117,13 +110,13 @@ void ContiParameters::read_data_from_hdf5_file(const alps::params& p) {
   std::stringstream path;
   path << "/Data";
   ar >> alps::make_pvp(path.str(), tmp);
-  for (std::size_t i = 0; i < ndat(); i++)
+  for (int i = 0; i < ndat(); i++)
     y_(i) = tmp[i] / static_cast<double>(p["NORM"]);
   path.str("");
   if (p["COVARIANCE_MATRIX"]=="") {
     path << "/Error";
     ar >> alps::make_pvp(path.str(), tmp);
-    for (std::size_t i = 0; i < ndat(); i++)
+    for (int i = 0; i < ndat(); i++)
       sigma_(i) = tmp[i] / static_cast<double>(p["NORM"]);
   } else {
     path << "/Covariance";
@@ -131,8 +124,8 @@ void ContiParameters::read_data_from_hdf5_file(const alps::params& p) {
     tmp.clear();
     tmp.resize(ndat() * ndat());
     ar >> alps::make_pvp(path.str(), tmp);
-    for (std::size_t i = 0; i < ndat(); i++)
-      for (std::size_t j = 0; j < ndat(); j++)
+    for (int i = 0; i < ndat(); i++)
+      for (int j = 0; j < ndat(); j++)
         cov_(i, j) = tmp[i * ndat() + j];
   }
 }
@@ -225,7 +218,6 @@ void ContiParameters::read_covariance_matrix_from_text_file(
 void ContiParameters::decompose_covariance_matrix(const alps::params& p){
 
     vector_type var(ndat());
-    //bindings::lapack::syev('V', bindings::upper(cov_) , var, bindings::lapack::optimal_workspace()); 
     //TODO: check if this truly implements lapack's expected overwrite of cov_
     Eigen::SelfAdjointEigenSolver<matrix_type> es(cov_);
     var=es.eigenvalues();
@@ -292,17 +284,12 @@ void MaxEntParameters::truncate_to_singular_space(const vector_type& S) {
 
 void MaxEntParameters::singular_value_decompose_kernel(bool verbose,
     vector_type& S) {
-  /*boost::numeric::bindings::lapack::gesvd('S', 'S', Kt, S, U_, Vt_);
-  */
-
 #ifdef HAVE_LAPACK
 
   matrix_type Kt = K_; // gesvd destroys K!
   lapack_svd(Kt,S, Vt_,U_);
 
 #else
-  const double threshold = std::sqrt(std::numeric_limits<double>::epsilon())
-      * nfreq();
   Eigen::JacobiSVD<matrix_type> svd(K_,Eigen::ComputeThinU | Eigen::ComputeThinV);
   //svd.setThreshold(threshold);
   S=svd.singularValues();
@@ -318,7 +305,7 @@ void MaxEntParameters::singular_value_decompose_kernel(bool verbose,
     std::cout << "# eps = " << sqrt(std::numeric_limits<double>::epsilon())
         << std::endl << "# prec = " << prec << std::endl;
 
-  for (unsigned int s = 0; s < S.size(); ++s) {
+  for (Eigen::Index s = 0; s < S.size(); ++s) {
     if (verbose)
       std::cout << "# " << s << "\t" << S[s] << "\n";
 
@@ -387,10 +374,11 @@ MaxEntParameters::MaxEntParameters(alps::params& p) :
   k_type = ker.getKernelType();
 
   //scale lhs and rhs according to errors, etc.
-  if (p["COVARIANCE_MATRIX"]!="")
+  if (p["COVARIANCE_MATRIX"]!="") {
     decompose_covariance_matrix(p);
-    
-    check_high_frequency_limit(y(),k_type);
+  }
+
+  check_high_frequency_limit(y(),k_type);
 
   //Look around Eq. D.5 in Sebastian's thesis. We have sigma_ = sqrt(eigenvalues of covariance matrix) or, 
   //in case of a diagonal covariance matrix, we have sigma_=SIGMA_X. 
@@ -410,7 +398,6 @@ MaxEntParameters::MaxEntParameters(alps::params& p) :
   //compute Ut and 
   compute_minimal_chi2();
 }
-
 
 
 

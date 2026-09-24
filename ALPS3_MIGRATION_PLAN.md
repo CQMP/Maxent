@@ -367,6 +367,10 @@ Already done elsewhere: B2, B3 (2.1), B7 (`xi_bose_bugfix`), B20 (Pade removed).
 
 **2.3A: no change to results** (references must stay bit-identical)
 
+**Done 2026-09-24.** All Maxent-owned code and utilities build with
+`-Wall -Wextra -Wpedantic -Werror`; the fast and full regression suites remain
+unchanged. A text-input regression covers trailing blank lines.
+
 * Fix all compiler warnings (44 at the start of 2.3): B14 (`std::size_t` vs
   `Eigen::Index` loops), B12 (member initialization order), unused variables,
   misleading indentation, B13 (deprecated `params::get_origin_name()`; the
@@ -679,3 +683,4 @@ make -j8 && ctest     # 6/6 executables, 35 cases pass, ~9 s
 | 2026-09-23 | 2.x | Pade removed (D7), on branch `modernize/remove-pade`: `pade/` (13 files: 6 built, 5 unbuilt alternatives, header, CMake), `MAXENT_BUILD_PADE`, and the README section. It required GMP (`mpf_class`, 256-bit default precision) and did not compile (B20). |
 | 2026-09-24 | 2.2 | Step 2.2 done on `modernize/step2.2`: kk regression cases, kk spline, closed-form Legendre kernel (GSL removed), Boost utilities → std. No reference changed; 41/41 tests. ALPSCore#668 merged (GoogleTest 1.18, not installed, CMake 3.16). Found B22 (performance). |
 | 2026-09-24 | sync | Synced with ALPSCore `master` `560ae112` (#669: C++14 required and default, ALPSCore compiled with exactly `ALPS_CXX_STD`, Boost.Math dependency removed; #670: Doxygen removed). Maxent `d529a14` against it (installed as C++14, Boost 1.88): configures without `Boost_DIR`, compiles as C++17, 41/41 tests, regression unchanged (only the known Legendre rounding-level differences from 2.2). Note: build ALPSCore in a fresh build directory; an old one keeps a stale compiler identification that Maxent's configure then rejects. |
+| 2026-09-24 | 2.3A | Warning cleanup and no-output-change fixes complete: Eigen index types, initializer order, unused/deprecated code, inline HDF5/LAPACK helpers, debug size check, unreachable kernel branches, robust text-file extraction, and dead bindings/config code removed. The dev preset enables `MAXENT_WERROR`; 42/42 Release tests pass including full regression, and the LAPACK build is warning-free. |

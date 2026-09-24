@@ -21,9 +21,7 @@ extern "C" void dgesvd_( const char* jobu, const char* jobvt,
 ///performs a SVD on input matrix K
 /// returns K =  U (S) V^T where S is a vector of the diagonal values of
 /// matrix Sigma
-void lapack_svd(matrix_type &K, vector_type &S, matrix_type &Vt, matrix_type &U){
-
-   /*boost::numeric::bindings::lapack::gesvd('S', 'S', Kt, S, U_, Vt_);*/
+inline void lapack_svd(matrix_type &K, vector_type &S, matrix_type &Vt, matrix_type &U){
   //use 'S' for thin U,Vt matrices
   char jobu = 'S';
   char jobvt = 'S';

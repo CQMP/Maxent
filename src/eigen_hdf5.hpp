@@ -11,7 +11,6 @@
 
 #pragma once
 #include <alps/hdf5/archive.hpp>
-#include <alps/utilities/cast.hpp>
 #include <Eigen/Core>
 #include <algorithm>
 
@@ -32,7 +31,7 @@ namespace alps {
                       if (value.size()) {
                           std::vector<std::size_t> first(get_extent(value[0]));
                           if (true)
-                              for(std::size_t i=1;i<value.size();i++) {
+                              for(Eigen::Index i=1;i<value.size();i++) {
                                   std::vector<std::size_t> size(get_extent(value[i]));
                                   if (
                                          first.size() != size.size()
@@ -46,7 +45,7 @@ namespace alps {
                   }
           };
         }
-        void save(
+        inline void save(
             archive &ar
           , std::string const & path
           , Eigen::VectorXd &value
@@ -54,7 +53,6 @@ namespace alps {
           , std::vector<std::size_t> chunk =std::vector<std::size_t>()
           , std::vector<std::size_t> offset = std::vector<std::size_t>()
        ) {
-            using alps::cast;
             if (ar.is_group(path))
                 ar.delete_group(path);
             if (is_continuous<Eigen::VectorXd>::value && value.size() == 0)
