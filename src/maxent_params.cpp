@@ -51,7 +51,11 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
   to_lower(dataspace);
   if(dataspace == "time" || dataspace == "legendre" || p["PARTICLE_HOLE_SYMMETRY"]==true){
     double index, X_i, dX_i;
-    while (datstream >> index >> X_i >> dX_i) {
+    while (true) {
+      datstream >> std::ws;
+      if (datstream.eof()) break;
+      if (!(datstream >> index >> X_i >> dX_i))
+        throw std::runtime_error("malformed data record in: " + fname);
       if (datIn < ndat()) {
         inputGrid_(datIn) = index;
         y_(datIn) = X_i / static_cast<double>(p["NORM"]);
@@ -69,7 +73,11 @@ void ContiParameters::read_data_from_text_file(const alps::params& p) {
         throw std::runtime_error("Your NDAT is odd!");\
     }
     double index, X_i_re, dX_i_re, X_i_im, dX_i_im;
-    while (datstream >> index >> X_i_re >> dX_i_re >> X_i_im >> dX_i_im) {
+    while (true) {
+      datstream >> std::ws;
+      if (datstream.eof()) break;
+      if (!(datstream >> index >> X_i_re >> dX_i_re >> X_i_im >> dX_i_im))
+        throw std::runtime_error("malformed complex data record in: " + fname);
       if (datIn < ndat()) {
         inputGrid_(datIn) = index;
         inputGrid_(datIn+1) = index; 
@@ -399,5 +407,4 @@ MaxEntParameters::MaxEntParameters(alps::params& p) :
   //compute Ut and 
   compute_minimal_chi2();
 }
-
 

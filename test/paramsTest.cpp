@@ -137,7 +137,9 @@ TEST(Parameters,RejectsIncompleteFinalDataRecord){
   MaxEntSimulation::define_parameters(p);
   p["BETA"]=2;
   p["DATA"]=pf;
-  p["NDAT"] = 6;
+  // The five complete records already satisfy NDAT. The malformed tail must
+  // still be rejected rather than mistaken for clean EOF.
+  p["NDAT"] = 5;
 
   EXPECT_THROW(ContiParameters c(p), std::runtime_error);
   std::remove(pf.c_str());
@@ -158,7 +160,9 @@ TEST(Parameters,RejectsIncompleteFinalComplexDataRecord){
   p["DATA"]=pf;
   p["DATASPACE"]="frequency";
   p["PARTICLE_HOLE_SYMMETRY"]=false;
-  p["NDAT"] = 6;
+  // The two complete complex records already satisfy NDAT. The malformed tail
+  // must still be rejected rather than mistaken for clean EOF.
+  p["NDAT"] = 4;
 
   EXPECT_THROW(ContiParameters c(p), std::runtime_error);
   std::remove(pf.c_str());
