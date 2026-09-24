@@ -18,7 +18,7 @@ Root attributes hold the case metadata, the command, the status and the provenan
 
 Not packed: *.spex.dat and *.fits.dat (spectrum and fit for every alpha: they
 grow like N_ALPHA x NFREQ or N_ALPHA x NDAT, and are covered by chi2.dat, the
-alpha probabilities and the *_back.dat files) and *.booterr.dat (random, B10).
+alpha probabilities and the *_back.dat files).
 """
 
 import argparse
@@ -40,7 +40,7 @@ ROOT = HERE.parent.parent
 sys.path.insert(0, str(HERE))
 from cases import all_cases  # noqa: E402
 
-SKIP_OUTPUTS = re.compile(r"\.(spex|fits|booterr)\.dat$")
+SKIP_OUTPUTS = re.compile(r"\.(spex|fits)\.dat$")
 SCALARS = {
     "minimal_chi2": re.compile(r"^minimal chi2: (\S+)", re.M),
     "posterior_probability": re.compile(r"^posterior probability of the default model: (\S+)", re.M),
@@ -114,8 +114,8 @@ def run_case(case, programs, outdir, provenance, timeout=TIMEOUT):
         before = {p.relative_to(workdir).as_posix() for p in workdir.rglob("*")}
         cmd = [str(programs[case["program"]])] + ([case["param"]] if case["param"] else []) + case["args"]
         p, seconds = run(cmd, workdir, timeout)
-        # maxent always exits with 0 (B1) and reports errors as 'Caught Exception';
-        # the other programs report failure through their exit code
+        # Maxent reports exceptions with a non-zero exit code and a diagnostic;
+        # the other programs report failure through their exit code alone.
         status = "timeout" if p.returncode is None else \
             "exception" if "Caught Exception" in p.stderr else \
             "failed" if case["program"] != "maxent" and p.returncode != 0 else "ok"

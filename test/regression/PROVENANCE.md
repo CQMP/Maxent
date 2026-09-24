@@ -54,6 +54,13 @@ Its synthetic Gaussian-spectrum input has zero error bars, so the clock-seeded
 bootstrap is deterministic; three consecutive generate-and-compare runs
 passed.
 
+## Bootstrap-error reference (added 2026-09-24)
+
+`t_generate_err.h5` was generated from `modernize/step2.3c` after commit
+`379b2f0`, using the Release build with AppleClang 21, libc++, C++17, and the
+local ALPSCore installation. It uses the new default `SEED=0`; two independent
+generations were identical. The reference includes `case.out.booterr.dat`.
+
 ## Determinism
 
 Two independent generations with the reference build were compared with

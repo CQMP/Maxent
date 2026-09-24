@@ -4,6 +4,15 @@ Every regeneration of files in `reference/` is logged here: date, commit,
 reason, affected cases, and the largest difference to the previous
 references (from `compare.py --report`). Newest entry first.
 
+## 2026-09-24: reproducible bootstrap errors (B10)
+
+* **Source:** `modernize/step2.3c` after commit `379b2f0`.
+* **Reason:** bootstrap error generation now uses the user-selectable `SEED`
+  parameter, which defaults to 0 instead of the wall clock.
+* **Cases:** added `t_generate_err`, including `booterr.dat`; updated
+  `cli_help` for the new parameter. No existing numerical reference changed.
+* **Verification:** two independent runs with the default seed were identical.
+
 ## 2026-09-24: grid spelling and help corrected (B16)
 
 * **Source:** `modernize/step2.3c`, based on merge commit `454f7ee`.

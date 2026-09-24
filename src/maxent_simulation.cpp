@@ -56,6 +56,7 @@ void MaxEntSimulation::define_parameters(alps::params &p){
   p.define<double>("NORM",1.0,"NORM");
   p.define<bool>("BACKCONTINUE",true,"Output A(omega) back to imaginary axis");
   p.define<bool>("GENERATE_ERR",false,"Generate a bootstrap approximation for error bars");
+  p.define<unsigned int>("SEED",0,"Seed for reproducible bootstrap error bars");
   //*********************************
   p.define<double>("BETA","beta, inverse temperature");
   p.define<int>("NDAT","# of input points");

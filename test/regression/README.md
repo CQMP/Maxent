@@ -73,8 +73,9 @@ Each result file holds:
   copied dataset by dataset at full precision. Text tables (`*.dat`) are loaded
   as float64, but only carry the 10 significant digits Maxent writes.
   `*.spex.dat` and `*.fits.dat` (spectrum and fit at every α; large, and
-  covered by `chi2.dat`, the α probabilities and the `*_back.dat` files) and
-  `*.booterr.dat` (random, B10) are not packed.
+  covered by `chi2.dat`, the α probabilities and the `*_back.dat` files) are
+  not packed. Bootstrap error output is deterministic (`SEED=0` by default)
+  and is covered by `t_generate_err`.
 * `/log/scalars/`: values parsed from the logs: minimal χ², posterior
   probability of the default model, Ng, number of singular values kept, and
   the number of α values where the minimizer hit `MAX_IT`.

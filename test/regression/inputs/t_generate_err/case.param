@@ -1,0 +1,9 @@
+BETA=5.0
+NFREQ=40
+N_ALPHA=8
+NDAT=24
+DATASPACE=frequency
+KERNEL=fermionic
+PARTICLE_HOLE_SYMMETRY=true
+DATA="data.dat"
+GENERATE_ERR=true
