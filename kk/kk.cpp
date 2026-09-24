@@ -138,6 +138,7 @@ int main(int argc, char **argv){
   std::ifstream input_file(input_file_name.c_str());
   if(!input_file.is_open()) throw std::runtime_error("input sigma file not open.");
   if(!output_file.is_open()) throw std::runtime_error("output sigma file not open.");
+  output_file.precision(17);
  
  
   //read in the file for sigma imag:
