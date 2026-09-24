@@ -20,6 +20,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "gaussian_noise.hpp"
 #include <boost/program_options.hpp>
 #include <boost/math/special_functions/bessel.hpp> 
 
@@ -260,21 +262,6 @@ struct argstruct{
         double beta;int l;double tau; 
         std::pair<double,double> tails; vector_type *tau_points;
  };
-///genereate a normally distrubted noisy vector. 
-//i.e. output[i] = normally dist number with mean=data[i] and stddev=err[i]
-vector_type generateGaussNoise(vector_type data, vector_type err,std::mt19937 &rng){
-    const int N = data.size();
-    vector_type data_noise(N);
-    for(int i=0;i<N;i++){
-        if(err[i] == 0.0)
-            data_noise[i] = data[i];
-        else{
-            std::normal_distribution<> distribution(data[i],err[i]);
-            data_noise[i] = distribution(rng);
-        }
-    }
-    return data_noise;
-}
 ///Generalized bootstrap routine. Requires the non-linear function to be
 // f(vector_type v,void *arg) where *arg is most easily a struct
 return_type bootstrap(double (*f)(vector_type,void*),

@@ -4,7 +4,7 @@
 
     python3 test/regression/generate.py --maxent build/maxent --out /tmp/results \
         [--sets fast,targeted,cli] [--cases REGEX] [--components build/dump_components] \
-        [--kk build/kk/kk] [--legendre-convert build/legendre_convert/legendre_convert]
+        [--kk build/kk/kk] [--legendre-convert build/legendre_convert/legendre_convert] \
         [--provenance prov.json] [--jobs 8]
 
 For every case one HDF5 file <out>/<case>.h5 is written:
