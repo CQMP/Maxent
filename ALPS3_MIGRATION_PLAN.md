@@ -266,7 +266,8 @@ the observed spread times a safety margin. Record the chosen values in
 Decisions (2026-09-23): project version **2.0.0**; default build type
 **Release**; old option names (`Testing`, `PADE`, `USE_LAPACK`) are **dropped**,
 not aliased; GoogleTest via `FetchContent`, pinned to the **newest release
-(1.18.0)**; Pade stays off and broken for now (B20, D7). *(Later removed entirely, D7.)*
+(1.18.0)**. Pade was kept off in 2.1 because it did not compile (B20); it has
+since been **removed entirely** (D7, resolved).
 
 **Done 2026-09-23.** Results are **bit-identical** to the references
 (Release `-O3 -std=c++17`: 1157 fast/targeted/CLI/component datasets and 237
@@ -302,9 +303,9 @@ ASan+UBSan with no sanitizer reports), clang 22 and GCC 15. Notes:
   * `find_package(Eigen3 3.3 CONFIG REQUIRED)` → `Eigen3::Eigen`. Delete `cmake/FindEigen3.cmake` and the `ALPSCore_HAS_EIGEN_VERSION` branch.
   * `find_package(LAPACK)` → `LAPACK::LAPACK`, behind `option(MAXENT_USE_LAPACK OFF)`.
   * Library target `maxent::core` (rename from `libmaxent` and drop the `PREFIX ""` hack), with `target_include_directories(... PUBLIC $<BUILD_INTERFACE:...>)` and `target_compile_definitions` in place of the generated config header, or keep `configure_file` but attach it to the target.
-* Options are namespaced: `MAXENT_BUILD_TESTS`, `MAXENT_BUILD_UTILITIES`, `MAXENT_BUILD_PADE` (instead of `Testing`, `PADE`, `USE_LAPACK`).
+* Options are namespaced: `MAXENT_BUILD_TESTS`, `MAXENT_BUILD_UTILITIES` (instead of `Testing`, `USE_LAPACK`; `MAXENT_BUILD_PADE`/`PADE` went away with Pade, D7).
 * Google Test: delete the bundled 2013-era `gtest-all.cc`/`gtest.h`. Use `find_package(GTest)` and fall back to `FetchContent`, then `gtest_discover_tests()`. Replace `cmake/EnableGtests.cmake`.
-* Utilities: `kk`/`legendre_convert` link only what they use (`Boost::program_options`, GSL or its replacement, `OpenMP::OpenMP_CXX`). Pade uses `find_library(GMP)`/`gmpxx`, not the hard-coded `/opt/local/lib`.
+* Utilities: `kk`/`legendre_convert` link only what they use (`Boost::program_options`, GSL or its replacement, `OpenMP::OpenMP_CXX`).
 * Add `install(EXPORT)` and a `maxentConfig.cmake` only if we want downstream consumers. This is probably unnecessary given step 5.
 * Add a `CMakePresets.json` (dev, asan, release), mirroring ALPS 3.0, which ships one.
 
