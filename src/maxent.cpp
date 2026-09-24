@@ -12,6 +12,7 @@
 #include "maxent.hpp"
 #include <alps/utilities/fs/remove_extensions.hpp>
 
+#include <iomanip>
 
 int main(int argc,const char** argv)
 {
