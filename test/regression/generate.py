@@ -18,7 +18,7 @@ Root attributes hold the case metadata, the command, the status and the provenan
 
 Not packed: *.spex.dat and *.fits.dat (spectrum and fit for every alpha: they
 grow like N_ALPHA x NFREQ or N_ALPHA x NDAT, and are covered by chi2.dat, the
-alpha probabilities and the *_back.dat files) and *.booterr.dat (random, B10).
+alpha probabilities and the *_back.dat files).
 """
 
 import argparse
@@ -40,7 +40,7 @@ ROOT = HERE.parent.parent
 sys.path.insert(0, str(HERE))
 from cases import all_cases  # noqa: E402
 
-SKIP_OUTPUTS = re.compile(r"\.(spex|fits|booterr)\.dat$")
+SKIP_OUTPUTS = re.compile(r"\.(spex|fits)\.dat$")
 SCALARS = {
     "minimal_chi2": re.compile(r"^minimal chi2: (\S+)", re.M),
     "posterior_probability": re.compile(r"^posterior probability of the default model: (\S+)", re.M),
@@ -60,6 +60,17 @@ def run(cmd, cwd, timeout=TIMEOUT):
         err = e.stderr.decode(errors="replace") if isinstance(e.stderr, bytes) else (e.stderr or "")
         p = subprocess.CompletedProcess(cmd, None, out, err)
     return p, time.monotonic() - t0
+
+
+def classify_status(program, returncode, stderr):
+    """Classify command completion without mistaking crashes for exceptions."""
+    if returncode is None:
+        return "timeout"
+    if program == "maxent" and returncode == 1 and "Caught Exception:" in stderr:
+        return "exception"
+    if returncode != 0:
+        return "failed"
+    return "ok"
 
 
 def pack_outputs(h5, workdir, before):
@@ -114,11 +125,10 @@ def run_case(case, programs, outdir, provenance, timeout=TIMEOUT):
         before = {p.relative_to(workdir).as_posix() for p in workdir.rglob("*")}
         cmd = [str(programs[case["program"]])] + ([case["param"]] if case["param"] else []) + case["args"]
         p, seconds = run(cmd, workdir, timeout)
-        # maxent always exits with 0 (B1) and reports errors as 'Caught Exception';
-        # the other programs report failure through their exit code
-        status = "timeout" if p.returncode is None else \
-            "exception" if "Caught Exception" in p.stderr else \
-            "failed" if case["program"] != "maxent" and p.returncode != 0 else "ok"
+        # An expected Maxent exception has both the documented exit status and
+        # diagnostic signature. Crashes and other nonzero exits remain generic
+        # failures rather than accidentally satisfying an exception case.
+        status = classify_status(case["program"], p.returncode, p.stderr)
         with h5py.File(out, "w") as h5:
             for key in ("name", "set", "covers"):
                 h5.attrs[key] = case[key]

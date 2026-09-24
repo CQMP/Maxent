@@ -58,9 +58,9 @@ alps::params base_params() {
 
 // ---------------------------------------------------------------- kernels
 void dump_kernel(const std::string &name, const std::string &dataspace, const std::string &kernel_name,
-                 bool ph, int ndat, double omega_min, double omega_max, bool time_input) {
+                 bool ph, int ndat, double omega_min, double omega_max, bool time_input,
+                 int nfreq = 24) {
   alps::params p = base_params();
-  const int nfreq = 24;
   p["NDAT"] = ndat;
   p["NFREQ"] = nfreq;
   p["DATASPACE"] = dataspace;
@@ -137,6 +137,7 @@ int main(int argc, char **argv) {
   // kernels: every kernel type reachable through set_kernel_type (the time-Legendre types are not, B5)
   dump_kernel("time_fermionic", "time", "fermionic", false, 9, -6, 6, true);
   dump_kernel("time_bosonic", "time", "bosonic", false, 9, 0, 6, true);
+  dump_kernel("time_bosonic_symmetric", "time", "bosonic", false, 9, -6, 6, true, 25);
   dump_kernel("time_tzero", "time", "tzero", false, 9, 0, 6, true);
   dump_kernel("legendre_fermionic", "legendre", "fermionic", true, 6, -6, 6, false);
   dump_kernel("legendre_bosonic", "legendre", "bosonic", true, 6, -6, 6, false);

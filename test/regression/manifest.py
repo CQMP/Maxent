@@ -87,7 +87,7 @@ def main():
               "quadrature and, since step 2.2, the closed form used in maxent_kernel.cpp reproduce the GSL "
               "Legendre kernels of the references to 2e-16 and 3.3e-16.)",
               "* `-O0` builds take more than 30 minutes for the full `legendre` case.",
-              "* `*.spex.dat`, `*.fits.dat` and `*.booterr.dat` are not compared (see README.md).", ""]
+              "* `*.spex.dat` and `*.fits.dat` are not compared (see README.md).", ""]
     (HERE / "MANIFEST.md").write_text("\n".join(lines))
     print(f"wrote MANIFEST.md: {len(cases)} cases, {total} datasets")
 

@@ -44,7 +44,7 @@ TARGETED = [
     ("t_param_xi",            "data as X_i/SIGMA_i in parameter file, frequency PH", []),
     ("t_param_taui",          "X_i/SIGMA_i/TAU_i in parameter file, time fermionic", []),
     ("t_kernel_tzero",        "T=0 kernel, OMEGA_MIN=0", []),
-    ("t_kernel_time_bosonic", "time bosonic kernel, OMEGA_MIN=0", ["B7 (fixed; K(i,0)=T assumes the grid starts at 0)"]),
+    ("t_kernel_time_bosonic", "time bosonic kernel, OMEGA_MIN=0", []),
     ("t_kernel_anomalous_ph", "anomalous kernel, frequency PH", []),
     ("t_kernel_anomalous_nonph", "anomalous kernel, frequency non-PH", []),
     ("t_kernel_legendre_bosonic", "Legendre bosonic kernel", ["B17 (Legendre bosonic uses the fermionic integrand)"]),
@@ -62,10 +62,12 @@ TARGETED = [
     ("t_model_quadratic_rise_exp_decay", "default model: quadratic rise exp decay (T=0 kernel, OMEGA_MIN=0)", []),
     ("t_model_tabulated",     "default model: tabulated file", []),
     ("t_grid_lorentzian",     "grid: lorentzian", []),
-    ("t_grid_half_lorentzian", "grid: half lorentzian", ["B16 (help text says 'half-lorentzian')"]),
+    ("t_grid_half_lorentzian", "grid: half-lorentzian alias", []),
     ("t_grid_quadratic",      "grid: quadratic", []),
     ("t_grid_log",            "grid: log", []),
     ("t_grid_linear",         "grid: linear", []),
+    ("t_generate_err",         "bootstrap error bars with the default SEED=0", []),
+    ("t_generate_err_seed",    "bootstrap error bars with explicit SEED=1234", []),
     ("t_model_runs",          "MODEL_RUNS=2 (flat, gaussian): per-model outputs and varspec", []),
 ]
 
@@ -73,7 +75,7 @@ CLI = [
     ("cli_help",         ["--help"],        "--help output"),
     ("cli_help_models",  ["--help.models"], "--help.models output"),
     ("cli_help_grids",   ["--help.grids"],  "--help.grids output"),
-    ("cli_missing_beta", None,              "error output when BETA is missing (B1: exit code is 0)"),
+    ("cli_missing_beta", None,              "error output and failing exit status when BETA is missing"),
 ]
 
 
@@ -115,12 +117,12 @@ def all_cases():
     for name, args, covers in CLI:
         if args is None:
             cases.append(dict(name=name, set="cli", inputs="test/regression/inputs/" + name,
-                              param="case.param", args=[], covers=covers, flags=["B1"],
+                              param="case.param", args=[], covers=covers, flags=[],
                               expect="exception"))
         else:
             cases.append(dict(name=name, set="cli", inputs=None, param=None,
                               args=args, covers=covers,
-                              flags=["B16"] if name == "cli_help_grids" else [],
+                              flags=[],
                               expect="ok"))
     for name, direction, covers in KK:
         cases.append(dict(name=name, set="kk", program="kk", inputs="test/regression/inputs/" + name,

@@ -11,7 +11,6 @@
 
 #include "maxent.hpp"
 #include <cmath>
-#include <ctime>
 #include <Eigen/Eigenvalues>
 #include <Eigen/Cholesky>
 #include "maxent_backcont.hpp"
@@ -21,7 +20,9 @@
 //NOTE: size1= rows; size2=columns
 
 MaxEntHelper::MaxEntHelper(alps::params& p) :
-MaxEntParameters(p) , def_(nfreq()), text_output(p["TEXT_OUTPUT"])
+MaxEntParameters(p),
+bootstrap_seed_(p["SEED"].as<std::mt19937::result_type>()),
+def_(nfreq()), text_output(p["TEXT_OUTPUT"])
 {
     for (int i=0; i<nfreq(); ++i)
         def_[i] = MaxEntParameters::Default().D(omega_coord(i)) * delta_omega(i);
@@ -355,8 +356,7 @@ void MaxEntHelper::generateCovariantErr(const vector_type& A, const double alpha
       A_u(i) = sqrt(A(i));
     A_u = u*A_u;
 
-    std::mt19937 rng;
-    rng.seed(static_cast<unsigned int>(std::time(0)));
+    std::mt19937 rng(bootstrap_seed_);
 
     std::vector<vector_type> noise_vecs;
     int max_it = 10000;

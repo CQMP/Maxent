@@ -223,9 +223,11 @@ Measured facts that the design relies on:
 | Targeted cases | Covariance (text, HDF5); `DATA_IN_HDF5`; `X_i`/`SIGMA_i` input; explicit `TAU_i`; T=0, time-bosonic, anomalous (PH and non-PH) kernels; every default model incl. tabulated; every grid; `MODEL_RUNS` (varspec) | same, plus a component harness that dumps the kernel matrix, its singular values, the grid and the discretized default model for small sizes |
 | CLI snapshots | `--help`, `--help.models`, `--help.grids`, missing-parameter error | exact text (exit codes once B1 is fixed) |
 
+`GENERATE_ERR` is covered by `t_generate_err`; its bootstrap output is
+reproducible because `SEED` defaults to 0 (B10).
+
 Not captured:
 
-* `GENERATE_ERR`: seeded from the clock (B10). It gets a reference after the seed parameter is added.
 * The LAPACK SVD path: compared against the Eigen results within tolerance, with no separate reference.
 
 Cases that run through suspected bugs record current behavior and are flagged
@@ -406,20 +408,29 @@ need careful checking at large l and argument) and `program_options` (no
 standard equivalent). Reconfirmed 2026-09-24: these are intentional retained
 Boost boundaries for now.
 
-**2.3C: command-line behavior** (updates the CLI references on purpose)
+**2.3C: command-line behavior — Done 2026-09-24** (updates the CLI references on purpose)
 
-* B1: non-zero exit code on errors, together with `boost::diagnostic_information`
-  → `e.what()` (moved here from 2.2).
-* B16: accept `half-lorentzian` as well as `half lorentzian`, and show the real
-  `CUT` default in `--help.grids`.
-* B10: a `SEED` parameter for the bootstrap errors (moved here from 2.2).
+* **Done 2026-09-24:** B1: non-zero exit code on errors, together with
+  `boost::diagnostic_information` → `e.what()` (moved here from 2.2).
+* **Done 2026-09-24:** B16: accept `half-lorentzian` as well as
+  `half lorentzian`, and show the real `CUT` default in `--help.grids`.
+* **Done 2026-09-24:** B10: a `SEED` parameter for the bootstrap errors,
+  defaulting to 0 for reproducibility (moved here from 2.2). Added the
+  `t_generate_err` regression reference for the deterministic default and
+  `t_generate_err_seed` to verify that an explicit non-default seed is used.
 
-**2.3D: numerical changes** (each its own commit and `REFERENCE_CHANGES.md` entry)
+**2.3D: numerical changes — Done 2026-09-24** (each accepted change its own
+commit and `REFERENCE_CHANGES.md` entry)
 
-* B7b: time-bosonic kernel: use the ω→0 limit only at ω = 0.
-* B15: remove the `float` casts in the log grid.
-* B11 (optional): `BDCSVD` instead of `JacobiSVD`; measure against the
-  references before deciding.
+* **Done 2026-09-24:** B7b: time-bosonic kernel uses the ω→0 limit only
+  at ω = 0. Updated the targeted and component references.
+* **Done 2026-09-24:** B15: replaced the log-grid `float` casts with explicit
+  `double` conversions. Existing grids are bit-identical (the integer values
+  used by the tests and normal runs are exactly representable as `float`).
+* **Measured 2026-09-24; keep `JacobiSVD`:** `BDCSVD` did not improve the
+  large Legendre case (57.49 s, effectively unchanged), while its different
+  singular vectors changed the deterministic bootstrap-error result by about
+  3%. The optional B11 change therefore has no demonstrated benefit here.
 
 Keep the `MaxEntSimulation` public getters stable, because the tests use them.
 

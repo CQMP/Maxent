@@ -70,6 +70,7 @@ public :
   void generateCovariantErr(const vector_type& A_in, const double alpha, ofstream_ &os);
 
 private:
+  std::mt19937::result_type bootstrap_seed_;
   ///discretized and normalized version of the default model.
   vector_type def_;
   ///check that the default model is non-zero

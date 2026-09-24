@@ -22,7 +22,7 @@ t_array_(nfreq_+1){
   if (p_f_grid =="lorentzian") {
     initialize_lorentzian_grid(cut);
   }
-  else if (p_f_grid=="half lorentzian") {
+  else if (p_f_grid=="half lorentzian" || p_f_grid=="half-lorentzian") {
     initialize_half_lorentzian_grid(cut);
   }
   else if (p_f_grid=="quadratic") {
@@ -46,18 +46,18 @@ void grid::initialize_linear_grid() {
 
 void grid::initialize_logarithmic_grid(double t_min) {
   double  t_max = 0.5;
-  double scale = std::log(t_max / t_min) / ((float) ((nfreq_ / 2 - 1)));
+  double scale = std::log(t_max / t_min) / static_cast<double>(nfreq_ / 2 - 1);
   t_array_[nfreq_ / 2] = 0.5;
   for (int i = 0; i < nfreq_ / 2; ++i) {
     t_array_[nfreq_ / 2 + i + 1] = 0.5
-        + t_min * std::exp(((float) (i)) * scale);
+        + t_min * std::exp(static_cast<double>(i) * scale);
     t_array_[nfreq_ / 2 - i - 1] = 0.5
-        - t_min * std::exp(((float) (i)) * scale);
+        - t_min * std::exp(static_cast<double>(i) * scale);
   }
   //if we have an odd # of frequencies, this catches the last element
   if (nfreq_ % 2 != 0)
     t_array_[nfreq_ / 2 + nfreq_ / 2 + 1] = 0.5
-    + t_min * std::exp(((float) (nfreq_) / 2) * scale);
+    + t_min * std::exp(static_cast<double>(nfreq_) / 2 * scale);
 }
 
 void grid::initialize_quadratic_grid(double spread) {
@@ -98,7 +98,5 @@ void grid::initialize_lorentzian_grid(double cut) {
   for (int i = 0; i < nfreq_ + 1; ++i)
     t_array_[i] = (temp[i] - temp[0]) / (temp[temp.size() - 1] - temp[0]);
 }
-
-
 
 

@@ -11,11 +11,11 @@
 
 #include "maxent.hpp"
 #include <alps/utilities/fs/remove_extensions.hpp>
-#include <boost/exception/diagnostic_information.hpp> 
 
 
 int main(int argc,const char** argv)
 {
+  try {
   alps::params parms(argc,argv); 
   MaxEntSimulation::define_parameters(parms);
   //other help messages
@@ -62,8 +62,8 @@ int main(int argc,const char** argv)
     std::cout << "For more information see examples/grids.pdf\n"              << std::endl;
     std::cout <<std::left << std::setw(15)<< "Grid Name"      <<'\t' << "option=default" << std::endl;
     std::cout <<std::left << std::setw(15)<< "========="      <<'\t' << "==============" << std::endl;
-    std::cout <<std::left << std::setw(15)<< "lorentzian"     <<'\t' << "CUT=0.1" << "\n"
-              <<std::left << std::setw(15)<< "half-lorentzian"<<'\t' << "CUT=0.1" << "\n"
+    std::cout <<std::left << std::setw(15)<< "lorentzian"     <<'\t' << "CUT=0.01" << "\n"
+              <<std::left << std::setw(15)<< "half-lorentzian"<<'\t' << "CUT=0.01" << "\n"
               <<std::left << std::setw(15)<< "quadratic"      <<'\t' << "SPREAD=4" << "\n"
               <<std::left << std::setw(15)<< "log"            <<'\t' << "LOG_MIN=0.0001" << "\n"
               <<std::left << std::setw(15)<< "linear"         <<'\t' << "---" << std::endl;
@@ -95,7 +95,6 @@ int main(int argc,const char** argv)
   else
     basename=parms["BASENAME"].as<std::string>();
   
-  try{
         if(exitEarly){
           throw std::runtime_error("Critical parameters not defined");
         }
@@ -163,11 +162,14 @@ int main(int argc,const char** argv)
           my_sim.run();
           my_sim.evaluate();
         }
+    return 0;
   }
     catch(const std::exception &e){
-        std::cerr << "Caught Exception " << boost::diagnostic_information(e);
+        std::cerr << "Caught Exception: " << e.what() << '\n';
+        return 1;
     }
     catch(...){
-        std::cerr << "Caught Exception" << boost::current_exception_diagnostic_information();
+        std::cerr << "Caught Exception: unknown exception\n";
+        return 1;
     }
 }

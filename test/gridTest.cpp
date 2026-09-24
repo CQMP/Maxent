@@ -104,7 +104,21 @@ TEST(Grid,HalfLorentzianEven){
     
     grid g(p);
     EXPECT_EQ(g(0),0);
-    EXPECT_EQ(g(NFREQ),1);
+  EXPECT_EQ(g(NFREQ),1);
+}
+TEST(Grid,HalfLorentzianHyphenAlias){
+    alps::params p;
+    MaxEntSimulation::define_parameters(p);
+    const int NFREQ=20;
+    p["NFREQ"] = NFREQ;
+
+    p["FREQUENCY_GRID"] = "half lorentzian";
+    grid spaced(p);
+    p["FREQUENCY_GRID"] = "half-lorentzian";
+    grid hyphenated(p);
+
+    for(int i=0;i<=NFREQ;i++)
+      EXPECT_EQ(hyphenated(i),spaced(i));
 }
 TEST(Grid,QuadraticEven){
     alps::params p;
@@ -145,6 +159,5 @@ TEST(Grid,LinearEven){
     EXPECT_EQ(g(NFREQ/2), 0.5);
     EXPECT_EQ(g(NFREQ),1);
 }
-
 
 
