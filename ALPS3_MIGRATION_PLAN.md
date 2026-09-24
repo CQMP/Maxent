@@ -25,6 +25,10 @@ Reference trees used for this analysis:
 
 ## 1. Current state (Step 1, done)
 
+*This section is a snapshot of the baseline (`a399253`, 2026-09-23). Later
+changes are recorded in the work log (Appendix B); removed components are
+marked as such.*
+
 ### 1.1 Repository inventory
 
 | Component | Path | LOC | Built by default | ALPSCore use | Other deps |
@@ -34,11 +38,11 @@ Reference trees used for this analysis:
 | Unit tests | `test/*Test.cpp` (6 files) | ~1,640 | yes (`Testing=ON`) | params, hdf5, `temporary_filename` | bundled Google Test (`gtest-all.cc`, 21k-line `gtest.h`) |
 | `kk` (Kramers–Kronig) | `kk/kk.cpp` | 209 | yes | **none** | GSL (spline), Boost.ProgramOptions, OpenMP |
 | `legendre_convert` | `legendre_convert/` | 579 | yes | **none** (links `ALPSCore_LIBRARIES` for no reason) | Boost (program_options, random, math) |
-| `pade` | `pade/pade_arbitrary_degree/` | ~1,300 | no (`-DPADE=1`) | `alps::params` (subclassed), `alps::numeric::matrix` in unbuilt files | GMP, Eigen3, Boost.ProgramOptions |
+| ~~`pade`~~ | ~~`pade/pade_arbitrary_degree/`~~ | — | — | — | **Removed** (D7, 2026-09-23). At baseline: ~1,300 LOC, off by default, subclassed `alps::params`, needed GMP. |
 
-Pade details: `main.cpp`, `main_gmp.cpp`, `main_bary.cpp`, `lu.cpp` and
-`pade_interpolator_old.cpp` are in git but not in its CMake, so they are dead
-code. Its CMake hard-codes `link_directories("/opt/local/lib")`.
+Pade (removed, D7) had five unbuilt alternative sources at baseline
+(`main.cpp`, `main_gmp.cpp`, `main_bary.cpp`, `lu.cpp`, `pade_interpolator_old.cpp`)
+and a CMake file that hard-coded `link_directories("/opt/local/lib")`.
 
 Files that exist only in the local checkout (ignored, but they clutter the work
 tree): `build/` (CMake 3.14 cache), `submission/`, `submission.zip` (3.5 MB),
@@ -83,7 +87,7 @@ two places: output in `MaxEntSimulation::evaluate()`, and input in
 | `alps::fs::remove_extensions` | `maxent.cpp:88` | 1 |
 | `alps::cast` | `eigen_hdf5.hpp` (`using` only, never called) | 0 real uses |
 | `<alps/config.hpp>` ("needed to set up correct bindings") | 5 files | obsolete ublas-bindings leftover |
-| `alps::numeric::matrix` | Pade, **unbuilt files only** | — |
+| `alps::numeric::matrix` | Pade, **unbuilt files only** (Pade removed, D7) | — |
 
 Boost usage outside ALPSCore: `shared_ptr` (31), `lexical_cast` (15),
 `throw_exception` (11), `to_lower` (5), `math::isnan` (4), `random`
@@ -153,7 +157,7 @@ pass in about 9 s**. All shipped examples run to completion:
 * No golden-value regression tests. The simulation tests would not catch a 10% change in a spectrum.
 * Nothing tests the `maxent` executable: CLI parsing, `--help`, `MODEL_RUNS`, or the output files and HDF5 layout.
 * No kernel unit tests. `kernelTest` is mentioned in `maxent_kernel.cpp:39` but does not exist.
-* No tests for `kk`, `legendre_convert` or `pade`.
+* No tests for `kk` or `legendre_convert` (nor for `pade`, since removed, D7).
 * The `examples/` directory is not exercised by CI.
 * The LAPACK SVD path (`USE_LAPACK`) is untested.
 
@@ -184,7 +188,7 @@ confirmed it numerically.
 | B17 | `src/maxent_kernel.cpp` (`setup_legendre_kernel`) | The Legendre **bosonic** kernel uses the fermionic integrand (1+e^{−βω} denominator); it is bit-identical to the fermionic kernel (confirmed with the component dump). |
 | B18 | usability | The default Lorentzian grid is centered at (OMEGA_MIN+OMEGA_MAX)/2. With `OMEGA_MIN=0` (T=0, bosonic) it has almost no points near ω=0 (lowest points 0.82 and 2.06 for NFREQ=200, OMEGA_MAX=10), so spectra with weight at low frequency cannot be fitted. Consider a different default grid when `OMEGA_MIN=0`, or a warning. |
 | B19 | `src/maxent_simulation.cpp` (`levenberg_marquardt`) | The minimizer can diverge. Reproducer: `test/regression/inputs/t_model_quadratic_rise_exp_decay` with `--LAMBDA=1`: from the second α on, Q ≈ 1e26 and norm ≈ 1e8, every α hits `MAX_IT` (258 s); with `--MAX_IT=100` it stops with `Q=NaN, something went wrong`. Also diverges with the quadratic grid and with `OMEGA_MIN=0.2`, so it is not caused by the default model vanishing at ω=0. `LAMBDA=2` converges. Needs step-size control / a trust region. |
-| B20 | `pade/pade_arbitrary_degree/` | Pade does not compile: missing `#include <iostream>`, ALPSCore changed `params::help_requested()`, and `std::complex<mpf_class>` is not supported by libc++ (the standard only allows `std::complex` of floating-point types). Left off (D7). |
+| B20 | `pade/pade_arbitrary_degree/` | Pade does not compile: missing `#include <iostream>`, ALPSCore changed `params::help_requested()`, and `std::complex<mpf_class>` is not supported by libc++ (the standard only allows `std::complex` of floating-point types). Left off (D7). **Resolved 2026-09-23 by removing Pade (D7).** |
 | B21 | `src/` (logging) | Progress and diagnostic messages go to `std::cerr` (25 places in `src/`) with no convention and no verbosity control (issue #46, open since 2018; the old PR #47 `cerr -> cout` was closed as outdated on 2026-09-23). Decide a convention (results/progress to `cout`, warnings/errors to `cerr`), add a verbosity setting, and update the CLI regression references deliberately (they record stdout/stderr). |
 
 ---
@@ -262,7 +266,8 @@ the observed spread times a safety margin. Record the chosen values in
 Decisions (2026-09-23): project version **2.0.0**; default build type
 **Release**; old option names (`Testing`, `PADE`, `USE_LAPACK`) are **dropped**,
 not aliased; GoogleTest via `FetchContent`, pinned to the **newest release
-(1.18.0)**; Pade stays off and broken for now (B20, D7).
+(1.18.0)**. Pade was kept off in 2.1 because it did not compile (B20); it has
+since been **removed entirely** (D7, resolved).
 
 **Done 2026-09-23.** Results are **bit-identical** to the references
 (Release `-O3 -std=c++17`: 1157 fast/targeted/CLI/component datasets and 237
@@ -298,9 +303,9 @@ ASan+UBSan with no sanitizer reports), clang 22 and GCC 15. Notes:
   * `find_package(Eigen3 3.3 CONFIG REQUIRED)` → `Eigen3::Eigen`. Delete `cmake/FindEigen3.cmake` and the `ALPSCore_HAS_EIGEN_VERSION` branch.
   * `find_package(LAPACK)` → `LAPACK::LAPACK`, behind `option(MAXENT_USE_LAPACK OFF)`.
   * Library target `maxent::core` (rename from `libmaxent` and drop the `PREFIX ""` hack), with `target_include_directories(... PUBLIC $<BUILD_INTERFACE:...>)` and `target_compile_definitions` in place of the generated config header, or keep `configure_file` but attach it to the target.
-* Options are namespaced: `MAXENT_BUILD_TESTS`, `MAXENT_BUILD_UTILITIES`, `MAXENT_BUILD_PADE` (instead of `Testing`, `PADE`, `USE_LAPACK`).
+* Options are namespaced: `MAXENT_BUILD_TESTS`, `MAXENT_BUILD_UTILITIES` (instead of `Testing`, `USE_LAPACK`; `MAXENT_BUILD_PADE`/`PADE` went away with Pade, D7).
 * Google Test: delete the bundled 2013-era `gtest-all.cc`/`gtest.h`. Use `find_package(GTest)` and fall back to `FetchContent`, then `gtest_discover_tests()`. Replace `cmake/EnableGtests.cmake`.
-* Utilities: `kk`/`legendre_convert` link only what they use (`Boost::program_options`, GSL or its replacement, `OpenMP::OpenMP_CXX`). Pade uses `find_library(GMP)`/`gmpxx`, not the hard-coded `/opt/local/lib`.
+* Utilities: `kk`/`legendre_convert` link only what they use (`Boost::program_options`, GSL or its replacement, `OpenMP::OpenMP_CXX`).
 * Add `install(EXPORT)` and a `maxentConfig.cmake` only if we want downstream consumers. This is probably unnecessary given step 5.
 * Add a `CMakePresets.json` (dev, asan, release), mirroring ALPS 3.0, which ships one.
 
@@ -341,7 +346,7 @@ After this step, the core library's only Boost dependency is header-only Boost.M
 
   Build ALPSCore from source in CI and cache it.
 * **Replace the allowlist `.gitignore`.** Done 2026-09-23: replaced with a minimal ignore list (build dirs, OS/editor files, Python caches). Local-only material (D10) is hidden per clone via `.git/info/exclude`, not in the repository.
-* Remove the dead Pade sources (`main*.cpp`, `lu.cpp`, `pade_interpolator_old.cpp`), or move them to `pade/attic/` if they are still wanted.
+* ~~Remove the dead Pade sources~~ Done: Pade was removed entirely (D7).
 * Update the README: build instructions, dependency list (no GSL), and remove the Travis badge.
 
 ### 2.5 Isolate ALPSCore behind two seams (bridge into step 4)
@@ -388,7 +393,7 @@ ALPS 3.0 only has the ALPS-2-era ancestors of those pieces.
 | `<alps/config.hpp>` | `<alps/config.h>` (+ `alps/ngs/config.hpp`) | different header name | Maxent doesn't need it. Delete in step 2. |
 | `alps/utilities/temporary_filename.hpp` | `alps/utility/temporary_filename.hpp` (**utility**, singular), same signature | path differs | Replace with `std::filesystem` in step 2. |
 | `alps::fs::remove_extensions` | missing | missing | `std::filesystem::path` logic. Check whether ALPSCore strips *all* extensions or the last one, and keep the `BASENAME` default identical. |
-| `alps::numeric::matrix` (Pade dead files only) | `alps/numeric/matrix.hpp` exists | irrelevant | Dead code, delete. |
+| `alps::numeric::matrix` (Pade dead files only) | `alps/numeric/matrix.hpp` exists | irrelevant | No longer used: Pade removed (D7). |
 | Eigen (ALPSCore optionally bundles it, `ALPSCore_HAS_EIGEN_VERSION`) | **ALPS 3.0 does not use Eigen anywhere** (it uses ublas plus LAPACK bindings) | missing | Eigen becomes a *new* dependency for ALPS. See D3. |
 | GSL | not used by ALPS | missing | Removed in step 2. |
 | Imported CMake targets (`alps::alps-params`, …) via `ALPSCoreConfig.cmake` | `ALPSConfig.cmake` sets **variables** (`ALPS_INCLUDE_DIRS`, `ALPS_LIBRARY_DIRS`, …). `UseALPS.cmake` **force-sets the compiler and `CMAKE_CXX_FLAGS` in the cache** unless `PREVENT_ALPS_COMPILERS` is set. No imported targets. | different model; UseALPS is intrusive | A standalone build needs a small `FindALPS3`/wrapper that creates an INTERFACE target, sets `PREVENT_ALPS_COMPILERS`, and avoids `UseALPS.cmake`. |
@@ -489,7 +494,7 @@ coexists with it in a controlled way.
 applications/maxent/            (or tool/maxent/ replacing the legacy files)
   CMakeLists.txt                option ALPS_BUILD_MAXENT (default ON if Eigen found)
   src/  include/alps/maxent/    library alps_maxent + executable
-  utilities/{kk,legendre_convert,pade}
+  utilities/{kk,legendre_convert}
   test/                         unit tests + add_alps_test regression cases with .output files
 tutorials/maxent-*/             the examples/ inputs (+ PDFs moved to documentation)
 lib/pyalps/maxent.py            updated wrapper (see 5.3)
@@ -509,7 +514,7 @@ Recommended path:
 * Eigen: `find_package(Eigen3 CONFIG)`, falling back to `FetchContent` (header-only, MPL2, compatible with MIT). The wheel build (`pyproject.toml`/scikit-build-core) needs the same.
 * Compile under ALPS's global flags (C++17, `-fpermissive`, Boost defines), and also keep a strict build job.
 * Tests: unit tests through gtest (fetched) or converted to plain executables registered with `add_alps_test`. Regression cases through `add_alps_test` with `.output` references (see D5).
-* Utilities: `kk`/`legendre_convert` link ALPS's bundled Boost (`program_options` is built). Pade stays optional (GMP).
+* Utilities: `kk`/`legendre_convert` link ALPS's bundled Boost (`program_options` is built).
 * Docs: README content goes into the ALPS docs, and the PDFs go to `tutorials/` or the documentation site. Update `ACKNOWLEDGE.TXT`/`CITATION.md` (Levy, LeBlanc, Gull, CPC 215 (2017)).
 * CI: add Maxent tests to the ALPS GitHub Actions matrix (GCC 10–15, Clang 13–22, macOS).
 
@@ -536,7 +541,7 @@ Recommended path:
 | D4 | Location in ALPS: `applications/maxent` vs `tool/maxent` | step 5 | `applications/maxent` (it is a full application with utilities and tests) |
 | D5 | Test framework inside ALPS: keep gtest vs `add_alps_test`/Boost.Test | step 2 (framework choice), step 5 | Keep gtest for unit tests and use `add_alps_test` for example regressions. Ask ALPS maintainers whether a fetched gtest is acceptable. |
 | D6 | GSL in `kk`: replace or keep optional | step 2 | Replace (small spline), so the whole package is GSL-free |
-| D7 | Pade: keep (GMP dependency), fix up, or drop | step 2 | Keep optional and delete its dead files |
+| D7 | Pade: keep (GMP dependency), fix up, or drop | step 2 | **Resolved 2026-09-23: removed.** Pade (all 13 files, including the five unbuilt ones) is deleted, together with `MAXENT_BUILD_PADE` and its README section. |
 | D8 | Install GSL locally once to produce the original Legendre reference outputs | step 2.0 | **Resolved 2026-09-23:** GSL 2.8 installed via MacPorts (`/opt/local`) and detected by `cmake/FindGSL.cmake`. |
 | D9 | Rebuild the stale local ALPSCore install | step 2 | **Resolved 2026-09-23:** `~/Projects/ALPSCore` switched to `master` (`3606edfb`, = v2.3.3 + merge; CMake package still reports 2.2.0), built in `build-master/` (C++17, MPI on, Boost 1.88, HDF5 2.1.1, RelWithDebInfo), 135/135 ALPSCore tests pass, clean install to `~/Projects/ALPSCore/install`. The install now also ships gtest/gmock 1.16. |
 | D10 | What to do with untracked local directories | step 2 | **Resolved 2026-09-23:** deleted `doc/` (generated Doxygen output), the paper-submission snapshot (`submission/`, `submission.zip`), `theory/`, `examples/SpM/`, the Eclipse files in `src/`, and `pade/pade_arbitrary_degree.zip` (byte-identical copy of the tracked Pade sources on `master`). No local-only material remains. |
@@ -583,3 +588,4 @@ make -j8 && ctest     # 6/6 executables, 35 cases pass, ~9 s
 | 2026-09-23 | 2.1 | **Step 2.1 done.** Build-only source fix committed; CMake rewritten (3.22...4.2, project version 2.0.0, C++17, default Release, `maxent::core` target, `MAXENT_*` options, GoogleTest 1.18.0 via FetchContent, regression suite in CTest, presets, GNUInstallDirs). Bit-identical to the references. See §2.1 for notes. Merged as PR #52 (`ccc3be4`) after two Copilot reviews (4 findings: 3 fixed, 1 kept with explanation; second review: approval recommended). |
 | 2026-09-23 | 2.2 prep | Ready for step 2.2: `modernize/step2` at `ccc3be4` builds against ALPSCore `master` `8d2ed3a9` (C++17, Boost 1.88, found without `Boost_DIR`); 39/39 tests, regression bit-identical (920 + 237 datasets). Note: `~/Projects/ALPSCore/install` currently holds a C++11/Boost 1.81 build that Maxent rejects; use an install of current `master`. |
 | 2026-09-23 | repo | Closed two outdated PRs: #35 (SpM notes, superseded by #45) and #47 (`cerr -> cout`, 2018). Issue #46 (logging to `cerr`) stays open; recorded as B21. |
+| 2026-09-23 | 2.x | Pade removed (D7), on branch `modernize/remove-pade`: `pade/` (13 files: 6 built, 5 unbuilt alternatives, header, CMake), `MAXENT_BUILD_PADE`, and the README section. It required GMP (`mpf_class`, 256-bit default precision) and did not compile (B20). |

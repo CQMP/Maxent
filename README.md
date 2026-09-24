@@ -30,7 +30,6 @@ Table of Contents
         * [Default Models](#default-models)
         * [Grids](#grids)
   * [Utilities](#utilities)
-    * [Pade](#pade)
     * [Kramers-Kronig](#kramers-kronig)
     * [Legendre Convert](#legendre-convert)
   * [License and citations](#license-and-citations)
@@ -79,7 +78,6 @@ Options:
 |---|---|---|
 | `MAXENT_BUILD_TESTS` | ON | unit tests and the regression suite |
 | `MAXENT_BUILD_UTILITIES` | ON | `kk` and `legendre_convert` |
-| `MAXENT_BUILD_PADE` | OFF | `pade` (needs GMP; currently does not compile) |
 | `MAXENT_USE_LAPACK` | OFF | LAPACK instead of Eigen for the SVD of the kernel |
 | `MAXENT_WERROR` | OFF | treat warnings as errors |
 | `MAXENT_REGRESSION_FULL` | OFF | also run the full-size regression cases (about 1 min) |
@@ -193,10 +191,6 @@ Maxent creats a default model on a grid between [0,1]
 Requires: [GSL](http://www.gnu.org/software/gsl/), Boost
 ## Legendre Convert
 Requires: Boost
-## Optional
-### Pade
-Requires: [GMP](https://gmplib.org/),[Eigen3.1](http://eigen.tuxfamily.org/index.php?title=Main_Page)
-Because Pade requires GMP, it does not build automatically. To include it in your build, add `-DMAXENT_BUILD_PADE=ON` to the `cmake` command. (Pade currently does not compile.)
 
 ## License and citations
 
