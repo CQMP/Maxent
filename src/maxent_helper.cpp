@@ -10,7 +10,6 @@
 *****************************************************************************/
 
 #include "maxent.hpp"
-#include <alps/config.hpp> // needed to set up correct bindings
 #include <cmath>
 #include <ctime>
 #include <Eigen/Eigenvalues>
@@ -36,7 +35,7 @@ MaxEntParameters(p) , def_(nfreq()), text_output(p["TEXT_OUTPUT"])
 /// this is needed for transform_into_singular_space
 /// to work safely
 void MaxEntHelper::checkDefaultModel(const vector_type &D) const{
-    for(int i=0;i<D.size();i++){
+    for(Eigen::Index i=0;i<D.size();i++){
         double Di=D(i);
         if(Di==0 || std::isnan(Di))
           throw std::logic_error("Error: Default model point = 0 at omega="
@@ -49,7 +48,7 @@ void MaxEntHelper::checkDefaultModel(const vector_type &D) const{
 vector_type MaxEntHelper::transform_into_singular_space(vector_type A) const
 {
   double D;
-  for (unsigned int i=0; i<A.size(); ++i) {
+  for (Eigen::Index i=0; i<A.size(); ++i) {
     D=Default(i);
     A[i] /= D;
     A[i] = A[i]==0. ? 0. : log(A[i]);
@@ -61,7 +60,7 @@ vector_type MaxEntHelper::transform_into_singular_space(vector_type A) const
 vector_type MaxEntHelper::transform_into_real_space(vector_type u) const
 {
   u = maxent_prec_prod(Vt().transpose(), u);
-  for (unsigned int i=0; i<u.size(); ++i) {
+  for (Eigen::Index i=0; i<u.size(); ++i) {
     u[i] = exp(u[i]);
     u[i] *= Default(i);
   }
@@ -72,7 +71,7 @@ vector_type MaxEntHelper::transform_into_real_space(vector_type u) const
 vector_type MaxEntHelper::get_spectrum(const vector_type& u) const
 {
   vector_type A = transform_into_real_space(u);
-  for (unsigned int i=0; i<A.size(); ++i) 
+  for (Eigen::Index i=0; i<A.size(); ++i)
     A[i] /= delta_omega(i);
   return A;
 }
@@ -84,8 +83,8 @@ matrix_type MaxEntHelper::left_side(const vector_type& u) const
 {
   vector_type A = transform_into_real_space(u);
   matrix_type M = Vt().transpose();
-  for (unsigned int i=0; i<M.rows(); ++i) 
-    for (unsigned int j=0; j<M.cols(); ++j) 
+  for (Eigen::Index i=0; i<M.rows(); ++i)
+    for (Eigen::Index j=0; j<M.cols(); ++j)
       M(i,j) *= A[i];
   M = maxent_prec_prod(Vt(), M);
   M = maxent_prec_prod(Sigma() ,M);
@@ -111,8 +110,8 @@ double MaxEntHelper::step_length(const vector_type& delta, const vector_type& u)
 {
   vector_type A = transform_into_real_space(u);
   matrix_type L = Vt().transpose();
-  for (unsigned int i=0; i<L.rows(); ++i) 
-    for (unsigned int j=0; j<L.cols(); ++j) 
+  for (Eigen::Index i=0; i<L.rows(); ++i)
+    for (Eigen::Index j=0; j<L.cols(); ++j)
       L(i,j) *= A[i];
   L = maxent_prec_prod(Vt(), L);
   return delta.dot(maxent_prec_prod(L, delta));
@@ -121,11 +120,10 @@ double MaxEntHelper::step_length(const vector_type& delta, const vector_type& u)
 //Bryan's paper section 2.3 (or after eq 22)
 double MaxEntHelper::convergence(const vector_type& u, const double alpha) const 
 {
-  //using namespace boost::numeric::ublas;
   vector_type A = transform_into_real_space(u);
   matrix_type L = Vt().transpose();
-  for (unsigned int i=0; i<L.rows(); ++i) 
-    for (unsigned int j=0; j<L.cols(); ++j) 
+  for (Eigen::Index i=0; i<L.rows(); ++i)
+    for (Eigen::Index j=0; j<L.cols(); ++j)
       L(i,j) *= A[i];
   L = maxent_prec_prod(Vt(), L);
   vector_type alpha_dSdu = -alpha*maxent_prec_prod(L, u);
@@ -140,38 +138,35 @@ double MaxEntHelper::log_prob(const vector_type& u, const double alpha) const
 {
   matrix_type L = maxent_prec_prod_trans(K(), K());
   const vector_type A = transform_into_real_space(u);
-  for (unsigned int i=0; i<L.rows(); ++i)
-    for (unsigned int j=0; j<L.cols(); ++j)
+  for (Eigen::Index i=0; i<L.rows(); ++i)
+    for (Eigen::Index j=0; j<L.cols(); ++j)
       L(i,j) *= sqrt(A[i])*sqrt(A[j]);
-  for (unsigned int i=0; i<L.rows(); ++i)
+  for (Eigen::Index i=0; i<L.rows(); ++i)
     L(i,i) += alpha;
-  //boost::numeric::bindings::lapack::potrf(boost::numeric::bindings::lower(L));
-  
   //LAPACK does potrf in place, while Eigen does not
   Eigen::LLT<matrix_type,Eigen::Lower> lltofL(L);
   L=lltofL.matrixL();
 
   double log_det = 0.;
-  for (unsigned int i=0; i<L.rows(); ++i) 
+  for (Eigen::Index i=0; i<L.rows(); ++i)
     log_det  += log(L(i,i)*L(i,i));
   return 0.5*( (nfreq())*log(alpha) - log_det ) - Q(u, alpha);
 }
 
 double MaxEntHelper::chi_scale_factor(vector_type A, const double chi_sq, const double alpha) const
 {
-  for (unsigned int i=0; i<A.size(); ++i) 
+  for (Eigen::Index i=0; i<A.size(); ++i)
     A[i] *= delta_omega(i);
 
   matrix_type L = maxent_prec_prod_trans(K(), K());
-  for (unsigned int i=0; i<L.rows(); ++i)
-    for (unsigned int j=0; j<L.cols(); ++j)
+  for (Eigen::Index i=0; i<L.rows(); ++i)
+    for (Eigen::Index j=0; j<L.cols(); ++j)
       L(i,j) *= sqrt(A[i])*sqrt(A[j]);
   vector_type lambda(L.rows());
-  //bindings::lapack::syev('N', bindings::upper(L) , lambda, bindings::lapack::optimal_workspace());
   Eigen::SelfAdjointEigenSolver<matrix_type> es(L);
   lambda = es.eigenvalues();
   double Ng = 0.;
-  for (unsigned int i=0; i<lambda.size(); ++i) {
+  for (Eigen::Index i=0; i<lambda.size(); ++i) {
     if (lambda[i]>=0) 
       Ng += lambda[i]/(lambda[i]+alpha);
   }
@@ -186,12 +181,12 @@ double MaxEntHelper::chi2(const vector_type& A) const
   vector_type del_G = maxent_prec_prod(K(), A) - y();
   
   /*std::cout<<"in computation of chi2:"<<std::endl;
-   for(int i=0;i<y().size();++i){
+   for(Eigen::Index i=0;i<y().size();++i){
    std::cout<<i<<" "<<maxent_prec_prod(K(), A)[i]<<" "<<y()[i]<<std::endl;
    }*/
   
   double c = 0;
-  for (unsigned int i=0; i<del_G.size(); ++i) 
+  for (Eigen::Index i=0; i<del_G.size(); ++i)
     c += del_G[i]*del_G[i];
   return c;
 }
@@ -201,7 +196,7 @@ void MaxEntHelper::print_chi2(const vector_type& A, std::ostream &os) const
   vector_type backcont=maxent_prec_prod(K(), A);
   vector_type defaultm=maxent_prec_prod(K(), Default());
   os<<"#first column: index (Matsubara frequency). second column: fitted function. third: input data. fourth: default model."<<std::endl;
-  for(int i=0;i<y().size();++i){
+  for(Eigen::Index i=0;i<y().size();++i){
     os<<i<<" "<<backcont[i]<<" "<<y()[i]<<" "<<defaultm[i]<<std::endl;
   }
   os<<std::endl;
@@ -212,7 +207,7 @@ void MaxEntHelper::print_chi2(const vector_type& A, std::ostream &os) const
 double MaxEntHelper::entropy(const vector_type& A) const 
 {
   double S = 0;
-  for (unsigned int i=0; i<A.size(); ++i) {
+  for (Eigen::Index i=0; i<A.size(); ++i) {
     double lg = A[i]==0. ? 0. : log(A[i]/Default(i));
     S += A[i] - Default(i) - A[i]*lg;
   }
@@ -246,7 +241,6 @@ void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A_in,const dou
     vector_type G = bc.backcontinue(A);
     kernel_type k_type = pp->getKernelType();
     
-    double beta = 1/(pp->T());
     bool ph_sym = true;
     if(k_type == frequency_fermionic_kernel ||
        k_type == frequency_bosonic_kernel   ||
@@ -256,26 +250,26 @@ void MaxEntHelper::backcontinue(ofstream_ &os, const vector_type &A_in,const dou
     ext_back = G*norm;
     if(text_output){
       if(ph_sym){
-        for(int n=0; n<G.size();n++){
+        for(Eigen::Index n=0; n<G.size();n++){
           os << pp->inputGrid(n) << " " << G(n)*norm << std::endl;
         }
       }
       else{
-        for(int n=0;n<G.size();n+=2){
+        for(Eigen::Index n=0;n<G.size();n+=2){
           os << pp->inputGrid(n/2) << " " << G(n)*norm << " " << G(n+1)*norm << std::endl;
         }
       }
     }
     //scale y by error then determine 'error' of integral
     vector_type y_scaled = y();
-    for(int i=0;i<y_scaled.size();i++){
+    for(Eigen::Index i=0;i<y_scaled.size();i++){
       y_scaled(i) *= sigma(i);
     }
     double max_err = bc.max_error(G,y_scaled); 
 
     //A is missing delta_omega value, add back in for chi2
     vector_type A_chi = A;
-    for (unsigned int i=0; i<A_chi.size(); ++i) 
+    for (Eigen::Index i=0; i<A_chi.size(); ++i)
       A_chi[i] *= delta_omega(i);
 
     double chi_sq = chi2(A_chi);
@@ -297,10 +291,10 @@ void determineVariance(std::vector<vector_type> &in,vector_type &mean, vector_ty
   }
   mean /= in.size();
   //compute stddev  
-  for(int i=0;i<mean.size();i++){
+  for(Eigen::Index i=0;i<mean.size();i++){
     double stddev =0;
     double mean_i = mean(i);
-    for(int v=0;v<in.size();v++){
+    for(std::size_t v=0;v<in.size();v++){
       double val = in[v](i);
       stddev+= (val-mean_i)*(val-mean_i);
     }
@@ -357,7 +351,7 @@ void MaxEntHelper::generateCovariantErr(const vector_type& A, const double alpha
 
     //setup and transform sqrt(A)
     vector_type A_u = A;
-    for (int i=0;i<A.size();i++)
+    for (Eigen::Index i=0;i<A.size();i++)
       A_u(i) = sqrt(A(i));
     A_u = u*A_u;
 
@@ -380,7 +374,7 @@ void MaxEntHelper::generateCovariantErr(const vector_type& A, const double alpha
 
     //save file
     os << "#omega A A_mean approx_err" <<std::endl;
-    for (std::size_t  i=0; i<A.size(); ++i){
+    for (Eigen::Index i=0; i<A.size(); ++i){
         os << omega_coord(i) << " " << A[i] << " " << mean(i)*mean(i) << " " <<A[i]*2*std_err(i)<< std::endl;
     }
   }

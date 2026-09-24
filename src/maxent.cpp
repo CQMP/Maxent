@@ -89,7 +89,7 @@ int main(int argc,const char** argv)
 
   std::string basename;
   if(parms.defaulted("BASENAME")){
-    basename = alps::fs::remove_extensions(parms.get_origin_name()) + ".out";
+    basename = alps::fs::remove_extensions(alps::origin_name(parms)) + ".out";
     parms["BASENAME"] = basename;
   }
   else
@@ -151,7 +151,7 @@ int main(int argc,const char** argv)
             ofstream_ spec_file;
             spec_file.open((basename+".varspec.dat").c_str());
             spec_file << "#omega mean_maxspec stdev_maxspec mean_avspec stdev_avspec" <<std::endl;
-            for (std::size_t  i=0; i<omega_grid.size(); ++i)
+            for (Eigen::Index i=0; i<omega_grid.size(); ++i)
               spec_file << omega_grid(i)
                 << " " << mean_max(i) << " " << stdev_max(i)
                 << " " << mean_av(i)  << " " << stdev_av(i) 
@@ -171,4 +171,3 @@ int main(int argc,const char** argv)
         std::cerr << "Caught Exception" << boost::current_exception_diagnostic_information();
     }
 }
-

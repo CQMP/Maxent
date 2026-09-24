@@ -20,7 +20,10 @@
       "name": "dev",
       "displayName": "Debug",
       "inherits": "base",
-      "cacheVariables": {"CMAKE_BUILD_TYPE": "Debug"}
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "MAXENT_WERROR": "ON"
+      }
     },
     {
       "name": "asan",

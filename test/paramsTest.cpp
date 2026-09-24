@@ -101,6 +101,73 @@ std::string pf=alps::temporary_filename("in_file.dat");
   std::remove(pf.c_str());
 }
 
+TEST(Parameters,DataInFileWithTrailingBlankLines){
+  std::string pf=alps::temporary_filename("in_file.dat");
+  write_minimal_input_file(pf);
+  {
+    std::ofstream tempfile(pf.c_str(), std::ios::app);
+    tempfile << "\n\n";
+  }
+
+  alps::params p;
+  MaxEntSimulation::define_parameters(p);
+  p["BETA"]=2;
+  p["DATA"]=pf;
+  p["NDAT"] = 5;
+
+  ContiParameters c(p);
+  EXPECT_EQ(c.ndat(),5);
+  for(int i=0;i<c.ndat();i++){
+    EXPECT_NEAR(c.y(i),(i+1)*0.1,1e-10);
+    EXPECT_EQ(c.sigma(i),0.5);
+  }
+
+  std::remove(pf.c_str());
+}
+
+TEST(Parameters,RejectsIncompleteFinalDataRecord){
+  std::string pf=alps::temporary_filename("in_file.dat");
+  write_minimal_input_file(pf);
+  {
+    std::ofstream tempfile(pf.c_str(), std::ios::app);
+    tempfile << "5 0.6\n"; // Missing the error-bar column.
+  }
+
+  alps::params p;
+  MaxEntSimulation::define_parameters(p);
+  p["BETA"]=2;
+  p["DATA"]=pf;
+  // The five complete records already satisfy NDAT. The malformed tail must
+  // still be rejected rather than mistaken for clean EOF.
+  p["NDAT"] = 5;
+
+  EXPECT_THROW(ContiParameters c(p), std::runtime_error);
+  std::remove(pf.c_str());
+}
+
+TEST(Parameters,RejectsIncompleteFinalComplexDataRecord){
+  std::string pf=alps::temporary_filename("in_file.dat");
+  {
+    std::ofstream tempfile(pf.c_str());
+    tempfile << "0 0.1 0.01 -0.2 0.02\n"
+             << "1 0.3 0.03 -0.4 0.04\n"
+             << "2 0.5 0.05 -0.6\n"; // Missing the imaginary error bar.
+  }
+
+  alps::params p;
+  MaxEntSimulation::define_parameters(p);
+  p["BETA"]=2;
+  p["DATA"]=pf;
+  p["DATASPACE"]="frequency";
+  p["PARTICLE_HOLE_SYMMETRY"]=false;
+  // The two complete complex records already satisfy NDAT. The malformed tail
+  // must still be rejected rather than mistaken for clean EOF.
+  p["NDAT"] = 4;
+
+  EXPECT_THROW(ContiParameters c(p), std::runtime_error);
+  std::remove(pf.c_str());
+}
+
 TEST(Parameters,MaxentParams){
     //set up parameters
 	alps::params p;
@@ -181,6 +248,7 @@ TEST(Parameters,HighFrequencyCheck){
     p["SHIFT"]=2.0;
     
     std::complex<double> G;
+    testing::internal::CaptureStderr();
     for(int i=0;i<numModels;i++){
         p["DEFAULT_MODEL"] = models[i];
         MaxEntParameters c(p);
@@ -196,6 +264,8 @@ TEST(Parameters,HighFrequencyCheck){
 
         EXPECT_TRUE(std::abs(1+limit)<.1);
     }
+    const std::string diagnostics = testing::internal::GetCapturedStderr();
+    EXPECT_NE(diagnostics.find("The high frequency limit is not 1!"), std::string::npos);
 }
 
 TEST(Parameters,HDF5ContiParams){
@@ -326,9 +396,14 @@ TEST(Parameters,CovarianceDataInFile){
   p["DATA"]=pf;
   p["NDAT"] = 5;
   p["COVARIANCE_MATRIX"]=cov;
+  p["DATASPACE"]="frequency";
+  p["PARTICLE_HOLE_SYMMETRY"]=true;
 
   //MaxEntParameters handles covariance scaling
+  testing::internal::CaptureStderr();
   MaxEntParameters c(p);
+  const std::string diagnostics = testing::internal::GetCapturedStderr();
+  EXPECT_NE(diagnostics.find("The high frequency limit is not 1!"), std::string::npos);
   EXPECT_EQ(c.ndat(),5);
   EXPECT_EQ(c.T(),0.5);
 
@@ -402,4 +477,3 @@ TEST(Parameters,CovarianceHDF5Params){
   }
   std::remove(tf.c_str());
 }
-

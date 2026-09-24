@@ -11,7 +11,6 @@
 
 #pragma once
 
-#include <alps/config.hpp> // needed to set up correct bindings
 #include "maxent_config.hpp"
 #include <Eigen/Core>
 
