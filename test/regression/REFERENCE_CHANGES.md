@@ -4,6 +4,17 @@ Every regeneration of files in `reference/` is logged here: date, commit,
 reason, affected cases, and the largest difference to the previous
 references (from `compare.py --report`). Newest entry first.
 
+## 2026-09-24: time-bosonic zero-frequency limit corrected (B7b)
+
+* **Source:** `modernize/step2.3c` after commit `46b5610`.
+* **Reason:** the time-bosonic kernel previously assigned the ω→0 limit to
+  column 0 regardless of that column's frequency. It now uses the limit only
+  when ω is exactly zero and evaluates the kernel formula everywhere else.
+* **Cases:** `t_kernel_time_bosonic` and `components`; added a symmetric-grid
+  time-bosonic component that contains both negative and exactly zero ω.
+* **Largest differences:** 2.202e-3 relative in the kernel component; 5.373e-4
+  relative in χ² and 1.190e-2 relative in the small spectrum variance.
+
 ## 2026-09-24: reproducible bootstrap errors (B10)
 
 * **Source:** `modernize/step2.3c` after commit `379b2f0`.

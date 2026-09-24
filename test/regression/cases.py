@@ -44,7 +44,7 @@ TARGETED = [
     ("t_param_xi",            "data as X_i/SIGMA_i in parameter file, frequency PH", []),
     ("t_param_taui",          "X_i/SIGMA_i/TAU_i in parameter file, time fermionic", []),
     ("t_kernel_tzero",        "T=0 kernel, OMEGA_MIN=0", []),
-    ("t_kernel_time_bosonic", "time bosonic kernel, OMEGA_MIN=0", ["B7 (fixed; K(i,0)=T assumes the grid starts at 0)"]),
+    ("t_kernel_time_bosonic", "time bosonic kernel, OMEGA_MIN=0", []),
     ("t_kernel_anomalous_ph", "anomalous kernel, frequency PH", []),
     ("t_kernel_anomalous_nonph", "anomalous kernel, frequency non-PH", []),
     ("t_kernel_legendre_bosonic", "Legendre bosonic kernel", ["B17 (Legendre bosonic uses the fermionic integrand)"]),

@@ -61,6 +61,15 @@ passed.
 local ALPSCore installation. It uses the new default `SEED=0`; two independent
 generations were identical. The reference includes `case.out.booterr.dat`.
 
+## Time-bosonic references updated (B7b, 2026-09-24)
+
+The `kernel_time_bosonic` datasets in `components.h5` and the
+`t_kernel_time_bosonic.h5` reference were regenerated from
+`modernize/step2.3c` after commit `46b5610`, using the Release build with
+AppleClang 21 and libc++. All other component datasets are unchanged.
+The component reference also adds a symmetric-grid time-bosonic kernel to
+cover a negative first frequency and the exact ω=0 branch.
+
 ## Determinism
 
 Two independent generations with the reference build were compared with

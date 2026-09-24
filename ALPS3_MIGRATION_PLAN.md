@@ -420,7 +420,8 @@ Boost boundaries for now.
 
 **2.3D: numerical changes** (each its own commit and `REFERENCE_CHANGES.md` entry)
 
-* B7b: time-bosonic kernel: use the ω→0 limit only at ω = 0.
+* **Done 2026-09-24:** B7b: time-bosonic kernel uses the ω→0 limit only
+  at ω = 0. Updated the targeted and component references.
 * B15: remove the `float` casts in the log grid.
 * B11 (optional): `BDCSVD` instead of `JacobiSVD`; measure against the
   references before deciding.
