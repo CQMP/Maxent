@@ -12,6 +12,7 @@
 #include "maxent.hpp"
 #include <alps/config.hpp> // needed to set up correct bindings
 #include <cmath>
+#include <ctime>
 #include <Eigen/Eigenvalues>
 #include <Eigen/Cholesky>
 #include "maxent_backcont.hpp"

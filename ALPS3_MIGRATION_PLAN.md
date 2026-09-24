@@ -327,8 +327,13 @@ text, the `SEED` parameter and the old ublas code moved to 2.3.
 * Boost utilities replaced by the standard library (`shared_ptr`,
   `lexical_cast`, `throw_exception`, `to_lower`, `isnan`, Boost.Random);
   bit-identical results.
-* Remaining Boost: Boost.Math (header-only) in the core,
-  `diagnostic_information` (2.3), `program_options` in the utilities.
+* Remaining Boost: in the core library only `boost::diagnostic_information`
+  (goes in 2.3), so the core will then use no Boost directly; Boost.Math is no
+  longer used there. The utilities keep Boost: `kk` uses `program_options`, and
+  `legendre_convert` uses `program_options`, Boost.Random and Boost.Math
+  (`legendre_p`, `factorial`, `sph_bessel`). Decision (2026-09-24): keep
+  Boost.Math; it needs C++14 (Boost >= 1.82) and Maxent uses C++17, and Boost is
+  a dependency anyway through ALPSCore and ALPS.
 * Warnings: 51 → 44. The Legendre example runtime is unchanged (~57-60 s):
   the kernel was never the bottleneck (B22).
 
