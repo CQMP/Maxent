@@ -384,8 +384,14 @@ vector_type MaxEntHelper::generateGaussNoise(vector_type data, vector_type err,s
     const int N = data.size();
     vector_type data_noise(N);
     for(int i=0;i<N;i++){
-        std::normal_distribution<double> s(data[i],err[i]);
-        data_noise[i] = s(rng);
+        // std::normal_distribution does not prescribe its transformation and
+        // therefore gives different seeded sequences with libc++ and
+        // libstdc++.  Convert mt19937 output explicitly so bootstrap results
+        // are reproducible across supported platforms.
+        const double u1 = std::ldexp(static_cast<double>(rng()) + 0.5, -32);
+        const double u2 = std::ldexp(static_cast<double>(rng()) + 0.5, -32);
+        const double z = std::sqrt(-2.0 * std::log(u1)) * std::cos(2.0 * M_PI * u2);
+        data_noise[i] = data[i] + err[i] * z;
     }
     return data_noise;
 }

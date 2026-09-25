@@ -65,6 +65,13 @@ generations were identical. `t_generate_err_seed.h5` was added after commit
 default-seed reference, so the case detects an ignored `SEED` parameter. Both
 references include `case.out.booterr.dat`.
 
+On 2026-09-25 the two bootstrap references were regenerated on the same
+AppleClang/libc++ system after replacing `std::normal_distribution` with an
+explicit transform of `mt19937` output. This makes the seeded sequence
+independent of the standard-library implementation. The component reference
+was regenerated at the same time after making the symmetric normalization
+grid's zero crossing exact; only `model_general_double_gaussian.txt` changed.
+
 ## Time-bosonic references updated (B7b, 2026-09-24)
 
 The `kernel_time_bosonic` datasets in `components.h5` and the

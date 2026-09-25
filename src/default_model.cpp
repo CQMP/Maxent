@@ -113,8 +113,11 @@ double GeneralDefaultModel::norm() {
   //this is an evaluation on an equidistant grid; sum integrated by trapezoidal rule
   double delta_omega = (omega_max - omega_min) / (ntab - 1);
   for (int o = 1; o < ntab; ++o) {
-    double omega1 = omega_min + (o - 1) * delta_omega;
-    double omega2 = omega_min + o * delta_omega;
+    // This weighted-endpoint form gives an exact zero on symmetric grids.
+    // That matters for models with a deliberately discontinuous zero branch
+    // and avoids compiler-dependent FMA rounding at the branch point.
+    double omega1 = ((ntab - o) * omega_min + (o - 1) * omega_max) / (ntab - 1);
+    double omega2 = ((ntab - 1 - o) * omega_min + o * omega_max) / (ntab - 1);
     sum += ((*Mod)(omega1) + (*Mod)(omega2)) / 2. * delta_omega;
     xtab[o] = sum;
   }
@@ -189,6 +192,5 @@ std::shared_ptr<DefaultModel> make_default_model(const alps::params& parms, std:
     return std::shared_ptr<DefaultModel>(new GeneralDefaultModel(parms, Mod));
   }
 }
-
 
 

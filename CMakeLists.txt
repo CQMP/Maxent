@@ -58,7 +58,11 @@ configure_file(cmake/maxent_config.hpp.in ${PROJECT_BINARY_DIR}/config/maxent_co
 add_library(maxent_warnings INTERFACE)
 target_compile_options(maxent_warnings INTERFACE
   $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall -Wextra -Wpedantic>
-  $<$<AND:$<BOOL:${MAXENT_WERROR}>,$<CXX_COMPILER_ID:GNU,Clang,AppleClang>>:-Werror>)
+  $<$<AND:$<BOOL:${MAXENT_WERROR}>,$<CXX_COMPILER_ID:GNU,Clang,AppleClang>>:-Werror>
+  # GCC diagnoses Boost.Variant's type-erased storage as maybe-uninitialized
+  # when ALPS parameters are instantiated. Keep the warning visible without
+  # treating this third-party false positive as a Maxent build failure.
+  $<$<AND:$<BOOL:${MAXENT_WERROR}>,$<CXX_COMPILER_ID:GNU>>:-Wno-error=maybe-uninitialized>)
 
 # ---------------------------------------------------------------- library and program
 add_library(maxent_core STATIC

@@ -4,6 +4,21 @@ Every regeneration of files in `reference/` is logged here: date, commit,
 reason, affected cases, and the largest difference to the previous
 references (from `compare.py --report`). Newest entry first.
 
+## 2026-09-25: cross-library deterministic bootstrap and zero crossing
+
+* **Source:** `modernize/step2.4`, before the CI portability-fix commit.
+* **Reason:** `std::normal_distribution` does not specify its transformation,
+  so identical `mt19937` seeds produced different bootstrap samples with
+  libc++ and libstdc++. Maxent now performs an explicit Box-Muller transform.
+  The default-model integration grid now constructs a symmetric midpoint as
+  exact zero, avoiding compiler-dependent FMA rounding at the discontinuous
+  branch of the general double Gaussian.
+* **Cases:** `t_generate_err`, `t_generate_err_seed`, and `components`.
+  Only the two `booterr.dat` datasets and
+  `model_general_double_gaussian.txt` changed.
+* **Largest differences:** 3.742e-2 relative in bootstrap output and 4.077e-4
+  relative in the general-double-Gaussian component.
+
 ## 2026-09-24: explicit bootstrap seed coverage
 
 * **Source:** `modernize/step2.3c` after commit `8b2ff05`.
