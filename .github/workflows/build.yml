@@ -153,12 +153,21 @@ jobs:
           brew install boost eigen hdf5 open-mpi
           python -m pip install --upgrade pip
           python -m pip install "numpy>=1.26" "h5py>=3.10"
+      - name: Determine dependency cache identity
+        id: dependency-cache
+        run: |
+          {
+            /usr/bin/clang --version
+            brew list --versions boost eigen hdf5 open-mpi
+          } > "${RUNNER_TEMP}/dependency-versions.txt"
+          dependency_key=$(shasum -a 256 "${RUNNER_TEMP}/dependency-versions.txt" | cut -d ' ' -f 1)
+          echo "key=${dependency_key}" >> "${GITHUB_OUTPUT}"
       - name: Cache ALPSCore
         id: cache-alpscore
         uses: actions/cache@v6
         with:
           path: ${{ runner.temp }}/alpscore-install
-          key: maxent-alpscore-${{ runner.os }}-${{ runner.arch }}-appleclang-${{ hashFiles('alpscore/**') }}
+          key: maxent-alpscore-${{ runner.os }}-${{ runner.arch }}-${{ steps.dependency-cache.outputs.key }}-${{ hashFiles('alpscore/**') }}
       - name: Build ALPSCore
         if: steps.cache-alpscore.outputs.cache-hit != 'true'
         env:

@@ -171,15 +171,19 @@ def main():
         for p in problems:
             print(f"     {p}")
         failed += bool(problems)
-    bootstrap_results = [args.result / f"{case}.h5"
-                         for case in ("t_generate_err", "t_generate_err_seed")]
-    if not args.report and all(path.exists() for path in bootstrap_results):
-        with h5py.File(bootstrap_results[0], "r") as first, h5py.File(bootstrap_results[1], "r") as second:
-            default = first[BOOTSTRAP_DATASET][()][:, 2:]
-            explicit = second[BOOTSTRAP_DATASET][()][:, 2:]
-        if np.array_equal(default, explicit):
-            print("FAIL bootstrap seeds: default and explicit seeds produced identical estimates")
-            failed += 1
+    bootstrap_cases = {"t_generate_err", "t_generate_err_seed"}
+    selected_cases = {ref.stem for ref in refs}
+    bootstrap_results = [args.result / f"{case}.h5" for case in sorted(bootstrap_cases)]
+    if (not args.report and bootstrap_cases <= selected_cases
+            and all(path.exists() for path in bootstrap_results)):
+        with (h5py.File(bootstrap_results[0], "r") as first,
+              h5py.File(bootstrap_results[1], "r") as second):
+            if BOOTSTRAP_DATASET in first and BOOTSTRAP_DATASET in second:
+                default = first[BOOTSTRAP_DATASET][()][:, 2:]
+                explicit = second[BOOTSTRAP_DATASET][()][:, 2:]
+                if np.array_equal(default, explicit):
+                    print("FAIL bootstrap seeds: default and explicit seeds produced identical estimates")
+                    failed += 1
     if not args.report:
         print(f"{len(refs)} cases, {failed} failed")
     return 1 if failed else 0
