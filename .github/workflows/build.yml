@@ -69,6 +69,16 @@ jobs:
           fi
           python -m pip install --upgrade pip
           python -m pip install "numpy>=1.26" "h5py>=3.10"
+      - name: Determine dependency cache identity
+        id: dependency-cache
+        run: |
+          {
+            "${{ matrix.plat.cxx_compiler }}-${{ matrix.plat.c_version }}" --version
+            dpkg-query -W -f='${Package}=${Version}\n' \
+              libhdf5-serial-dev libeigen3-dev libopenmpi-dev
+          } > "${RUNNER_TEMP}/dependency-versions.txt"
+          dependency_key=$(sha256sum "${RUNNER_TEMP}/dependency-versions.txt" | cut -d ' ' -f 1)
+          echo "key=${dependency_key}" >> "${GITHUB_OUTPUT}"
       - name: Cache Boost and ALPSCore
         id: cache-dependencies
         uses: actions/cache@v6
@@ -76,7 +86,7 @@ jobs:
           path: |
             ${{ runner.temp }}/boost
             ${{ runner.temp }}/alpscore-install
-          key: maxent-deps-${{ runner.os }}-${{ runner.arch }}-${{ matrix.plat.c_compiler }}-${{ matrix.plat.c_version }}-boost-${{ env.BOOST_VERSION }}-${{ hashFiles('alpscore/**') }}
+          key: maxent-deps-${{ runner.os }}-${{ runner.arch }}-${{ steps.dependency-cache.outputs.key }}-boost-${{ env.BOOST_VERSION }}-${{ hashFiles('alpscore/**') }}
       - name: Build Boost and ALPSCore
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
         env:
