@@ -65,6 +65,14 @@ generations were identical. `t_generate_err_seed.h5` was added after commit
 default-seed reference, so the case detects an ignored `SEED` parameter. Both
 references include `case.out.booterr.dat`.
 
+`std::normal_distribution` deliberately remains the system-library
+implementation, so a seed reproduces results within one implementation but
+does not promise identical samples across standard libraries. The regression
+harness validates the stochastic columns statistically while keeping the
+frequency and spectrum columns strict. The component reference was regenerated
+on 2026-09-25 after making the symmetric normalization grid's zero crossing
+exact; only `model_general_double_gaussian.txt` changed.
+
 ## Time-bosonic references updated (B7b, 2026-09-24)
 
 The `kernel_time_bosonic` datasets in `components.h5` and the

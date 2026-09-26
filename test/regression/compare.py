@@ -30,6 +30,7 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 COMPARED = re.compile(r"^(files|log/scalars|cli)/")
+BOOTSTRAP_DATASET = "files/case.out.booterr.dat"
 
 
 def load_tolerances(path):
@@ -60,6 +61,33 @@ def as_text(x):
     return x.decode() if isinstance(x, bytes) else x
 
 
+def validate_bootstrap(reference, result):
+    """Validate stochastic bootstrap output without fixing a library's PRNG transform."""
+    a, b = np.asarray(reference, dtype=float), np.asarray(result, dtype=float)
+    problems = []
+    if a.shape != b.shape or b.ndim != 2 or b.shape[1] != 4:
+        return [f"booterr shape {b.shape}, expected {a.shape} with four columns"]
+    if not np.all(np.isfinite(b)):
+        problems.append("booterr contains non-finite values")
+        return problems
+    if not np.array_equal(a[:, :2], b[:, :2]):
+        problems.append("booterr frequency or spectrum columns differ")
+    if np.any(b[:, 2:] < 0):
+        problems.append("booterr mean or error estimate is negative")
+
+    spectrum_scale = float(np.max(np.abs(b[:, 1]), initial=0.0))
+    if spectrum_scale == 0:
+        problems.append("booterr spectrum is identically zero")
+        return problems
+    mean_deviation = float(np.max(np.abs(b[:, 2] - b[:, 1]), initial=0.0))
+    if mean_deviation > 0.25 * spectrum_scale:
+        problems.append("booterr bootstrap mean is inconsistent with the spectrum")
+    max_error = float(np.max(b[:, 3], initial=0.0))
+    if max_error == 0 or max_error > 5.0 * spectrum_scale:
+        problems.append("booterr uncertainty estimate is zero or implausibly large")
+    return problems
+
+
 def compare_case(ref_path, res_path, rules, report):
     case = ref_path.stem
     problems, rows = [], []
@@ -83,6 +111,9 @@ def compare_case(ref_path, res_path, rules, report):
                 problems.append(f"{case}: {name} text differs")
             continue
         a, b = np.asarray(a, dtype=float), np.asarray(b, dtype=float)
+        if name == BOOTSTRAP_DATASET:
+            problems.extend(f"{case}: {p}" for p in validate_bootstrap(a, b))
+            continue
         if a.shape != b.shape:
             problems.append(f"{case}: {name} shape {b.shape}, reference {a.shape}")
             continue
@@ -140,6 +171,19 @@ def main():
         for p in problems:
             print(f"     {p}")
         failed += bool(problems)
+    bootstrap_cases = {"t_generate_err", "t_generate_err_seed"}
+    selected_cases = {ref.stem for ref in refs}
+    bootstrap_results = [args.result / f"{case}.h5" for case in sorted(bootstrap_cases)]
+    if (not args.report and bootstrap_cases <= selected_cases
+            and all(path.exists() for path in bootstrap_results)):
+        with (h5py.File(bootstrap_results[0], "r") as first,
+              h5py.File(bootstrap_results[1], "r") as second):
+            if BOOTSTRAP_DATASET in first and BOOTSTRAP_DATASET in second:
+                default = first[BOOTSTRAP_DATASET][()][:, 2:]
+                explicit = second[BOOTSTRAP_DATASET][()][:, 2:]
+                if np.array_equal(default, explicit):
+                    print("FAIL bootstrap seeds: default and explicit seeds produced identical estimates")
+                    failed += 1
     if not args.report:
         print(f"{len(refs)} cases, {failed} failed")
     return 1 if failed else 0

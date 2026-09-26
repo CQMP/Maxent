@@ -39,7 +39,10 @@ if(NOT Boost_FOUND)
   message(FATAL_ERROR "Boost ${ALPSCore_BOOST_VERSION} (the version ALPSCore was built with) was not "
     "found. Pass -DBoost_DIR=<dir containing BoostConfig.cmake> or add its prefix to CMAKE_PREFIX_PATH.")
 endif()
-find_package(Eigen3 3.3 CONFIG REQUIRED)
+find_package(Eigen3 CONFIG REQUIRED)
+if(Eigen3_VERSION VERSION_LESS 3.3)
+  message(FATAL_ERROR "Eigen 3.3 or newer is required (found ${Eigen3_VERSION})")
+endif()
 
 set(HAVE_BLAS 0)
 set(HAVE_LAPACK 0)
@@ -55,7 +58,11 @@ configure_file(cmake/maxent_config.hpp.in ${PROJECT_BINARY_DIR}/config/maxent_co
 add_library(maxent_warnings INTERFACE)
 target_compile_options(maxent_warnings INTERFACE
   $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall -Wextra -Wpedantic>
-  $<$<AND:$<BOOL:${MAXENT_WERROR}>,$<CXX_COMPILER_ID:GNU,Clang,AppleClang>>:-Werror>)
+  $<$<AND:$<BOOL:${MAXENT_WERROR}>,$<CXX_COMPILER_ID:GNU,Clang,AppleClang>>:-Werror>
+  # GCC diagnoses Boost.Variant's type-erased storage as maybe-uninitialized
+  # when ALPS parameters are instantiated. Keep the warning visible without
+  # treating this third-party false positive as a Maxent build failure.
+  $<$<AND:$<BOOL:${MAXENT_WERROR}>,$<CXX_COMPILER_ID:GNU>>:-Wno-error=maybe-uninitialized>)
 
 # ---------------------------------------------------------------- library and program
 add_library(maxent_core STATIC

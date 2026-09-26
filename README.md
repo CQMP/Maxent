@@ -1,6 +1,6 @@
 Maxent
 ======
-[![Build Status](https://travis-ci.org/CQMP/Maxent.svg?branch=master)](https://travis-ci.org/CQMP/Maxent)
+[![CI](https://github.com/CQMP/Maxent/actions/workflows/build.yml/badge.svg)](https://github.com/CQMP/Maxent/actions/workflows/build.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.txt)
 
 The Maxent Project: A utility for performing analytic continuation using the method of Maximum Entropy.
@@ -38,10 +38,15 @@ Table of Contents
 ### Libraries
 
 #### Boost
-When compiling both ALPSCore and Maxent, be careful to ensure boost was compiled with the same library and stdlib as ALPSCore and Maxent.   
+Maxent uses Boost headers and the `program_options` library in its utilities.
+Use the same Boost version and C++ standard library that were used to build
+ALPSCore; CMake checks the version reported by ALPSCore.
 
 #### ALPSCore
-ALPSCore needs to be properly installed, see [ALPSCore library](https://github.com/ALPSCore/ALPSCore). ALPSCore provides the location of the Boost libraries.
+ALPSCore must be installed, including its CMake package files; see the
+[ALPSCore library](https://github.com/ALPSCore/ALPSCore). Set `ALPSCore_DIR`
+to the directory containing `ALPSCoreConfig.cmake` when it is not found
+automatically.
 
 #### Eigen3
 For our linear algebra routines we use Eigen3 version >=3.3. CMake finds it through its `Eigen3Config.cmake`; if it is not in a standard location, add its prefix to `CMAKE_PREFIX_PATH` or set `-DEigen3_DIR=/path/to/share/eigen3/cmake`.
@@ -80,7 +85,8 @@ Options:
 | `MAXENT_USE_SYSTEM_GTEST` | OFF | use an installed GoogleTest instead of downloading 1.18.0 |
 
 ### Tests
-Once compiled, run `ctest --test-dir build` (or `ctest --preset <preset>` for
+Once compiled, run `ctest --test-dir build --output-on-failure` (or
+`ctest --preset <preset>` for
 a preset build) to make sure everything works. This runs the unit tests (label
 `unit`) and the regression suite (label `regression-fast`, needs Python 3 with
 numpy and h5py); see [test/regression/README.md](test/regression/README.md).

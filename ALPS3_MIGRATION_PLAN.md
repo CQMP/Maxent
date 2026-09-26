@@ -436,7 +436,8 @@ Keep the `MaxEntSimulation` public getters stable, because the tests use them.
 
 ### 2.4 Hygiene and CI
 
-* Delete `.travis.yml` and add GitHub Actions with this matrix:
+* **In progress 2026-09-24:** delete `.travis.yml` and add GitHub Actions,
+  mirroring ALPS 3.0's workflow conventions, with this matrix:
   * Ubuntu: GCC 11/13/15, Clang 15/19
   * macOS arm64: AppleClang
   * one ASan/UBSan job
@@ -445,7 +446,8 @@ Keep the `MaxEntSimulation` public getters stable, because the tests use them.
   Build ALPSCore from source in CI and cache it.
 * **Replace the allowlist `.gitignore`.** Done 2026-09-23: replaced with a minimal ignore list (build dirs, OS/editor files, Python caches). Local-only material (D10) is hidden per clone via `.git/info/exclude`, not in the repository.
 * ~~Remove the dead Pade sources~~ Done: Pade was removed entirely (D7).
-* Update the README: build instructions, dependency list (no GSL), and remove the Travis badge.
+* **Done 2026-09-24:** update the README build/test instructions and dependency
+  list, and replace the Travis badge with the GitHub Actions badge.
 
 ### 2.5 Isolate ALPSCore behind two seams (bridge into step 4)
 

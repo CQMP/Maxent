@@ -4,6 +4,15 @@ Every regeneration of files in `reference/` is logged here: date, commit,
 reason, affected cases, and the largest difference to the previous
 references (from `compare.py --report`). Newest entry first.
 
+## 2026-09-25: deterministic model zero crossing
+
+* **Source:** `modernize/step2.4`, before the CI portability-fix commit.
+* **Reason:** the default-model integration grid now constructs a symmetric midpoint as
+  exact zero, avoiding compiler-dependent FMA rounding at the discontinuous
+  branch of the general double Gaussian.
+* **Cases:** `components`; only `model_general_double_gaussian.txt` changed.
+* **Largest difference:** 4.077e-4 relative.
+
 ## 2026-09-24: explicit bootstrap seed coverage
 
 * **Source:** `modernize/step2.3c` after commit `8b2ff05`.
